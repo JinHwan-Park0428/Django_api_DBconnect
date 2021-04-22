@@ -13,7 +13,8 @@ class DjangotestViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Djangotest.objects.all()
     serializer_class = DjangotestSerializer
 
-    permission_classes = [permissions.IsAuthenticated]
+    # 관리자 권한 요구 코드
+    # permission_classes = [permissions.IsAuthenticated]
 
     # sql 인젝션 방어용 코드
     # @action(detail=False, methods=['GET'])
