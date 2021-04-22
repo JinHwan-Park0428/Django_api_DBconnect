@@ -31,28 +31,30 @@ class DjangotestViewSet(viewsets.ReadOnlyModelViewSet):
     #     return Response(serializer.data)
 
     #sql 인젝션 되는 코드
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['POST'])
     def search(self, request):
         new_data = dict()
         # books = Book.objects.all()
         try:
             cursor = connection.cursor()
-            q = request.query_params.get('q', None)
-            strSql = "SELECT userid, userpwd FROM Djangotest where userkey=" +q
+            # q = request.query_params.get('q', None)
+            # print(request.data)
+            q1 = request.data['userid']
+            q2 = request.data['userpwd']
+            strSql = "SELECT userid, userpwd FROM Djangotest where userid='" +q1+"'"+" or "+ "userpwd='"+ q2+ "'"
             result = cursor.execute(strSql)
             datas = cursor.fetchall()
             for data in datas:
                 new_data['userid'] = data[0]
                 new_data['userpwd'] = data[1]
 
+
             connection.commit()
             connection.close()
 
-
-
-        except:
+        except Exception as e:
             connection.rollback()
-            print("Something Error!")
+            print(e)
 
         return Response(new_data)
 
