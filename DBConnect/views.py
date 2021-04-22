@@ -3,6 +3,8 @@ from rest_framework import permissions
 from DBConnect.models import Djangotest
 from DBConnect.serializers import DjangotestSerializer
 from django.db import connection
+import requests
+import json
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -31,6 +33,7 @@ class DjangotestViewSet(viewsets.ReadOnlyModelViewSet):
     #sql 인젝션 되는 코드
     @action(detail=False, methods=['GET'])
     def search(self, request):
+        new_data = dict()
         # books = Book.objects.all()
         try:
             cursor = connection.cursor()
@@ -38,14 +41,18 @@ class DjangotestViewSet(viewsets.ReadOnlyModelViewSet):
             strSql = "SELECT userid, userpwd FROM Djangotest where userkey=" +q
             result = cursor.execute(strSql)
             datas = cursor.fetchall()
-            print(datas)
+            for data in datas:
+                new_data['userid'] = data[0]
+                new_data['userpwd'] = data[1]
 
             connection.commit()
             connection.close()
 
+
+
         except:
             connection.rollback()
-            print("Failed selecting in BookListView")
+            print("Something Error!")
 
-        return Response(datas)
+        return Response(new_data)
 
