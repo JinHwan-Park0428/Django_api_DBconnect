@@ -14,11 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from DBConnect.views import djangotestListAPI, djangotestDetailAPI
+from django.urls import include, path
+from rest_framework import routers
+from DBConnect import views
+
+# http://127.0.0.1:8000/users
+router = routers.DefaultRouter()
+router.register(r'Djangotest', views.DjangotestViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/user/', djangotestListAPI.as_view()),
-    path('api/user/<int:pk>/', djangotestDetailAPI.as_view())
+    path('', include(router.urls)),
+    path('apt-auth', include('rest_framework.urls', namespace='rest_framework'))
 ]

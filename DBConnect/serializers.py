@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import djangotest
+from .models import Djangotest
 
 
-class djangotestSerializer(serializers.ModelSerializer):
+class DjangotestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = djangotest
+        model = Djangotest
         fields = '__all__'

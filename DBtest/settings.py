@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'DBtest.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'yeonsiwoo3',
         'USER': 'yeonsiwoo3',
         'PASSWORD': 'Hyomin2332@',
