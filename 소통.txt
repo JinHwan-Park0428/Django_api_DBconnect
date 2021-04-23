@@ -1,0 +1,73 @@
+SkdevsecUser
+
+현재 기능
+1. 회원가입,
+2. 아이디&닉네임 중복,
+3. 로그인,
+4. 내 정보 보기,
+5. 내 정보 수정하기
+
+기능 별 알고리즘
+1. 회원가입
+    1. 필요한 주소 값
+        1. http://domain/SkdevsecUser/create_user
+    2. 날라올 것으로 예상하는 POST 값
+        1. uid
+        2. upwd
+        3. unickname
+        4. uname
+        5. umail
+        6. uphone
+        7. ucreate_date
+        8. authority
+    3. 실행되는 기능
+        1. INSERT INTO skdevsec_user VALUES (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority)
+        2. 에러 발생(회원가입 실패 및 다른 에러 발생)시 0 전송 및 에러코드 출력
+        3. 문제 없이 INSERT 됐을 경우, 1 전송
+
+2. 아이디&닉네임 중복
+    1. 필요한 주소 값
+        1. http://domain/SkdevsecUser/same_or_not
+    2. 날라올 것으로 예상하는 POST 값
+        1. uid
+        2. unickname
+    3. 실행되는 기능
+        1. SELECT * FROM skdevsec_user WHERE uid=uid OR unickname=unickname
+        2. 에러 발생(프론트 엔드로 전해지는 데이터는 없음)시 에러코드 출력
+        3. 데이터가 존재(중복 존재)하면 1 전송 아니면 0 전송
+
+3. 로그인
+    1. 필요한 주소 값
+        1. http://domain/SkdevsecUser/login
+    2. 날라올 것으로 예상하는 POST 값
+        1. uid
+        2. upwd
+    3. 실행되는 기능
+        1. SELECT authority FROM skdevsec_user WHERE uid=uid and upwd=upwd
+        2. 에러 발생(프론트 엔드로 전해지는 데이터는 없음)시 에러코드 출력
+        3. 권한이 1이면 2전송, 0이면 1전송, 빈 값(로그인 실패)이면 0전송
+
+4. 내 정보 보기
+    1. 필요한 주소 값
+        1. http://domain/SkdevsecUser/view_info
+    2. 날라올 것으로 예상하는 POST 값
+        1. uid
+    3. 실행되는 기능
+        1. SELECT uid, unickname, uname, umail, uphone, ucreate_date FROM skdevsec_user WHERE uid=uid
+        2. 에러 발생(프론트 엔드로 전해지는 데이터는 없음)시 에러코드 출력
+        3. DB에서 가져온 데이터 전송
+
+5. 내 정보 수정하기
+    1. 필요한 주소 값
+        1. http://domain/SkdevsecUser/change_info
+    2. 날라올 것으로 예상하는 POST 값
+        1. uid
+        2. upwd
+        3. unickname
+        4. umail
+        5. uphone
+    3. 실행되는 기능
+        1. UPDATE skdevsec_user SET upwd=upwd unickname=unickname umail=umail uphone=uphone WHERE uid=uid
+        2. 에러 발생(수정 실패 및 다른 에러)시 에러코드 출력 및 0 전송
+        3. 수정 성공하면 1 전송송
+
