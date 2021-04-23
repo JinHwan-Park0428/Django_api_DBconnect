@@ -1,4 +1,4 @@
-# 필요한 모듈 이뮤ㅗ트
+# 필요한 모듈 임포트
 from rest_framework import viewsets
 from rest_framework import permissions
 from DBConnect.models import *
@@ -98,7 +98,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
     # sql 인젝션 되는 코드
     # 회원가입 함수
     @action(detail=False, methods=['POST'])
-    def create(self, request):
+    def create_user(self, request):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
