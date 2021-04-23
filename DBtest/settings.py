@@ -13,7 +13,7 @@ DEBUG = True
 # 접속 가능한 호스트('*' <== 전부 허용)
 ALLOWED_HOSTS = ['*']
 
-# 설치된 앱
+# 앱
 INSTALLED_APPS = [
     'rest_framework',
     'DBConnect',
@@ -41,10 +41,10 @@ MIDDLEWARE = [
 # 외부 웹사이트 허용 여부
 CORS_ORIGIN_ALLOW_ALL = True
 
-# 이건 모지?
+# 아직까지 건들 일 없음
 ROOT_URLCONF = 'DBtest.urls'
 
-# 사용할 일 없음
+# 아직까지 건들 일 없음
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -62,9 +62,10 @@ TEMPLATES = [
     },
 ]
 
-# 사용할 일 없음
+# 아직까지 건들 일 없음
 WSGI_APPLICATION = 'DBtest.wsgi.application'
 
+# MYSQL 데이터베이스 설정
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -79,6 +80,7 @@ DATABASES = {
     }
 }
 
+# 아직까지 건들 일 없음
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -94,6 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# 기타 설정들
 LANGUAGE_CODE = 'ko-kr'
 
 TIME_ZONE = 'Asia/Seoul'
