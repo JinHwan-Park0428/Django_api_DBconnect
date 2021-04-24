@@ -7,6 +7,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Django Secure Key
 SECRET_KEY = 'django-insecure-z9=1t9nxitfv6sj!((ta7xn!u+6ixa$rmmzib-xbmh7_#qi&#f'
 
+# EMAIL = {
+#     'EMAIL_BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+#     'EMIAL_USE_TLS': True,
+#     'EMAIL_PORT': 587,
+#     'EMAIL_HOST': 'smtp.gmail.com',
+#     'EMAIL_HOST_USER': 'zkzlaptb6@gmail.com',
+#     'EMAIL_HOST_PASSWORD': '',
+#     'SERVER_EMAIL': 'zkzlaptb6@gmail.com',
+#     'DEFAULT_FROM_MAIL': 'zkzlaptb6'
+# }
+
+EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_USE_TLS = True
+# EMAIL_PORT: '587'
+# EMAIL_HOST: 'smtp.gmail.com'
+# EMAIL_HOST_USER: 'zkzlaptb6@gmail.com'
+# EMAIL_HOST_PASSWORD: ''
+# # SERVER_EMAIL: 'zkzlaptb6@gmail.com'
+# DEFAULT_FROM_MAIL: 'zkzlaptb6@gmail.com'
+
+EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = True
+EMAIL_PORT: '587'
+EMAIL_HOST: 'smtp.naver.com'
+EMAIL_HOST_USER: 'zkzlaptb@naver.com'
+EMAIL_HOST_PASSWORD: ''
+# SERVER_EMAIL: ''
+DEFAULT_FROM_MAIL: 'zkzlaptb@naver.com'
+
 # Debug 허용/비허용 (나중에 False 해야함)
 DEBUG = True
 
@@ -48,8 +77,7 @@ ROOT_URLCONF = 'DBtest.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

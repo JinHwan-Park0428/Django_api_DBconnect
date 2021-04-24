@@ -7,6 +7,21 @@ from django.db import connection
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+import json
+from .text import message
+from .token import account_activation_token
+from DBtest.settings import SECRET_KEY
+
+from django.views import View
+from django.http import HttpResponse, JsonResponse
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
+from django.core.mail import EmailMessage
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes, force_text
+
 # 각각의 클래스는 필요한 기능에 따른 SQL 쿼리문을 작성할 것
 # 각각의 클래스의 함수에 접근 하기 위한 주소 예시
 # ex) http://localhost:8000/테이블명/함수명/
@@ -69,7 +84,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(0)
 
         # 성공 했을 시, 1 전송
-        else :
+        else:
             return Response(1)
 
     # sql 인젝션 되는 코드
@@ -106,6 +121,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 return Response(0)
 
+    # sql 인젝션 되는 코드
+    # 닉네임 중복
     @action(detail=False, methods=['POST'])
     def nickname_check(self, request):
         try:
@@ -136,6 +153,56 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response(1)
             else:
                 return Response(0)
+
+    # sql 인젝션 되는 코드
+    # 회원가입 함수
+    @action(detail=False, methods=['POST'])
+    def email_check(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            umail = request.data['umail']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_user WHERE umail='" + umail + "'"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+            datas = cursor.fetchall()
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력
+        except Exception as e:
+            connection.rollback()
+            print("에러 내용: ", e)
+
+            # 데이터가 존재하면(중복이면) 1을 전송 아니면 0을 전송
+        else:
+            if len(datas) != 0:
+                return Response(1)
+            else:
+                try:
+                    currnet_site = get_current_site(request)
+                    domain = currnet_site.domain
+                    # uidb64 = urlsafe_base64_encode(force_bytes(umail))
+                    # token = account_activation_token(SkdevsecUser.objects.get(pk=umail))
+                    message_date = message(domain)
+
+                    mail_title = "이메일 인증을 완료해주세요"
+                    mail_to = umail
+                    email = EmailMessage("test", "test mail", to=[mail_to])
+                    email.send()
+                    return Response(0)
+
+                except Exception as e:
+                    connection.rollback()
+                    print("에러 내용1: ", e)
+
 
     # sql 인젝션 되는 코드
     # 로그인
