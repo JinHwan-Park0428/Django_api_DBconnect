@@ -73,19 +73,18 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(1)
 
     # sql 인젝션 되는 코드
-    # 아이디&닉네임 중복
+    # 아이디 중복&닉네임 중복
     @action(detail=False, methods=['POST'])
-    def same_or_not(self, request):
+    def id_check(self, request):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출:
             uid = request.data['uid']
-            unickname = request.data['unickname']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT * FROM skdevsec_user WHERE uid='" + uid + "' " + "OR unickname='" + unickname + "'"
+            strsql = "SELECT * FROM skdevsec_user WHERE uid='" + uid + "'"
 
             # DB에 명령문 전송
             result = cursor.execute(strsql)
@@ -107,6 +106,37 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 return Response(0)
 
+    @action(detail=False, methods=['POST'])
+    def nickname_check(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출:
+            unickname = request.data['unickname']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_user WHERE unickname='" + unickname + "'"
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+            datas = cursor.fetchall()
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력
+        except Exception as e:
+            connection.rollback()
+            print("에러구문: ", e)
+
+        # 데이터가 존재하면(중복이면) 1을 전송 아니면 0을 전송
+        else:
+            if len(datas) != 0:
+                return Response(1)
+            else:
+                return Response(0)
+
     # sql 인젝션 되는 코드
     # 로그인
     @action(detail=False, methods=['POST'])
@@ -115,6 +145,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
+            print("들어온 request 값: ", request)
+            print("들어온 data 값: ", request.data)
 
             # POST 메소드로 날라온 Request의 데이타 각각 추출
             uid = request.data['uid']

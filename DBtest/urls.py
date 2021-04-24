@@ -5,9 +5,7 @@ from rest_framework import routers
 from DBConnect import views
 
 # 특정 DB 테이블에 접근 하기 위한 주소 (ex: http://localhost:8080/SkdevsecBag/)
-router = routers.DefaultRouter()
-# 실험중인 기능
-# router = routers.DefaultRouter(trailing_slash=False)
+router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'SkdevsecBag', views.SkdevsecBagViewSet)
 router.register(r'SkdevsecBoard', views.SkdevsecBoardViewSet)
 router.register(r'SkdevsecComment', views.SkdevsecCommentViewSet)
