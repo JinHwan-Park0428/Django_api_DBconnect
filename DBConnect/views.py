@@ -10,7 +10,7 @@ from rest_framework.response import Response
 import json
 from .text import message
 from .token import account_activation_token
-from DBtest.settings import SECRET_KEY
+from DBtest.settings import SECRET_KEY, EMAIL_HOST
 
 from django.views import View
 from django.http import HttpResponse, JsonResponse
@@ -194,9 +194,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     message_date = message(domain)
 
                     mail_title = "이메일 인증을 완료해주세요"
-                    mail_to = umail
-                    email = EmailMessage("test", "test mail", to=[mail_to])
-                    email.send()
+                    send_mail(mail_title, message_date, EMAIL_HOST, [umail], fail_silently=False)
                     return Response(0)
 
                 except Exception as e:
