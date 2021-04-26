@@ -24,17 +24,12 @@ EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST: 'smtp.gmail.com'
 # EMAIL_HOST_USER: 'zkzlaptb6@gmail.com'
 # EMAIL_HOST_PASSWORD: ''
-# # SERVER_EMAIL: 'zkzlaptb6@gmail.com'
-# DEFAULT_FROM_MAIL: 'zkzlaptb6@gmail.com'
 
 EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = True
 EMAIL_PORT: '587'
 EMAIL_HOST: 'smtp.naver.com'
-EMAIL_HOST_USER: 'zkzlaptb@naver.com'
-EMAIL_HOST_PASSWORD: ''
-# SERVER_EMAIL: ''
-DEFAULT_FROM_MAIL: 'zkzlaptb@naver.com'
+EMAIL_HOST_USER: 'zkzlaptb'
+EMAIL_HOST_PASSWORD: '0p9o8i7u6y!'
 
 # Debug 허용/비허용 (나중에 False 해야함)
 DEBUG = True
