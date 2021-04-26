@@ -29,7 +29,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT: '587'
 EMAIL_HOST: 'smtp.naver.com'
 EMAIL_HOST_USER: 'zkzlaptb'
-EMAIL_HOST_PASSWORD: '0p9o8i7u6y!'
+EMAIL_HOST_PASSWORD: ''
 
 # Debug 허용/비허용 (나중에 False 해야함)
 DEBUG = True
