@@ -1,5 +1,5 @@
-# model.py 는 python manage.py inspectdb > DBConnect/models.py 명령어를 실행 시키면 자동으로 설정해둔 DB 내용을 감지하여 작성해줌
 from django.db import models
+
 
 class SkdevsecBag(models.Model):
     bag_id = models.AutoField(primary_key=True)
@@ -18,10 +18,10 @@ class SkdevsecBoard(models.Model):
     bfile = models.CharField(max_length=100)
     bview = models.IntegerField()
     bcomment = models.IntegerField()
-    unickname = models.IntegerField()
+    unickname = models.CharField(max_length=50)
     bcreate_date = models.CharField(max_length=50)
     bcate = models.CharField(max_length=50)
-    block = models.CharField(max_length=50)
+    b_lock = models.CharField(max_length=50)
 
     class Meta:
         managed = False

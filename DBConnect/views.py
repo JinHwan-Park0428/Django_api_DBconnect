@@ -328,16 +328,64 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             return Response(1)
 
+class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SkdevsecBoard.objects.all()
+    serializer_class = SkdevsecBoardSerializer
+
+    @action(detail=False, methods=['POST'])
+    def board_view(self, request):
+        new_data = list()
+
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bcate = request.data['bcate']
+            bpage = request.data['bpage']
+            bpage = int(bpage)
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(bpage*10-10) + ", 10"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+            if datas != None:
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['bid'] = datas[0]
+                    new_data_in['btitle'] = datas[1]
+                    new_data_in['bfile'] = datas[2]
+                    new_data_in['bview'] = datas[3]
+                    new_data_in['bcomment'] = datas[4]
+                    new_data_in['unickname'] = datas[5]
+                    new_data_in['bcreate_date'] = datas[6]
+                    new_data_in['b_lock'] = datas[7]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+                    print(f"check2: {datas}")
+            else : pass
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(e)
+
+        # 성공 했을 시, 데이터 전송
+        else:
+            return Response(new_data)
+
 
 class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecBag.objects.all()
     serializer_class = SkdevsecBagSerializer
-
-
-class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = SkdevsecBoard.objects.all()
-    serializer_class = SkdevsecBoardSerializer
 
 
 class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
