@@ -9,10 +9,11 @@ SECRET_KEY = 'django-insecure-z9=1t9nxitfv6sj!((ta7xn!u+6ixa$rmmzib-xbmh7_#qi&#f
 
 # 이메일 보내기 위한 기본 세팅
 EMAIL_HOST = 'smtp.naver.com'
-EMAIL_PORT = '587'
+EMAIL_PORT = 587
 EMAIL_HOST_USER = 'zkzlaptb@naver.com'
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = '0p9o8i7u6y!'
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 
 # Debug 허용/비허용 (나중에 False 해야함)
 DEBUG = True

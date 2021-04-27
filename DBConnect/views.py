@@ -6,11 +6,12 @@ from DBConnect.serializers import *
 from django.db import connection
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from random import *
 
 import json
 from .text import message
 from .token import account_activation_token
-from DBtest.settings import SECRET_KEY, EMAIL_HOST
+from DBtest.settings import SECRET_KEY, EMAIL_HOST_USER
 
 from django.views import View
 from django.http import HttpResponse, JsonResponse
@@ -187,6 +188,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response(1)
             else:
                 try:
+                    i = randint(10000000, 99999999)
                     currnet_site = get_current_site(request)
                     domain = currnet_site.domain
                     # uidb64 = urlsafe_base64_encode(force_bytes(umail))
@@ -194,8 +196,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     message_date = message(domain)
 
                     mail_title = "이메일 인증을 완료해주세요"
-                    send_mail(mail_title, message_date, EMAIL_HOST, [umail], fail_silently=False)
-                    return Response(0)
+                    send_mail(mail_title, f"인증번호 : {i}", EMAIL_HOST_USER, [umail], fail_silently=False)
+                    return Response(i)
 
                 except Exception as e:
                     connection.rollback()
@@ -219,7 +221,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # authority = request.data['authority']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT authority FROM skdevsec_user WHERE uid='" + uid + "' " + "and upwd='" + upwd + "'"
+            strsql = "SELECT unickname, authority FROM skdevsec_user WHERE uid='" + uid + "' " + "and upwd='" + upwd + "'"
 
             # DB에 명령문 전송
             result = cursor.execute(strsql)
@@ -230,7 +232,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             connection.close()
 
             for data in datas:
-                new_data['authority'] = data[0]
+                new_data['unickname'] = data[0]
+                new_data['authority'] = data[1]
 
         # 에러가 발생했을 경우 에러 내용 출력 및 로그인 실패 코드(0) 전송
         except Exception as e:
@@ -241,9 +244,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             if len(new_data) != 0:
                 if new_data['authority'] == 1:
-                    return Response(2)
+                    new_data['login_check'] = 2
+                    return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
                 else:
-                    return Response(1)
+                    new_data['login_check'] = 1
+                    return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
             else:
                 return Response(0)
 
