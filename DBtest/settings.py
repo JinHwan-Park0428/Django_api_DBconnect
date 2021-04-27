@@ -8,10 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-z9=1t9nxitfv6sj!((ta7xn!u+6ixa$rmmzib-xbmh7_#qi&#f'
 
 # 이메일 보내기 위한 기본 세팅
-EMAIL_HOST: 'smtp.naver.com'
-EMAIL_PORT: '587'
-EMAIL_HOST_USER: 'zkzlaptb@naver.com'
-EMAIL_HOST_PASSWORD: ''
+EMAIL_HOST = 'smtp.naver.com'
+EMAIL_PORT = '587'
+EMAIL_HOST_USER = 'zkzlaptb@naver.com'
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 
 # Debug 허용/비허용 (나중에 False 해야함)
