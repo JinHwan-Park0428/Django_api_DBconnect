@@ -11,7 +11,7 @@ SECRET_KEY = 'django-insecure-z9=1t9nxitfv6sj!((ta7xn!u+6ixa$rmmzib-xbmh7_#qi&#f
 EMAIL_HOST: 'smtp.naver.com'
 EMAIL_PORT: '587'
 EMAIL_HOST_USER: 'zkzlaptb@naver.com'
-EMAIL_HOST_PASSWORD: '0p9o8i7u6y!'
+EMAIL_HOST_PASSWORD: ''
 EMAIL_USE_TLS = True
 
 # Debug 허용/비허용 (나중에 False 해야함)
