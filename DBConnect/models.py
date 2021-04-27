@@ -1,5 +1,7 @@
 from django.db import models
 
+# fileupload = models.FileField(max_length=50, allow_empty_file=False, use_url=)
+
 
 class SkdevsecBag(models.Model):
     bag_id = models.AutoField(primary_key=True)

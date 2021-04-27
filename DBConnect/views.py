@@ -262,10 +262,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이타 각각 추출
-            uid = request.data['uid']
+            unickname = request.data['unickname']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT uid, unickname, uname, umail, uphone, ucreate_date FROM skdevsec_user WHERE uid='" + uid + "'"
+            strsql = "SELECT uid, unickname, uname, umail, uphone, ucreate_date FROM skdevsec_user WHERE unickname='" + unickname + "'"
 
             # DB에 명령문 전송
             result = cursor.execute(strsql)
@@ -302,13 +302,12 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이타 각각 추출
             uid = request.data['uid']
-            upwd = request.data['upwd']
             unickname = request.data['unickname']
             umail = request.data['umail']
             uphone = request.data['uphone']
 
             # SQL 쿼리문 작성
-            strsql = "UPDATE skdevsec_user SET upwd='" + upwd + "', " + "unickname='" + unickname + "', " + "umail='" + umail + "', " +"uphone='" + uphone+ "' WHERE uid='" + uid + "'"
+            strsql = "UPDATE skdevsec_user SET unickname='" + unickname + "', " + "umail='" + umail + "', " +"uphone='" + uphone+ "' WHERE uid='" + uid + "'"
 
             # DB에 명령문 전송
             result = cursor.execute(strsql)
@@ -328,12 +327,49 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             return Response(1)
 
+    # sql 인젝션 되는 코드
+    # 비밀번호 변경
+    @action(detail=False, methods=['POST'])
+    def change_pwd(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            unickname = request.data['unickname']
+            upwd = request.data['upwd']
+
+            # SQL 쿼리문 작성
+            strsql = "UPDATE skdevsec_user SET upwd='" + upwd + "'" + "unickname='" + unickname + "' WHERE unickname='" + unickname + "'"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+            datas = cursor.fetchall()
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 코드 전송
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 수정 완료 되면 성공 코드 전송
+        else:
+            return Response(1)
+
+# 게시판 관련 테이블
+# 게시판 출력, 게시물 출력, 게시물 등록, 게시물 수정, 게시물 삭제, 이미지 삭제, 게시물 검색
 class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecBoard.objects.all()
     serializer_class = SkdevsecBoardSerializer
 
+    # sql 인젝션 되는 코드
+    # 게시판 출력
     @action(detail=False, methods=['POST'])
-    def board_view(self, request):
+    def board_outside(self, request):
         new_data = list()
 
         try:
@@ -356,6 +392,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             connection.commit()
             connection.close()
 
+            # 게시판 정보를 보내기 위한 대입 로직 구현
             if datas != None:
                 while datas:
                     new_data_in = dict()
@@ -369,10 +406,9 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['b_lock'] = datas[7]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-                    print(f"check2: {datas}")
             else : pass
 
-        # 에러가 발생했을 경우 에러 내용 출력 및 0 전송
+        # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
             connection.rollback()
             print(e)
@@ -381,6 +417,257 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             return Response(new_data)
 
+    # sql 인젝션 되는 코드
+    # 게시물 출력
+    @action(detail=False, methods=['POST'])
+    def board_inside(self, request):
+        new_data = list()
+
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bid = request.data['bid']
+            # SQL 쿼리문 작성
+            strsql1 = "UPDATE skdevsec_board SET bview = bview+1 WHERE bid='" + bid + "'"
+            strsql2 = "SELECT * FROM skdevsec_board WHERE bid='" + bid + "'"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql1)
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql2)
+            datas = cursor.fetchone()
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+            # 게시판 정보를 보내기 위한 대입 로직 구현
+            if datas != None:
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['bid'] = datas[0]
+                    new_data_in['btitle'] = datas[1]
+                    new_data_in['btext'] = datas[2]
+                    new_data_in['bfile'] = datas[3]
+                    new_data_in['bview'] = datas[4]
+                    new_data_in['bcomment'] = datas[5]
+                    new_data_in['unickname'] = datas[6]
+                    new_data_in['bcreate_date'] = datas[7]
+                    new_data_in['b_lock'] = datas[8]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            else:
+                pass
+
+        # 에러가 발생했을 경우 에러 내용 출력
+        except Exception as e:
+            connection.rollback()
+            print(e)
+
+        # 성공 했을 시, 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 게시물 등록
+    @action(detail=False, methods=['POST'])
+    def board_upload(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            btitle = request.data['btitle']
+            btext = request.data['btext']
+            bfile = request.data['bfile']
+            bview = request.data['bview']
+            bcomment = request.data['bcomment']
+            unickname = request.data['unickname']
+            bcreate_date = request.data['bcreate_date']
+            bcate = request.data['bcate']
+            b_lock = request.data['b_lock']
+
+            # SQL 쿼리문 작성
+            strsql1 = "INSERT skdevsec_board(btitle, btext, bfile, bview, bcomment, unickname, bcreate_date, bcate, b_lock) VALUES('" + btitle + "', '" + btext + "', '" + bfile + "', '" + bview + "', '" + bcomment + "', '" + unickname + "', '" + bcreate_date + "', '" + bcate + "', '" + b_lock + "')"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql1)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 성공 값 반환
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
+    # 게시물 수정
+    @action(detail=False, methods=['POST'])
+    def change_board(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bid = request.data['bid']
+            btitle = request.data['btitle']
+            btext = request.data['btext']
+            bfile = request.data['bfile']
+            bcate = request.data['bcate']
+            b_lock = request.data['b_lock']
+
+            # SQL 쿼리문 작성
+            strsql1 = "UPDATE skdevsec_board SET btitle='" + btitle + "', btext='" + btext + "', bfile='" + bfile + "', bcate='" + bcate + "', b_lock='" + b_lock + "' WHERE bid='" + bid + "'"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql1)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 성공 값 반환
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
+    # 게시물 삭제
+    @action(detail=False, methods=['POST'])
+    def board_delete(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bid = request.data['bid']
+
+            # SQL 쿼리문 작성
+            strsql1 = "DELETE FROM skdevsec_board WHERE bid='" + bid + "'"
+            # DB에 명령문 전송
+            result = cursor.execute(strsql1)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 성공 값 반환
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
+    # 파일 삭제
+    @action(detail=False, methods=['POST'])
+    def file_delete(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bid = request.data['bid']
+            bfile = request.data['bfile']
+
+            # SQL 쿼리문 작성
+            strsql1 = "UPDATE skdevsec_board SET bfile=0 WHERE bid='" + bid + "'"
+            # DB에 명령문 전송
+            result = cursor.execute(strsql1)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 성공 값 반환
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
+    # 게시물 검색
+    @action(detail=False, methods=['POST'])
+    def board_search(self, request):
+        new_data = list()
+
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bcode = request.data['bcode']
+            bsearch = request.data['bsearch']
+            bcode = int(bcode)
+            # 검색 조건 코드 분류
+            # 전체 0, 제목 1, 내용 2, 작성자 3, 제목 + 내용 4
+            if bcode == 0:
+                # SQL 쿼리문 작성
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0"
+            elif bcode == 1:
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0"
+            elif bcode == 2:
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0"
+            elif bcode == 3:
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0"
+            elif bcode == 4:
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0"
+            else:
+                return Response("코드 값 잘못 보냄!!")
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+            # 게시판 정보를 보내기 위한 대입 로직 구현
+            if datas != None:
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['bid'] = datas[0]
+                    new_data_in['btitle'] = datas[1]
+                    new_data_in['bfile'] = datas[2]
+                    new_data_in['bview'] = datas[3]
+                    new_data_in['bcomment'] = datas[4]
+                    new_data_in['unickname'] = datas[5]
+                    new_data_in['bcreate_date'] = datas[6]
+                    new_data_in['b_lock'] = 0
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            else : pass
+
+        # 에러가 발생했을 경우 에러 내용 출력
+        except Exception as e:
+            connection.rollback()
+            print(e)
+
+        # 성공 했을 시, 데이터 전송
+        else:
+            return Response(new_data)
 
 class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
