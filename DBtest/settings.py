@@ -1,4 +1,5 @@
 # 모듈 임포트
+import os
 from pathlib import Path
 
 # 홈 디렉토리 경로
@@ -103,6 +104,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+FILE_UPLOAD_HANDLERS = [
+        "django.core.files.uploadhandler.MemoryFileUploadHandler",
+        "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+]
+
+
 # 기타 설정들
 LANGUAGE_CODE = 'ko-kr'
 
@@ -114,4 +121,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+# static 폴더 경로 지정 및 URL 경로 지정
 STATIC_URL = '/static/'
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]

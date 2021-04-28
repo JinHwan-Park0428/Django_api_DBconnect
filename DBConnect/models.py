@@ -1,8 +1,9 @@
+# 필요한 모듈 임포트
 from django.db import models
+from . import file_upload_path_for_db
+from DBtest.settings import STATIC_DIR
 
-# fileupload = models.FileField(max_length=50, allow_empty_file=False, use_url=)
-
-
+# DB내의 각각의 테이블에 대한 컬럼 정보 를 작성해야함 혹은 inspectdb 기능을 통해 db에서 반대로 가져올 수도 있음
 class SkdevsecBag(models.Model):
     bag_id = models.AutoField(primary_key=True)
     uid = models.IntegerField()
@@ -17,7 +18,7 @@ class SkdevsecBoard(models.Model):
     bid = models.AutoField(primary_key=True)
     btitle = models.CharField(max_length=100)
     btext = models.CharField(max_length=5000)
-    bfile = models.CharField(max_length=100)
+    bfile = models.FileField(upload_to=file_upload_path_for_db, blank=False, null=False)
     bview = models.IntegerField()
     bcomment = models.IntegerField()
     unickname = models.CharField(max_length=50)
