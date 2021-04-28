@@ -521,27 +521,31 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     # 게시물 수정
     @action(detail=False, methods=['POST'])
     def change_board(self, request):
+        new_data = dict()
         try:
-            # DB 접근할 cursor
-            cursor = connection.cursor()
+            # 수정할 게시물 번호를 받아서 해당 DB를 저장
+            data_check = SkdevsecBoard.objects.get(bid=request.data['bid'])
 
             # POST 메소드로 날라온 Request의 데이타 각각 추출
-            bid = request.data['bid']
-            btitle = request.data['btitle']
-            btext = request.data['btext']
-            bfile = request.data['bfile']
-            bcate = request.data['bcate']
-            b_lock = request.data['b_lock']
+            new_data['btitle'] = request.data['btitle']
+            new_data['btext'] = request.data['btext']
+            new_data['bfile'] = request.data['bfile']
+            new_data['bview'] = request.data['bview']
+            new_data['bcomment'] = request.data['bcomment']
+            new_data['unickname'] = request.data['unickname']
+            new_data['bcreate_date'] = request.data['bcreate_date']
+            new_data['bcate'] = request.data['bcate']
+            new_data['b_lock'] = request.data['b_lock']
 
-            # SQL 쿼리문 작성
-            strsql1 = "UPDATE skdevsec_board SET btitle='" + btitle + "', btext='" + btext + "', bfile='" + bfile + "', bcate='" + bcate + "', b_lock='" + b_lock + "' WHERE bid='" + bid + "'"
+            # DB에 저장하기 위해 시리얼라이저 함수 사용
+            file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
 
-            # DB에 명령문 전송
-            result = cursor.execute(strsql1)
-
-            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
-            connection.commit()
-            connection.close()
+            # 수정할 데이터를 업데이트함
+            if file_serializer.is_valid():
+                file_serializer.update(data_check, file_serializer.validated_data)
+            else:
+                print("문제 생김")
+                return Response(0)
 
         # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
         except Exception as e:
@@ -813,27 +817,90 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(1)
 
 
+# 장바구니 테이블
+# 장바구니 목록 출력, 장바구니 목록 삭제
 class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecBag.objects.all()
     serializer_class = SkdevsecBagSerializer
 
+    # sql 인젝션 되는 코드
+    # 장바구니 목록 출력
+    # 미완성
+    @action(detail=False, methods=['POST'])
+    def bag_show(self, request):
+        new_data = dict()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
 
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            uid = request.data['uid']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT pid FROM skdevsec_bag where uid='" + uid + "'"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+            datas = cursor.fetchall()
+
+            # 장바구니 목록이 있으면
+            if datas != None:
+                for data in datas:
+                    strsql = "SELECT pname, pcate, pimage, ptext, pprice, pcreate_date FROM skdevsec_product WHERE pid='" + data + "'"
+                    result = cursor.execute(strsql)
+                    products = cursor.fetchall()
+                    # 상품 정보를 보내기 위한 대입 로직 구현
+                    if products != None:
+                        new_data['pname'] = datas[0]
+                        new_data['pcate'] = datas[1]
+                        new_data['pimage'] = datas[2]
+                        new_data['ptext'] = datas[3]
+                        new_data['pprice'] = datas[4]
+                        new_data['pcreate_date'] = datas[5]
+                    else:
+                        Response("에러 전송")
+
+                # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+                connection.commit()
+                connection.close()
+
+            # 장바구니 목록이 없으면 0 전송
+            else :
+                # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+                connection.commit()
+                connection.close()
+                return Response(0)
+
+        # 에러가 발생했을 경우 에러 내용 출력
+        except Exception as e:
+            connection.rollback()
+            print(e)
+
+        # 성공 했을 시, 데이터 전송
+        else:
+            return Response(new_data)
+
+
+# 결제 상품 내역 테이블
 class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecOrderproduct.objects.all()
     serializer_class = SkdevsecOrderproductSerializer
 
 
+# 결제 내역 테이블
 class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecOrderuser.objects.all()
     serializer_class = SkdevsecOrderuserSerializer
 
 
+# 상품 관련 테이블
 class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecProduct.objects.all()
     serializer_class = SkdevsecProductBagSerializer
 
 
+# 상품 리뷰 관련 테이블
 class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecReview.objects.all()
     serializer_class = SkdevsecReviewSerializer
