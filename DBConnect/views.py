@@ -10,6 +10,7 @@ from DBtest.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from DBConnect.models import *
 
+
 # 각각의 클래스는 필요한 기능에 따른 SQL 쿼리문을 작성할 것
 # 각각의 클래스의 함수에 접근 하기 위한 주소 예시
 # ex) http://localhost:8000/테이블명/함수명/
@@ -692,15 +693,130 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             return Response(new_data)
 
+
+# 댓글 관련 테이블
+# 댓글 출력, 댓글 작성, 댓글 삭제
+class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SkdevsecComment.objects.all()
+    serializer_class = SkdevsecCommentSerializer
+
+    # sql 인젝션 되는 코드
+    # 댓글 출력
+    @action(detail=False, methods=['POST'])
+    def comment_output(self, request):
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bid = request.data['bid']
+            cpage = request.data['cpage']
+            cpage = int(cpage)
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT unickname, ctext, ccreate_date, clock FROM skdevsec_comment where bid='" + bid + "' order by cid LIMIT " + str(cpage*10-10) + " , 10"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+            # 댓글 정보를 보내기 위한 대입 로직 구현
+            if datas != None:
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['unickname'] = datas[0]
+                    new_data_in['ctext'] = datas[1]
+                    new_data_in['ccreate_date'] = datas[2]
+                    new_data_in['clock'] = datas[3]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            else : pass
+
+        # 에러가 발생했을 경우 에러 내용 출력
+        except Exception as e:
+            connection.rollback()
+            print(e)
+
+        # 성공 했을 시, 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 댓글 작성
+    @action(detail=False, methods=['POST'])
+    def comment_write(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bid = request.data['bid']
+            unickname = request.data['unickname']
+            ctext = request.data['ctext']
+            ccreate_date = request.data['ccreate_date']
+            clock = request.data['clock']
+
+            # SQL 쿼리문 작성
+            strsql = "INSERT INTO skdevsec_comment(bid, unickname, ctext, ccreate_date, clock) VALUES('" + bid + "', '" + unickname + "', '" + ctext + "', '" + ccreate_date + "', '" + clock + "')"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 1 전송
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
+    # 댓글 삭제
+    @action(detail=False, methods=['POST'])
+    def comment_delete(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            cid = request.data['bid']
+
+            # SQL 쿼리문 작성
+            strsql1 = "DELETE FROM skdevsec_comment WHERE cid='" + cid + "'"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql1)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 성공 값 반환
+        else:
+            return Response(1)
+
+
 class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecBag.objects.all()
     serializer_class = SkdevsecBagSerializer
-
-
-class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = SkdevsecComment.objects.all()
-    serializer_class = SkdevsecCommentSerializer
 
 
 class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):

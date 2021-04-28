@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 
+
 # 홈 디렉토리 경로
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -127,3 +128,4 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
+

@@ -1,7 +1,6 @@
 # 필요한 모듈 임포트
 from django.db import models
 from . import file_upload_path_for_db
-from DBtest.settings import STATIC_DIR
 
 # DB내의 각각의 테이블에 대한 컬럼 정보 를 작성해야함 혹은 inspectdb 기능을 통해 db에서 반대로 가져올 수도 있음
 class SkdevsecBag(models.Model):
