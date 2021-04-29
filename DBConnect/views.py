@@ -523,10 +523,15 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     def change_board(self, request):
         new_data = dict()
         try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
             # 수정할 게시물 번호를 받아서 해당 DB를 저장
-            data_check = SkdevsecBoard.objects.get(bid=request.data['bid'])
+            # data_check = SkdevsecBoard.objects.get(bid=request.data['bid'])
+            data_check = SkdevsecBoard.objects.get(bid=7)
 
             # POST 메소드로 날라온 Request의 데이타 각각 추출
+            bid = request.data['bid']
             new_data['btitle'] = request.data['btitle']
             new_data['btext'] = request.data['btext']
             new_data['bfile'] = request.data['bfile']
@@ -537,6 +542,16 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['bcate'] = request.data['bcate']
             new_data['b_lock'] = request.data['b_lock']
 
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
+
+            # DB에 명령문 전송
+            result = cursor.execute(strsql1)
+            datas = cursor.fetchall()
+
+            # 파일 삭제
+            os.remove(datas[0][0])
+
             # DB에 저장하기 위해 시리얼라이저 함수 사용
             file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
 
@@ -546,6 +561,10 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 print("문제 생김")
                 return Response(0)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
 
         # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
         except Exception as e:
@@ -575,6 +594,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             result = cursor.execute(strsql1)
             datas = cursor.fetchall()
+
             # 파일 삭제
             os.remove(datas[0][0])
 
