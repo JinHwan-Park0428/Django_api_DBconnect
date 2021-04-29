@@ -3,7 +3,7 @@ from django.urls import include, path
 from rest_framework import routers
 from . import views
 
-# 특정 DB 테이블에 접근 하기 위한 주소 (ex: http://localhost:8080/SkdevsecBag/)
+# 특정 DB 테이블에 접근 하기 위한 주소 (ex: http://localhost:8080/SkdevsecBag)
 # trailing_slash=False
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'SkdevsecBag', views.SkdevsecBagViewSet)
