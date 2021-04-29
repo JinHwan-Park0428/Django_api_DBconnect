@@ -57,10 +57,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             authority = request.data['authority']
 
             # SQL 쿼리문 작성
-            strsql = "INSERT INTO skdevsec_user VALUES ('" + uid + "', " + "'" + upwd + "', " + "'" + unickname + "', " + "'" + uname + "', " + "'" + umail + "', " + "'" + uphone + "', " + "'" + ucreate_date + "', " + "'" + authority +"')"
+            strsql = "INSERT INTO skdevsec_user VALUES ('" + uid + "', " + "'" + upwd + "', " + "'" + unickname + "', " + "'" + uname + "', " + "'" + umail + "', " + "'" + uphone + "', " + "'" + ucreate_date + "', " + "'" + authority + "')"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
             connection.commit()
@@ -91,7 +91,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "SELECT * FROM skdevsec_user WHERE uid='" + uid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchall()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -124,7 +124,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # SQL 쿼리문 작성
             strsql = "SELECT * FROM skdevsec_user WHERE unickname='" + unickname + "'"
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchall()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -158,7 +158,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "SELECT * FROM skdevsec_user WHERE umail='" + umail + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchall()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -204,7 +204,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "SELECT unickname, authority FROM skdevsec_user WHERE uid='" + uid + "' " + "and upwd='" + upwd + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchall()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -249,7 +249,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "SELECT uid, unickname, uname, umail, uphone, ucreate_date FROM skdevsec_user WHERE unickname='" + unickname + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchall()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -290,7 +290,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "SELECT * FROM skdevsec_user WHERE unickname='" + unickname + "' and upwd ='" + upwd + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchall()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -324,11 +324,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             uphone = request.data['uphone']
 
             # SQL 쿼리문 작성
-            strsql = "UPDATE skdevsec_user SET unickname='" + unickname + "', " + "umail='" + umail + "', " +"uphone='" + uphone+ "' WHERE uid='" + uid + "'"
+            strsql = "UPDATE skdevsec_user SET unickname='" + unickname + "', " + "umail='" + umail + "', " + "uphone='" + uphone + "' WHERE uid='" + uid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
-            datas = cursor.fetchall()
+            cursor.execute(strsql)
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
             connection.commit()
@@ -360,7 +359,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "UPDATE skdevsec_user SET upwd='" + upwd + "' WHERE unickname='" + unickname + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
             connection.commit()
@@ -399,10 +398,11 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bpage = int(bpage)
 
             # SQL 쿼리문 작성
-            strsql = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(bpage*10-10) + ", 10"
+            strsql = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(
+                bpage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchone()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -410,7 +410,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             connection.close()
 
             # 게시판 정보를 보내기 위한 대입 로직 구현
-            if datas != None:
+            if datas is not None:
                 while datas:
                     new_data_in = dict()
                     new_data_in['bid'] = datas[0]
@@ -423,7 +423,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['b_lock'] = datas[7]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            else : pass
+            else:
+                pass
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
@@ -450,10 +451,10 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             strsql2 = "SELECT * FROM skdevsec_board WHERE bid='" + bid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql1)
+            cursor.execute(strsql1)
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql2)
+            cursor.execute(strsql2)
             datas = cursor.fetchall()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -498,7 +499,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['b_lock'] = request.data['b_lock']
 
             # DB에 저장하기 위해 시리얼라이저 함수 사용
-            file_serializer = SkdevsecBoardSerializer(data = new_data)
+            file_serializer = SkdevsecBoardSerializer(data=new_data)
 
             # 저장이 가능한 상태면 저장
             if file_serializer.is_valid():
@@ -546,7 +547,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             strsql1 = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql1)
+            cursor.execute(strsql1)
             datas = cursor.fetchall()
 
             # 파일 삭제
@@ -592,14 +593,14 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             strsql2 = "DELETE FROM skdevsec_board WHERE bid='" + bid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql1)
+            cursor.execute(strsql1)
             datas = cursor.fetchall()
 
             # 파일 삭제
             os.remove(datas[0][0])
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql2)
+            cursor.execute(strsql2)
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
             connection.commit()
@@ -625,21 +626,20 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이타 각각 추출
             bid = request.data['bid']
-            bfile = request.data['bfile']
 
             # SQL 쿼리문 작성
             strsql1 = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
             strsql2 = "UPDATE skdevsec_board SET bfile=0 WHERE bid='" + bid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql1)
+            cursor.execute(strsql1)
             datas = cursor.fetchall()
 
             # 파일 삭제
             os.remove(datas[0][0])
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql2)
+            cursor.execute(strsql2)
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
             connection.commit()
@@ -685,7 +685,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response("코드 값 잘못 보냄!!")
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchone()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -693,7 +693,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             connection.close()
 
             # 게시판 정보를 보내기 위한 대입 로직 구현
-            if datas != None:
+            if datas is not None:
                 while datas:
                     new_data_in = dict()
                     new_data_in['bid'] = datas[0]
@@ -706,7 +706,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['b_lock'] = 0
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            else : pass
+            else:
+                pass
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
@@ -739,10 +740,11 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cpage = int(cpage)
 
             # SQL 쿼리문 작성
-            strsql = "SELECT unickname, ctext, ccreate_date, clock FROM skdevsec_comment where bid='" + bid + "' order by cid LIMIT " + str(cpage*10-10) + " , 10"
+            strsql = "SELECT unickname, ctext, ccreate_date, clock FROM skdevsec_comment where bid='" + bid + "' order by cid LIMIT " + str(
+                cpage * 10 - 10) + " , 10"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchone()
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
@@ -750,7 +752,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             connection.close()
 
             # 댓글 정보를 보내기 위한 대입 로직 구현
-            if datas != None:
+            if datas is not None:
                 while datas:
                     new_data_in = dict()
                     new_data_in['unickname'] = datas[0]
@@ -759,7 +761,8 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['clock'] = datas[3]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            else : pass
+            else:
+                pass
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
@@ -789,7 +792,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "INSERT INTO skdevsec_comment(bid, unickname, ctext, ccreate_date, clock) VALUES('" + bid + "', '" + unickname + "', '" + ctext + "', '" + ccreate_date + "', '" + clock + "')"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
             connection.commit()
@@ -820,7 +823,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             strsql1 = "DELETE FROM skdevsec_comment WHERE cid='" + cid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql1)
+            cursor.execute(strsql1)
 
             # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
             connection.commit()
@@ -861,17 +864,17 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             strsql = "SELECT pid FROM skdevsec_bag where uid='" + uid + "'"
 
             # DB에 명령문 전송
-            result = cursor.execute(strsql)
+            cursor.execute(strsql)
             datas = cursor.fetchall()
 
             # 장바구니 목록이 있으면
-            if datas != None:
+            if datas is not None:
                 for data in datas:
                     strsql = "SELECT pname, pcate, pimage, ptext, pprice, pcreate_date FROM skdevsec_product WHERE pid='" + data + "'"
-                    result = cursor.execute(strsql)
+                    cursor.execute(strsql)
                     products = cursor.fetchall()
                     # 상품 정보를 보내기 위한 대입 로직 구현
-                    if products != None:
+                    if products is not None:
                         new_data['pname'] = datas[0]
                         new_data['pcate'] = datas[1]
                         new_data['pimage'] = datas[2]
@@ -886,7 +889,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
                 connection.close()
 
             # 장바구니 목록이 없으면 0 전송
-            else :
+            else:
                 # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
                 connection.commit()
                 connection.close()
@@ -924,6 +927,3 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecReview.objects.all()
     serializer_class = SkdevsecReviewSerializer
-
-
-
