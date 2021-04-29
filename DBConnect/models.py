@@ -74,7 +74,7 @@ class SkdevsecProduct(models.Model):
     pid = models.AutoField(primary_key=True)
     pname = models.CharField(max_length=50)
     pcate = models.CharField(max_length=50)
-    pimage = models.CharField(max_length=50)
+    pimage = models.FileField(upload_to=file_upload_path_for_db, blank=False, null=False)
     ptext = models.CharField(max_length=50)
     pprice = models.IntegerField()
     pcreate_date = models.CharField(max_length=50)
