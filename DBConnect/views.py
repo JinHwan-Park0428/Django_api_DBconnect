@@ -839,7 +839,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # 장바구니 테이블
-# 장바구니 목록 출력, 장바구니 목록 삭제
+# 장바구니 목록 출력, 장바구니 목록 삭제, 장바구니 비우기
 class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecBag.objects.all()
@@ -847,10 +847,9 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
 
     # sql 인젝션 되는 코드
     # 장바구니 목록 출력
-    # 미완성
     @action(detail=False, methods=['POST'])
     def bag_show(self, request):
-        new_data = dict()
+        new_data = list()
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
@@ -868,17 +867,19 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             # 장바구니 목록이 있으면
             if datas is not None:
                 for data in datas:
-                    strsql = "SELECT pname, pcate, pimage, ptext, pprice, pcreate_date FROM skdevsec_product WHERE pid='" + data + "'"
+                    new_data_in = dict()
+                    strsql = "SELECT pname, pcate, pimage, ptext, pprice FROM skdevsec_product WHERE pid='" + str(data[0]) + "'"
                     cursor.execute(strsql)
-                    products = cursor.fetchall()
+                    products = cursor.fetchone()
+                    print(products)
                     # 상품 정보를 보내기 위한 대입 로직 구현
                     if products is not None:
-                        new_data['pname'] = datas[0]
-                        new_data['pcate'] = datas[1]
-                        new_data['pimage'] = datas[2]
-                        new_data['ptext'] = datas[3]
-                        new_data['pprice'] = datas[4]
-                        new_data['pcreate_date'] = datas[5]
+                        new_data_in['pname'] = products[0]
+                        new_data_in['pcate'] = products[1]
+                        new_data_in['pimage'] = products[2]
+                        new_data_in['ptext'] = products[3]
+                        new_data_in['pprice'] = products[4]
+                        new_data.append(new_data_in)
                     else:
                         Response("에러 전송")
 
@@ -901,6 +902,69 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
         # 성공 했을 시, 데이터 전송
         else:
             return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 장바구니 목록 삭제
+    @action(detail=False, methods=['POST'])
+    def bag_delete(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            uid = request.data['uid']
+            pid = request.data['pid']
+
+            # SQL 쿼리문 작성
+            strsql1 = "DELETE FROM skdevsec_bag WHERE uid='" + uid + "' AND pid='" + pid + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 성공 값 반환
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
+    # 장바구니 비우기
+    @action(detail=False, methods=['POST'])
+    def bag_delete_all(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            uid = request.data['uid']
+
+            # SQL 쿼리문 작성
+            strsql1 = "DELETE FROM skdevsec_bag WHERE uid='" + uid + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+
+            # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        except Exception as e:
+            connection.rollback()
+            print(e)
+            return Response(0)
+
+        # 성공 했을 시, 성공 값 반환
+        else:
+            return Response(1)
 
 
 # 상품 관련 테이블

@@ -5,7 +5,7 @@ from . import file_upload_path_for_db
 # DB내의 각각의 테이블에 대한 컬럼 정보 를 작성해야함 혹은 inspectdb 기능을 통해 db에서 반대로 가져올 수도 있음
 class SkdevsecBag(models.Model):
     bag_id = models.AutoField(primary_key=True)
-    uid = models.IntegerField()
+    uid = models.CharField(max_length=50)
     pid = models.IntegerField()
 
     class Meta:
