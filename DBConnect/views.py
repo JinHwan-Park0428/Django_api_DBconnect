@@ -1,14 +1,16 @@
 # 필요한 모듈 임포트
 import os
-from rest_framework import viewsets
-from DBConnect.serializers import *
+from random import *
+
+from django.core.mail import send_mail
 from django.db import connection
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from random import *
-from DBtest.settings import EMAIL_HOST_USER
-from django.core.mail import send_mail
+
 from DBConnect.models import *
+from DBConnect.serializers import *
+from DBtest.settings import EMAIL_HOST_USER
 
 
 # 각각의 클래스는 필요한 기능에 따른 SQL 쿼리문을 작성할 것
@@ -18,6 +20,7 @@ from DBConnect.models import *
 
 # 회원 정보 관련 테이블
 # 회원가입, 아이디&닉네임 중복, 이메일 중복체크 및 전송, 로그인, 내 정보 보기, 회원 정보 수정 전 인증, 내 정보 수정하기, 비밀번호 변경
+# 관리자 페이지 (회원 정보 검색)
 class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecUser.objects.all()
