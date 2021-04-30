@@ -28,7 +28,7 @@ class SkdevsecOrderuserSerializer(serializers.ModelSerializer):
         model = SkdevsecOrderuser
         fields = '__all__'
 
-class SkdevsecProductBagSerializer(serializers.ModelSerializer):
+class SkdevsecProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = SkdevsecProduct
         fields = '__all__'

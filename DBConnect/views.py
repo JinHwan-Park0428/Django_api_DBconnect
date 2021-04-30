@@ -39,6 +39,73 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
     #     return Response(serializer.data)
 
     # sql 인젝션 되는 코드
+    # 관리자 페이지 (회원 정보 검색)
+    @action(detail=False, methods=['POST'])
+    def admin_user_info(self, request):
+        # 권한이 1 이고 아이디가 admin일 시
+        if request.data['authority'] == '1' and request.data['uid'] == 'admin':
+            new_data = list()
+            try:
+                # POST 메소드로 날라온 Request의 데이터 각각 추출
+                upage = request.data['upage']
+                upage = int(upage)
+
+                # DB 접근할 cursor
+                cursor = connection.cursor()
+
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_user"
+
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
+
+                new_data.append({"user_count": datas[0]})
+
+                # SQL 쿼리문 작성
+                strsql = "SELECT * FROM skdevsec_user order by ucreate_date desc limit " + str(upage * 10 - 10) + ", 10"
+
+                # DB에 명령문 전송
+                cursor.execute(strsql)
+                datas = cursor.fetchone()
+
+                # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
+                connection.commit()
+                connection.close()
+
+                # 게시판 정보를 보내기 위한 대입 로직 구현
+                if datas is not None:
+                    while datas:
+                        new_data_in = dict()
+                        new_data_in['uid'] = datas[0]
+                        # pwd = ''
+                        # for i in datas[1]:
+                        #     pwd += '*'
+                        new_data_in['upwd'] = datas[1]
+                        new_data_in['unickname'] = datas[2]
+                        new_data_in['uname'] = datas[3]
+                        new_data_in['umail'] = datas[4]
+                        new_data_in['uphone'] = datas[5]
+                        new_data_in['ucreate_date'] = datas[6]
+                        new_data_in['authority'] = datas[7]
+                        new_data.append(new_data_in)
+                        datas = cursor.fetchone()
+                else:
+                    return Response(0)
+
+            # 에러가 발생했을 경우 에러 내용 출력
+            except Exception as e:
+                connection.rollback()
+                print(e)
+                return Response(0)
+
+            # 성공 했을 시, 데이터 전송
+            else:
+                return Response(new_data)
+        else :
+            return Response(0)
+
+    # sql 인젝션 되는 코드
     # 회원가입 함수
     @action(detail=False, methods=['POST'])
     def create_user(self, request):
@@ -46,7 +113,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
             upwd = request.data['upwd']
             unickname = request.data['unickname']
@@ -153,7 +220,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             umail = request.data['umail']
 
             # SQL 쿼리문 작성
@@ -199,7 +266,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
             upwd = request.data['upwd']
 
@@ -245,7 +312,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
 
             # SQL 쿼리문 작성
@@ -325,7 +392,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
             unickname = request.data['unickname']
             umail = request.data['umail']
@@ -359,7 +426,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
             upwd = request.data['upwd']
 
@@ -400,7 +467,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bcate = request.data['bcate']
             bpage = request.data['bpage']
             bpage = int(bpage)
@@ -440,12 +507,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             else:
-                pass
+                return Response(0)
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
             connection.rollback()
             print(e)
+            return Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
@@ -460,7 +528,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bid = request.data['bid']
             # SQL 쿼리문 작성
             strsql1 = "UPDATE skdevsec_board SET bview = bview+1 WHERE bid='" + bid + "'"
@@ -493,10 +561,14 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as e:
             connection.rollback()
             print(e)
+            return Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
-            return Response(new_data)
+            if new_data is not None:
+                return Response(new_data)
+            else:
+                return Response(0)
 
     # sql 인젝션 되는 코드
     # 게시물 등록
@@ -504,7 +576,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     def board_upload(self, request):
         new_data = dict()
         try:
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             new_data['btitle'] = request.data['btitle']
             new_data['btext'] = request.data['btext']
             new_data['bfile'] = request.data['bfile']
@@ -562,7 +634,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # 수정할 게시물 번호를 받아서 해당 DB를 저장
             data_check = SkdevsecBoard.objects.get(bid=request.data['bid'])
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bid = request.data['bid']
             new_data['btitle'] = request.data['btitle']
             new_data['btext'] = request.data['btext']
@@ -616,7 +688,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bid = request.data['bid']
 
             # SQL 쿼리문 작성
@@ -628,7 +700,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchall()
 
             # 파일 삭제
-            os.remove(datas[0][0])
+            if datas is not None:
+                os.remove(datas[0][0])
 
             # DB에 명령문 전송
             cursor.execute(strsql2)
@@ -655,7 +728,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bid = request.data['bid']
 
             # SQL 쿼리문 작성
@@ -667,7 +740,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchall()
 
             # 파일 삭제
-            os.remove(datas[0][0])
+            if datas is not None:
+                os.remove(datas[0][0])
 
             # DB에 명령문 전송
             cursor.execute(strsql2)
@@ -695,7 +769,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bcode = request.data['bcode']
             bsearch = request.data['bsearch']
             bcode = int(bcode)
@@ -738,12 +812,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             else:
-                pass
+                return Response(0)
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
             connection.rollback()
             print(e)
+            return  Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
@@ -765,7 +840,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bid = request.data['bid']
             cpage = request.data['cpage']
             cpage = int(cpage)
@@ -822,7 +897,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bid = request.data['bid']
             unickname = request.data['unickname']
             ctext = request.data['ctext']
@@ -863,7 +938,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bid = request.data['bid']
             cid = request.data['cid']
 
@@ -910,7 +985,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
 
             # SQL 쿼리문 작성
@@ -924,8 +999,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             if datas is not None:
                 for data in datas:
                     new_data_in = dict()
-                    strsql = "SELECT pname, pcate, pimage, ptext, pprice FROM skdevsec_product WHERE pid='" + str(
-                        data[1]) + "'"
+                    strsql = "SELECT pname, pcate, pimage, ptext, pprice FROM skdevsec_product WHERE pid='" + str(data[1]) + "'"
                     cursor.execute(strsql)
                     products = cursor.fetchone()
                     print(products)
@@ -939,7 +1013,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
                         new_data_in['pprice'] = products[4]
                         new_data.append(new_data_in)
                     else:
-                        Response("에러 전송")
+                        Response(0)
 
                 # 데이터를 사용완료 했으면 DB와의 접속 종료(부하 방지)
                 connection.commit()
@@ -956,6 +1030,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as e:
             connection.rollback()
             print(e)
+            return Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
@@ -969,7 +1044,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             bag_id = request.data['bag_id']
 
             # SQL 쿼리문 작성
@@ -1000,7 +1075,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
 
             # SQL 쿼리문 작성
@@ -1028,24 +1103,33 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
 # 상품 리스트 출력, 상품 상세 페이지 출력, 상품 등록, 상품 수정, 상품 삭제
 class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecProduct.objects.all()
-    serializer_class = SkdevsecProductBagSerializer
+    serializer_class = SkdevsecProductSerializer
 
     # sql 인젝션 되는 코드
     # 상품 리스트 출력
     @action(detail=False, methods=['POST'])
-    def product_outside(self, request):
+    def product_output(self, request):
         new_data = list()
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             pcate = request.data['pcate']
             ppage = int(request.data['ppage'])
 
             # SQL 쿼리문 작성
-            strsql = "SELECT * FROM skdevsec_product where pcate LIKE '%" + pcate + "%' order by pid desc limit " + str(
-                ppage * 10 - 10) + ", 10"
+            strsql1 = "SELECT COUNT(*) FROM skdevsec_product WHERE pcate='" + pcate + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            datas = cursor.fetchone()
+
+            if datas is not None:
+                new_data.append({"product_count": datas[0]})
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_product where pcate='" + pcate + "' order by pid desc limit " + str(ppage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -1072,12 +1156,13 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             else:
-                pass
+                return Response(0)
 
             # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
             connection.rollback()
             print(e)
+            return Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
@@ -1092,7 +1177,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             pid = request.data['pid']
 
             # SQL 쿼리문 작성
@@ -1123,12 +1208,13 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             else:
-                pass
+                return Response(0)
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
             connection.rollback()
             print(e)
+            return  Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
@@ -1140,7 +1226,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
     def product_upload(self, request):
         new_data = dict()
         try:
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             new_data['pname'] = request.data['pname']
             new_data['pcate'] = request.data['pcate']
             new_data['pimage'] = request.data['pimage']
@@ -1152,7 +1238,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['pcount'] = request.data['pcount']
 
             # DB에 저장하기 위해 시리얼라이저 함수 사용
-            file_serializer = SkdevsecBoardSerializer(data=new_data)
+            file_serializer = SkdevsecProductSerializer(data=new_data)
 
             # 저장이 가능한 상태면 저장
             if file_serializer.is_valid():
@@ -1181,10 +1267,9 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # 수정할 게시물 번호를 받아서 해당 DB를 저장
-            # data_check = SkdevsecProduct.objects.get(pid=request.data['pid'])
-            data_check = SkdevsecProduct.objects.get(pid=7)
+            data_check = SkdevsecProduct.objects.get(pid=request.data['pid'])
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             pid = request.data['pid']
             new_data['pname'] = request.data['pname']
             new_data['pcate'] = request.data['pcate']
@@ -1204,7 +1289,8 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchall()
 
             # 파일 삭제
-            os.remove(datas[0][0])
+            if datas is None:
+                os.remove(datas[0][0])
 
             # DB에 저장하기 위해 시리얼라이저 함수 사용
             file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
@@ -1234,7 +1320,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             pid = request.data['pid']
 
             # SQL 쿼리문 작성
@@ -1274,7 +1360,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             pcode = request.data['pcode']
             psearch = request.data['psearch']
             pcode = int(pcode)
@@ -1283,7 +1369,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # 전체 0, 상품 명 1, 카테고리 2, 평점 이상 3
             if pcode == 0:
                 # SQL 쿼리문 작성
-                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch + "%' OR pcate LIKE '%" + psearch + "%' OR preview >'" + psearch + "')"
+                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch + "%' OR pcate='" + psearch + "' OR preview > '" + psearch + "')"
             elif pcode == 1:
                 strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch + "%')"
             elif pcode == 2:
@@ -1315,12 +1401,13 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             else:
-                pass
+                return Response(0)
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
             connection.rollback()
             print(e)
+            return Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
@@ -1342,7 +1429,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             pid = request.data['pid']
 
             # SQL 쿼리문 작성
@@ -1366,12 +1453,13 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             else:
-                pass
+                return Response(0)
 
         # 에러가 발생했을 경우 에러 내용 출력
         except Exception as e:
             connection.rollback()
             print(e)
+            return Response(0)
 
         # 성공 했을 시, 데이터 전송
         else:
@@ -1385,7 +1473,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             pid = request.data['pid']
             rstar = request.data['rstar']
             unickname = request.data['unickname']
@@ -1425,7 +1513,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             rid = request.data['rid']
             pid = request.data['pid']
 
@@ -1470,7 +1558,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # POST 메소드로 날라온 Request의 데이타 각각 추출
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
             oname = request.data['oname']
             ophone = request.data['ophone']
