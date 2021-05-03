@@ -1,0 +1,177 @@
+1. 테이블 명
+    skdevsecuser
+2. 테이블 사용 컬럼
+    1. uid (유저 아이디)
+    2. upwd (유저 비밀번호)
+    3. unickname (유저 별명)
+    4. uname (유저 이름)
+    5. umail (유저 이메일 주소)
+    6. uphone (유저 전화번호)
+    7. ucreate_date (유저 계정 생성 날자)
+    8. authority (유저 권한)
+3. 테이블에 귀속되는 기능들
+    1. 회원가입
+    2. 아이디 중복 체크
+    3. 닉네임 중복 체크
+    4. 로그인
+    5. 내 정보 보기
+    6. 내 정보 수정하기
+4. 각 기능 별 상세 정보
+    1. 회원가입
+        1. 사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/create_user
+        2. 반드시 받아야 하는 변수
+            1. uid
+            2. upwd
+            3. unickname
+            4. uname
+            5. umail
+            6. uphone
+            7. ucreate_date
+            8. authority
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            INSERT INTO skdevsec_user VALUES ('uid', 'upwd', 'unickname', 'uname', "'umail', 'uphone', 'ucreate_date', 'authority')
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 요청된 INSERT 데이터 삽입
+            2. 삽입 성공시 1 전달
+            3. 에러 발생 및 삽입 실패 시 0 전달
+
+    2. 아이디 중복 체크
+        1. 사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/id_check
+        2. 반드시 받아야 하는 변수
+            1. uid
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            SELECT * FROM skdevsec_user WHERE uid='uid'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 uid를 조건으로 일치하는 데이터 찾음
+            2. 데이터가 존재하면(중복이면) 1 전달 데이터가 존재 하지 않으면 0 전달
+            3. 에러 발생시 0 전송
+
+    3. 닉네임 중복 체크
+        1. 사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/nickname_check
+        2. 반드시 받아야 하는 변수
+            1. unickname
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            SELECT * FROM skdevsec_user WHERE unickname='unickname'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 unickname를 조건으로 일치하는 데이터 찾음
+            2. 데이터가 존재하면(중복이면) 1 전달 데이터가 존재 하지 않으면 0 전달
+            3. 에러 발생시 0 전송
+
+    4. 이메일 중복 체크 및 인증 메일 전송
+        1.사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/email_check
+        2. 반드시 받아야 하는 변수
+            1. umail
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            SELECT * FROM skdevsec_user WHERE umail='umail'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 unickname를 조건으로 일치하는 데이터 찾음
+            2. 데이터가 존재하면(중복이면) 1 전달
+            3. 데이터가 존재하지 않으면 전달 받은 umail로 메일 전송 및 인증 번호(8자리 난수) 반환
+            4. 에러 발생하면(메일 전송 실패 등) 0 전송
+
+    5. 로그인
+        1.사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/login
+        2. 반드시 받아야 하는 변수
+            1. uid
+            2. upwd
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            SELECT unickname, authority FROM skdevsec_user WHERE uid='uid' and upwd='upwd'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 변수에 일치하는 값을 검색
+            2. 검색되는 값이 있으면 unickname 과 authority 값 전달 받음
+            3. authority가 1 이면(관리자) unickname과 login_check=2 값 전송
+            4. authority가 0 이면(일반 사용자) unickname과 login_check=1 값 전송
+            5. 값이 없거나(로그인 정보 없음) 에러가 나면 0 전송
+
+    6. 내 정보 보기
+        1.사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/view_info
+        2. 반드시 받아야 하는 변수
+            1. unickname
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            SELECT uid, unickname, uname, umail, uphone, ucreate_date FROM skdevsec_user WHERE unickname='unickname'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 변수에 일치하는 값을 검색
+            2. 일치 하는 값이 있으면 필요한 정보를 저장해서 전달
+            3. 에러가 나거나 값이 없으면 0 전달
+
+    7. 회원 정보 수정 전 인증
+        1.사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/before_change
+        2. 반드시 받아야 하는 변수
+            1. unickname
+            2. upwd
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            SELECT * FROM skdevsec_user WHERE unickname='unickname' and upwd ='upwd'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 변수에 일치하는 값을 검색
+            2. 데이터가 존재하면(중복이면) 1 전송
+            3. 데이터가 존재하지 않거나 에러 발생 시 0 전달
+
+    8. 내 정보 수정하기
+        1.사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/change_info
+        2. 반드시 받아야 하는 변수
+            1. uid
+            2. unickname
+            3. umail
+            4. uphone
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            UPDATE skdevsec_user SET unickname='unickname', umail='umail', uphone='uphone' WHERE uid='uid'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 변수중 일부를 갱신
+            2. 갱신 성공하면 1 전송 실패및 에러 발생 시 0 전송
+
+    9. 비밀 번호 변경
+        1.사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/change_pwd
+        2. 반드시 받아야 하는 변수
+            1. unickname
+            2. upwd
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            UPDATE skdevsec_user SET upwd='upwd' unickname='unickname'
+        5. 실행되는 기능 및 에러 처리
+            1. skdevsec_user에 전달 받은 변수중 일부를 갱신
+            2. 갱신 성공하면 1 전송 실패및 에러 발생 시 0 전송
+
+    10. 관리자 페이지 (회원 정보 검색)
+        1.사용하기 위한 함수 주소
+            http://10.60.15.210:8000/SkdevsecUser/admin_user_info
+        2. 반드시 받아야 하는 변수
+            1. authority
+            2. uid
+            3. upage
+        3. 참조하는 테이블
+            skdevsec_user
+        4. 사용 되는 쿼리문
+            SELECT COUNT(*) FROM skdevsec_user
+            SELECT * FROM skdevsec_user order by ucreate_date desc limit (upage * 10 - 10), 10
+        5. 실행되는 기능 및 에러 처리
+            1. 권한이 1 이며 아이디가 'admin'인 유저(관리자이면)이면 실행
+            2. 전체 유저수를 계산하고, 전달받은 페이지 당 10개의 계정을 출력
+            3. 데이터가 있으면 전송, 없거나 에러 발생 시 0 전송
+
+
