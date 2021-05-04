@@ -7,6 +7,7 @@ class SkdevsecBag(models.Model):
     bag_id = models.AutoField(primary_key=True)
     uid = models.CharField(max_length=50)
     pid = models.IntegerField()
+    bcount = models.IntegerField()
 
     class Meta:
         managed = False

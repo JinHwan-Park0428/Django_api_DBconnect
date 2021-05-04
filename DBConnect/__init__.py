@@ -19,6 +19,7 @@ def file_upload_path(filename):
 def file_upload_path_for_db(intance, filename):
     return file_upload_path(filename)
 
+# 인증 SMS 전송
 def sms_send(phone):
     # 인증을 위한 랜덤값 생성
     rand_num = randint(100000, 1000000)
@@ -33,7 +34,7 @@ def sms_send(phone):
     # signature생성을 위한 파라미터 생성
     signature = make_signature(string_to_sign)
 
-    message = "인증 번호 [{}]를 입력해주세요.".format(rand_num)
+    message = f"인증번호 [{rand_num}]를 입력해주세요."
 
     headers = {
         'Content-Type': "application/json; charset=UTF-8",
@@ -50,13 +51,8 @@ def sms_send(phone):
         "messages": [{"to": phone}]
     }
 
-
     body = json.dumps(body)
-
     response = requests.post(api_url, headers=headers, data=body)
-    print(response)
-    print(response.raise_for_status())
-    print(response.json())
     response.raise_for_status()
 
     return rand_num
