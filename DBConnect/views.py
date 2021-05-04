@@ -19,8 +19,6 @@ import json
 # ex) http://localhost:8000/SkdevsecUser/create_user/
 
 # 회원 정보 관련 테이블
-# 회원 가입, 아이디 중복 체크, 닉네임 중복 체크, 이메일 중복 체크 및 인증 메일 전송, 로그인, 내 정보 보기, 회원 정보 수정 전 인증
-# 내 정보 수정하기, 비밀번호 변경, 회원 탈퇴, 회원 정보 출력, 회원 정보 검색
 class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecUser.objects.all()
@@ -559,7 +557,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # 게시판 관련 테이블
-# 게시판 출력, 게시물 상세 보기, 게시물 등록, 게시물 수정, 게시물 삭제, 파일 삭제, 게시물 검색, 내 게시물 보기(마이페이지)
 class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecBoard.objects.all()
     serializer_class = SkdevsecBoardSerializer
@@ -1056,7 +1053,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # 댓글 관련 테이블
-# 댓글 출력, 댓글 작성, 댓글 삭제
 class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecComment.objects.all()
     serializer_class = SkdevsecCommentSerializer
@@ -1209,7 +1205,6 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # 장바구니 테이블
-# 장바구니 목록 출력, 장바구니 목록 삭제, 장바구니 비우기, 장바구니 등록, 장바구니 결제
 class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecBag.objects.all()
@@ -1494,7 +1489,6 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # 상품 관련 테이블
-# 상품 리스트 출력, 상품 상세 페이지 출력, 상품 등록, 상품 수정, 상품 삭제, 상품 검색
 class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecProduct.objects.all()
     serializer_class = SkdevsecProductSerializer
@@ -1825,6 +1819,230 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as e:
             connection.rollback()
             print(f"product_search 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 메인에서 최신순 상품 리스트 출력
+    @action(detail=False, methods=['POST'])
+    def latest_item_list(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_product order by pcreate_date desc limit 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if len(datas) != 0:
+                # 데이터 수만큼 반복
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['pid'] = datas[0]
+                    new_data_in['pname'] = datas[1]
+                    new_data_in['pcate'] = datas[2]
+                    new_data_in['pimage'] = datas[3]
+                    new_data_in['ptext'] = datas[4]
+                    new_data_in['pprice'] = datas[5]
+                    new_data_in['pcreate_date'] = datas[6]
+                    new_data_in['preview'] = datas[7]
+                    new_data_in['preview_avg'] = datas[8]
+                    new_data_in['pcount'] = datas[9]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드로 0 전송
+                return Response(0)
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+            # 에러가 발생했을 경우 에러 내용 출력
+        except Exception as e:
+            connection.rollback()
+            print(f"latest_item_list 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드로 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 메인에서 가격높은순 상품 리스트 출력
+    @action(detail=False, methods=['POST'])
+    def highest_item_list(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_product order by pprice desc limit 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if len(datas) != 0:
+                # 데이터 수만큼 반복
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['pid'] = datas[0]
+                    new_data_in['pname'] = datas[1]
+                    new_data_in['pcate'] = datas[2]
+                    new_data_in['pimage'] = datas[3]
+                    new_data_in['ptext'] = datas[4]
+                    new_data_in['pprice'] = datas[5]
+                    new_data_in['pcreate_date'] = datas[6]
+                    new_data_in['preview'] = datas[7]
+                    new_data_in['preview_avg'] = datas[8]
+                    new_data_in['pcount'] = datas[9]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드로 0 전송
+                return Response(0)
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"highest_item_list 에러:{e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 메인에서 가격낮은순 상품 리스트 출력
+    @action(detail=False, methods=['POST'])
+    def rowest_item_list(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_product order by pprice asc limit 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if len(datas) != 0:
+                # 데이터 수만큼 반복
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['pid'] = datas[0]
+                    new_data_in['pname'] = datas[1]
+                    new_data_in['pcate'] = datas[2]
+                    new_data_in['pimage'] = datas[3]
+                    new_data_in['ptext'] = datas[4]
+                    new_data_in['pprice'] = datas[5]
+                    new_data_in['pcreate_date'] = datas[6]
+                    new_data_in['preview'] = datas[7]
+                    new_data_in['preview_avg'] = datas[8]
+                    new_data_in['pcount'] = datas[9]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드로 0 전송
+                return Response(0)
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"rowest_item_list 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 메인에서 인기순 상품 리스트 출력
+    @action(detail=False, methods=['POST'])
+    def best_item_list(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_product order by preview DESC, preview_avg DESC LIMIT 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if len(datas) != 0:
+                # 데이터 수만큼 반복
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['pid'] = datas[0]
+                    new_data_in['pname'] = datas[1]
+                    new_data_in['pcate'] = datas[2]
+                    new_data_in['pimage'] = datas[3]
+                    new_data_in['ptext'] = datas[4]
+                    new_data_in['pprice'] = datas[5]
+                    new_data_in['pcreate_date'] = datas[6]
+                    new_data_in['preview'] = datas[7]
+                    new_data_in['preview_avg'] = datas[8]
+                    new_data_in['pcount'] = datas[9]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드에 0 전송
+                return Response(0)
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"best_item_list 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
@@ -2236,7 +2454,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"pay_result_output 에러: {e}")
+            print(f"user_paid_output 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
@@ -2302,6 +2520,6 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
             print(f"pay_result_add 에러: {e}")
             return Response(0)
 
-        # 성공 했을 시, 1 전송
+        # 성공 했을 시, 프론트엔드에 1 전송
         else:
             return Response(1)
