@@ -1787,6 +1787,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[0] + "%') AND (pcate='"
                 for pcate in psearch[1:]:
                     strsql = strsql + pcate + "' OR pcate='"
+                strsql = strsql + "')"
             else:
                 return Response("코드 값 잘못 보냄!!")
 
@@ -1841,6 +1842,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
     # 리뷰 출력
     @action(detail=False, methods=['POST'])
     def review_output(self, request):
+        # 데이터 저장을 위한 리스트 선언
         new_data = list()
         try:
             # DB 접근할 cursor
@@ -1851,16 +1853,14 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
 
             # SQL 쿼리문 작성
             strsql = "SELECT rid, rstar, unickname, rcreate_date FROM skdevsec_review where pid='" + pid + "' order by rid desc"
+
             # DB에 명령문 전송
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 데이터를 사용완료 했으면 DB와 접속 종료(부하 방지)
-            connection.commit()
-            connection.close()
-
-            # 댓글 정보를 보내기 위한 대입 로직 구현
+            # 데이터가 있으면
             if len(datas) != 0:
+                # 데이터만큼 반복
                 while datas:
                     new_data_in = dict()
                     new_data_in['rid'] = datas[0]
@@ -1869,16 +1869,25 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['rcreate_date'] = datas[3]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
+            # 데이터가 없으면
             else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드로 0 전송
                 return Response(0)
 
-        # 에러가 발생했을 경우 에러 내용 출력
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"review_output 에러: {e}")
             return Response(0)
 
-        # 성공 했을 시, 데이터 전송
+        # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
             return Response(new_data)
 
@@ -1908,17 +1917,17 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             cursor.execute(strsql2)
 
-            # 데이터를 사용완료 했으면 DB와 접속 종료(부하 방지)
+            # DB와 접속 종료
             connection.commit()
             connection.close()
 
-        # 에러가 발생했을 경우 에러 내용 출력 및 0 전송
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"review_write 에러: {e}")
             return Response(0)
 
-        # 성공 했을 시, 1 전송
+        # 성공 했을 시, 프론트 엔드에 1 전송
         else:
             return Response(1)
 
@@ -1935,28 +1944,28 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             pid = request.data['pid']
 
             # SQL 쿼리문 작성
-            strsql1 = "DELETE FROM skdevsec_review WHERE rid='" + rid + "'"
+            strsql = "DELETE FROM skdevsec_review WHERE rid='" + rid + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+
+            # SQL 쿼리문 작성
+            strsql1 = "UPDATE skdevsec_product SET preview = (SELECT COUNT(*) FROM skdevsec_review WHERE pid='" + pid + "'), preview_avg =(SELECT round(avg(rstar),1) FROM skdevsec_review WHERE pid='" + pid + "')  WHERE pid='" + pid + "'"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
 
-            # SQL 쿼리문 작성
-            strsql2 = "UPDATE skdevsec_product SET preview = (SELECT COUNT(*) FROM skdevsec_review WHERE pid='" + pid + "'), preview_avg =(SELECT round(avg(rstar),1) FROM skdevsec_review WHERE pid='" + pid + "')  WHERE pid='" + pid + "'"
-
-            # DB에 명령문 전송
-            cursor.execute(strsql2)
-
-            # 데이터를 사용완료 했으면 DB와 접속 종료(부하 방지)
+            # DB와 접속 종료
             connection.commit()
             connection.close()
 
-        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"comment_delete 에러: {e}")
             return Response(0)
 
-        # 성공 했을 시, 성공 값 반환
+        # 성공 했을 시, 프론트엔드에 1 전송
         else:
             return Response(1)
 
@@ -1993,11 +2002,13 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql2)
             pnames = cursor.fetchall()
 
+            # 데이터 처리를 위한 리스트 선언
             pname_list = list()
 
             for pname in pnames:
                 pname_list.append(pname[0])
 
+            # 만약 사용자가 상품을 구매했으면 리뷰한 적이 있는지 확인
             if pname in pname_list:
                 # SQL 쿼리문 작성
                 strsql3 = "SELECT pid FROM skdevsec_product WHERE pname='" + pnames + "'"
@@ -2007,31 +2018,31 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                 pid = cursor.fetchone()
 
                 # SQL 쿼리문 작성
-                strsql4 = "SELECT * FROM skdevsec_review WHERE pid='" + pid + "' AND unickname='" + unickname + "'"
+                strsql4 = "SELECT * FROM skdevsec_review WHERE pid='" + pid[0] + "' AND unickname='" + unickname + "'"
 
                 # DB에 명령문 전송
                 cursor.execute(strsql4)
-                review = cursor.fetchone()
-
+                review = cursor.fetchall()
+            # 구매한적이 없으면 프론트엔드로 0 전송
             else:
                 return Response(0)
 
-            # 데이터를 사용완료 했으면 DB와 접속 종료(부하 방지)
+            # DB와 접속 종료
             connection.commit()
             connection.close()
 
-        # 에러가 발생했을 경우 에러 내용 출력 및 실패 값 반환
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"review_certified 에러: {e}")
             return Response(0)
 
-        # 성공 했을 시, 성공 값 반환
+        # 리뷰를 작성할 수 없으면 프론트엔드에 1 전송, 작성할 수 있으면 0 전송
         else:
             if len(review) != 0:
-                return Response(0)
-            else:
                 return Response(1)
+            else:
+                return Response(0)
 
 
 # 결제 기록 테이블
@@ -2043,41 +2054,39 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
     # 결제 전 핸드폰 인증
     @action(detail=False, methods=['POST'])
-    def send(self, request):
+    def send_sms(self, request):
         try:
-            # 디비 접속
+            # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # 입력값 받기(테스트를 위한 oname변수 활용)
-            unickname = request.data['nickname']
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            unickname = request.data['unickname']
             ophone = request.data['ophone']
 
-            # 입력한 값과 회원 디비에 저장된 번호를 비교하기 위한 쿼리문
-            strsql = "SELECT uid FROM skdevsec_user where unickname='" + unickname + "'"
+            # SQL 쿼리문 작성
+            strsql = "SELECT uphone FROM skdevsec_user where unickname='" + unickname + "'"
 
+            # DB에 명령문 전송
             cursor.execute(strsql)
-            uid = cursor.fetchone()
+            uphone = cursor.fetchone()
 
-            # 입력한 값과 회원 디비에 저장된 번호를 비교하기 위한 쿼리문
-            strsql1 = "SELECT ophone FROM skdevsec_orderuser where uid='" + uid[0] + "'"
-
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
-
-            # 입력한 번호와 디비의 번호를 비교
-            if datas[0] == ophone:
+            # 회원 번호와 입력 번호가 일치하면 문자 전송
+            if uphone[0] == ophone:
                 rand_num = sms_send(ophone)
+            # 안하면 프론트엔드에 0 전송
             else:
                 return Response(0)
 
+            # DB와 접속 종료
             connection.commit()
             connection.close()
 
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"send_sms 에러: {e}")
             return Response(0)
-
+        # 성공 했을 시, 전송했던 인증 번호를 프론트엔드에 전달
         else:
             return Response(rand_num)
 
@@ -2085,16 +2094,19 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['POST'])
     def sms_check(self, request):
         try:
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
             check_num = request.data('check_num')
             input_num = request.data('input_num')
 
+            # 인증번호와 입력 번호가 다르면 프론트엔드에 0 전송
             if check_num != input_num:
                 return Response(0)
 
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
-            print(e)
+            print(f"sms_check 에러: {e}")
             return Response(0)
-
+        # 성공 했을 시, 프론트 엔드에 1 전송
         else:
             return Response(1)
 
@@ -2116,16 +2128,19 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # SQL 쿼리문 작성
             strsql = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + uid + "', '" + oname + "', '" + ophone + "', '" + oaddress + "', '" + order_date + "', '" + oprice + "')"
+
             # DB에 명령문 전송
             cursor.execute(strsql)
             connection.commit()
 
             # SQL 쿼리문 작성
             strsql1 = "SELECT oid FROM skdevsec_orderuser ORDER BY order_date DESC"
+
             # DB에 명령문 전송
             cursor.execute(strsql1)
             oid = cursor.fetchone()
 
+            # Kakao Pay 결제 API
             url = "https://kapi.kakao.com"
             headers = {
                 'Authorization': "KakaoAK " + "28743e8e95f287447491df3d2ea26c22",
@@ -2147,24 +2162,25 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             response = requests.post(url + "/v1/payment/ready", params=params, headers=headers)
             response = json.loads(response.text)
 
-            # 데이터를 사용완료 했으면 DB와 접속 종료(부하 방지)
+            # DB와 접속 종료
             connection.commit()
             connection.close()
 
-        # 에러가 발생했을 경우 에러 내용 출력
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"kakaopay 에러: {e}")
             return Response(0)
 
-        # 성공 했을 시, 데이터 전송
+        # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
             return Response(response)
 
     # sql 인젝션 되는 코드
     # 결제 결과 출력
     @action(detail=False, methods=['POST'])
-    def pay_result_output(self, request):
+    def user_paid_output(self, request):
+        # 데이터 저장을 위한 리스트 선언
         new_data = list()
         try:
             # DB 접근할 cursor
@@ -2175,28 +2191,25 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             opage = int(opage)
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser"
-
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
-
-            new_data.append({"order_count": datas[0]})
-
-            # SQL 쿼리문 작성
-            strsql = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(
-                opage * 10 - 10) + ", 10"
+            strsql = "SELECT COUNT(*) FROM skdevsec_orderuser"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 데이터를 사용완료 했으면 DB와 접속 종료(부하 방지)
-            connection.commit()
-            connection.close()
+            # 주문 내역 갯수 저장
+            new_data.append({"order_count": datas[0]})
 
-            # 게시판 정보를 보내기 위한 대입 로직 구현
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
             if len(datas) != 0:
+                # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
                     new_data_in['oid'] = datas[0]
@@ -2208,16 +2221,25 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['oprice'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
+            # 데이터가 없으면
             else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드에 0 전송
                 return Response(0)
 
-        # 에러가 발생했을 경우 에러 내용 출력
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"pay_result_output 에러: {e}")
             return Response(0)
 
-        # 성공 했을 시, 데이터 전송
+        # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
             return Response(new_data)
 
@@ -2231,7 +2253,8 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
     # sql 인젝션 되는 코드
     # 결제 내역 저장
     @action(detail=False, methods=['POST'])
-    def pay_result(self, request):
+    def pay_result_add(self, request):
+        # 데이터 저장을 위한 변수 선언
         pname, pcate, pprice = '', '', ''
         try:
             # DB 접근할 cursor
@@ -2249,12 +2272,18 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchall()
 
+            # 데이터가 있으면
             if len(datas) != 0:
                 for data in datas:
                     pname = data[0]
                     pcate = data[1]
                     pprice = data[2]
+            # 데이터가 없으면
             else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드로 0 전송
                 return Response(0)
 
             # SQL 쿼리문 작성
@@ -2263,14 +2292,14 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             cursor.execute(strsql1)
 
-            # 데이터를 사용완료 했으면 DB와 접속 종료(부하 방지)
+            # DB와 접속 종료
             connection.commit()
             connection.close()
 
-        # 에러가 발생했을 경우 에러 내용 출력 및 0 전송
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드로 0 전송
         except Exception as e:
             connection.rollback()
-            print(e)
+            print(f"pay_result_add 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 1 전송
