@@ -61,7 +61,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 datas = cursor.fetchone()
 
                 # 데이터가 존재 한다면
-                if len(datas) != 0:
+                if datas is not None:
                     # 데이터 갯수 만큼 반복
                     # 데이터를 딕셔너리 형태로 저장 후, 리스트에 추가
                     while datas:
@@ -134,12 +134,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 cursor.execute(strsql)
                 datas = cursor.fetchone()
 
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-
                 # 데이터가 있으면
-                if len(datas) != 0:
+                if datas is not None:
                     # 데이터 만큼 반복
                     while datas:
                         new_data_in = dict()
@@ -155,8 +151,15 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         datas = cursor.fetchone()
                 # 데이터가 없으면
                 else:
+                    # DB와 접속 종료
+                    connection.commit()
+                    connection.close()
                     # 프론트엔드에 0 전송
                     return Response(0)
+
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
 
             # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
             except Exception as e:
@@ -1091,7 +1094,8 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
+            # if len(datas) != 0:
+            if datas is not None:
                 # 데이터 갯수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -2051,7 +2055,6 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # 상품 리뷰 관련 테이블
-# 리뷰 출력, 리뷰 등록, 리뷰 삭제, 리뷰 검증
 class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecReview.objects.all()
     serializer_class = SkdevsecReviewSerializer
@@ -2262,42 +2265,29 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 return Response(0)
 
-
 # 결제 기록 테이블
 # 카카오 페이 admin key : 28743e8e95f287447491df3d2ea26c22
-# 결제 전 핸드폰 인증, 인증 번호 확인, 결제 결과 저장, 결제 기능, 결제 결과 출력
 class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecOrderuser.objects.all()
     serializer_class = SkdevsecOrderuserSerializer
+
+    global_unickname = ''
+    global_oname = ''
+    global_ophone = ''
+    global_oaddress = ''
+    global_order_date = ''
+    global_oprice = ''
+    global_product = dict()
 
     # 결제 전 핸드폰 인증
     @action(detail=False, methods=['POST'])
     def send_sms(self, request):
         try:
-            # DB 접근할 cursor
-            cursor = connection.cursor()
-
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            unickname = request.data['unickname']
             ophone = request.data['ophone']
 
-            # SQL 쿼리문 작성
-            strsql = "SELECT uphone FROM skdevsec_user where unickname='" + unickname + "'"
-
-            # DB에 명령문 전송
-            cursor.execute(strsql)
-            uphone = cursor.fetchone()
-
-            # 회원 번호와 입력 번호가 일치하면 문자 전송
-            if uphone[0] == ophone:
-                rand_num = sms_send(ophone)
-            # 안하면 프론트엔드에 0 전송
-            else:
-                return Response(0)
-
-            # DB와 접속 종료
-            connection.commit()
-            connection.close()
+            # 문자 전송
+            rand_num = sms_send(ophone)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -2329,34 +2319,34 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(1)
 
     # sql 인젝션 되는 코드
+    # 결제 데이터 임시 저장
+    @action(detail=False, methods=['POST'])
+    def temp_pay_info(self, request):
+        try:
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            SkdevsecOrderuserViewSet.global_product = request.data
+            print(SkdevsecOrderuserViewSet.global_product)
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"temp_pay_info 에러: {e}")
+            return Response(0)
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
     # 결제 기능
     @action(detail=False, methods=['POST'])
     def kakaopay(self, request):
         try:
-            # DB 접근할 cursor
-            cursor = connection.cursor()
-
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            uid = request.data['uid']
-            oname = request.data['oname']
-            ophone = request.data['ophone']
-            oaddress = request.data['oaddress']
-            order_date = request.data['order_date']
-            oprice = request.data['oprice']
-
-            # SQL 쿼리문 작성
-            strsql = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + uid + "', '" + oname + "', '" + ophone + "', '" + oaddress + "', '" + order_date + "', '" + oprice + "')"
-
-            # DB에 명령문 전송
-            cursor.execute(strsql)
-            connection.commit()
-
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT oid FROM skdevsec_orderuser ORDER BY order_date DESC"
-
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            oid = cursor.fetchone()
+            SkdevsecOrderuserViewSet.global_unickname = request.data['unickname']
+            SkdevsecOrderuserViewSet.global_oname = request.data['oname']
+            SkdevsecOrderuserViewSet.global_ophone = request.data['ophone']
+            SkdevsecOrderuserViewSet.global_oaddress = request.data['oaddress']
+            SkdevsecOrderuserViewSet.global_order_date = request.data['order_date']
+            SkdevsecOrderuserViewSet.global_oprice = request.data['oprice']
 
             # Kakao Pay 결제 API
             url = "https://kapi.kakao.com"
@@ -2366,19 +2356,108 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             }
             params = {
                 'cid': "TC0ONETIME",
-                'partner_order_id': oid[0],
-                'partner_user_id': oname,
+                'partner_order_id': randint(1, 99999999999),
+                'partner_user_id': SkdevsecOrderuserViewSet.global_oname,
                 'item_name': '결제 상품(들)',
                 'quantity': 1,
-                'total_amount': oprice,
+                'total_amount': SkdevsecOrderuserViewSet.global_oprice,
                 'vat_amount': 0,
                 'tax_free_amount': 0,
-                'approval_url': 'http://10.60.15.210:8000/',
-                'fail_url': 'http://10.60.15.210:8000/',
-                'cancel_url': 'http://10.60.15.210:8000/',
+                'approval_url': 'http://10.60.15.210:8000',
+                'fail_url': 'http://10.60.15.210:8000',
+                'cancel_url': 'http://10.60.15.210:8000',
             }
             response = requests.post(url + "/v1/payment/ready", params=params, headers=headers)
             response = json.loads(response.text)
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            print(f"kakaopay 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(response)
+
+    # sql 인젝션 되는 코드
+    # 결제 성공
+    @action(detail=False, methods=['POST'])
+    def pay_success(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT uid FROM skdevsec_user WHERE uid='" + SkdevsecOrderuserViewSet.global_unickname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            uid = cursor.fetchone()
+
+            # SQL 쿼리문 작성
+            strsql1 = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + uid[0] + "', '" + SkdevsecOrderuserViewSet.global_oname + "', '" + SkdevsecOrderuserViewSet.global_ophone + "', '" + SkdevsecOrderuserViewSet.global_oaddress + "', '" + SkdevsecOrderuserViewSet.global_oaddress + "', '" + SkdevsecOrderuserViewSet.global_oprice + "')"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            connection.commit()
+
+            for temp_dict in SkdevsecOrderuserViewSet.global_product:
+                temp_list = list()
+                for value in temp_dict:
+                    temp_list.append(value)
+
+                strsql2 = "UPDATE skdevsec_product SET pcount=pcount-'" + temp_list[1] + "' WHERE pid='" + temp_list[0] + "'"
+
+                # DB에 명령문 전송
+                cursor.execute(strsql2)
+                connection.commit()
+
+                pname, pcate, pprice = '', '', ''
+
+                # SQL 쿼리문 작성
+                strsql3 = "SELECT pname, pcate, pprice FROM skdevsec_product WHERE pid='" + temp_list[0] + "'"
+
+                # DB에 명령문 전송
+                cursor.execute(strsql3)
+                datas = cursor.fetchall()
+
+                # 데이터가 있으면
+                if len(datas) != 0:
+                    for data in datas:
+                        pname = data[0]
+                        pcate = data[1]
+                        pprice = data[2]
+
+                # 데이터가 없으면
+                else:
+                    # DB와 접속 종료
+                    connection.commit()
+                    connection.close()
+                    # 프론트엔드로 0 전송
+                    return Response(0)
+
+                # SQL 쿼리문 작성
+                strsql4 = "SELECT oid FROM skdevsec_orderuser WHERE uid='" + uid[0] + "'"
+
+                # DB에 명령문 전송
+                cursor.execute(strsql4)
+                oid = cursor.fetchall()
+
+                # 데이터가 있으면
+                if len(datas) != 0:
+                    # SQL 쿼리문 작성
+                    strsql5 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + oid[0] + "', '" + pname + "', '" + pcate + "', '" + pprice + "', '" + temp_list[1] + "')"
+
+                    # DB에 명령문 전송
+                    cursor.execute(strsql5)
+
+                # 데이터가 없으면
+                else:
+                    # DB와 접속 종료
+                    connection.commit()
+                    connection.close()
+                    # 프론트엔드로 0 전송
+                    return Response(0)
 
             # DB와 접속 종료
             connection.commit()
@@ -2387,12 +2466,12 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"kakaopay 에러: {e}")
+            print(f"pay_success 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
-            return Response(response)
+            return Response(1)
 
     # sql 인젝션 되는 코드
     # 결제 결과 출력
@@ -2463,28 +2542,24 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # 결제 내역 테이블
-# 결제 내역 저장
 class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecOrderproduct.objects.all()
     serializer_class = SkdevsecOrderproductSerializer
 
     # sql 인젝션 되는 코드
-    # 결제 내역 저장
+    # 결제 내역 출력
     @action(detail=False, methods=['POST'])
-    def pay_result_add(self, request):
-        # 데이터 저장을 위한 변수 선언
-        pname, pcate, pprice = '', '', ''
+    def pay_result_output(self, request):
+        new_data = dict()
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             oid = request.data['oid']
-            pid = request.data['pid']
-            bcount = request.data['bcount']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT pname, pcate, pprice FROM skdevsec_product WHERE pid='" + pid + "'"
+            strsql = "SELECT pname, pcate, pprice, pcount FROM skdevsec_orderproduct WHERE oid='" + oid + "'"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -2493,9 +2568,10 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
             # 데이터가 있으면
             if len(datas) != 0:
                 for data in datas:
-                    pname = data[0]
-                    pcate = data[1]
-                    pprice = data[2]
+                    new_data['pname'] = data[0]
+                    new_data['pcate'] = data[1]
+                    new_data['pprice'] = data[2]
+                    new_data['pcount'] = data[3]
             # 데이터가 없으면
             else:
                 # DB와 접속 종료
@@ -2504,11 +2580,11 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
                 # 프론트엔드로 0 전송
                 return Response(0)
 
-            # SQL 쿼리문 작성
-            strsql1 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + oid + "', '" + pname + "', '" + pcate + "', '" + pprice + "', '" + bcount + "')"
-
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
+            # # SQL 쿼리문 작성
+            # strsql1 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + oid + "', '" + pname + "', '" + pcate + "', '" + pprice + "', '" + bcount + "')"
+            #
+            # # DB에 명령문 전송
+            # cursor.execute(strsql1)
 
             # DB와 접속 종료
             connection.commit()
