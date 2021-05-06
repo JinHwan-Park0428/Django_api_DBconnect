@@ -1777,37 +1777,36 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
     def product_search(self, request):
         # 데이터 저장을 위한 리스트 선언
         new_data = list()
+        count = 0
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            pcode = request.data['pcode']
-            psearch = request.data['psearch']
-            pcode = int(pcode)
+            psearch = request.data
 
-            # psearch = ["검색단어", "카테고리", "카테고리", ...]
-            # 검색 조건 코드 분류
-            # 상품 명 0, 카테고리 1
-            if pcode == 0:
-                # SQL 쿼리문 작성
-                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[0] + "%')"
-            elif pcode == 1:
-                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[0] + "%') AND (pcate='"
-                for pcate in psearch[1:]:
-                    strsql = strsql + pcate + "' OR pcate='"
-                strsql = strsql + "')"
-            else:
-                return Response("코드 값 잘못 보냄!!")
+            # psearch = ["페이지", "검색단어", "카테고리", "카테고리", ...]
+            # SQL 쿼리문 작성
+            strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[1] + "%')"
+            if len(psearch) >= 3:
+                if psearch[2] == "":
+                    strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[1] + "%')"
+                else:
+                    strsql = strsql + " AND (pcate='"
+                    for pcate in psearch[1:]:
+                        strsql = strsql + pcate + "' OR pcate='"
+                    strsql = strsql + "')"
+            strsql = strsql + " ORDER BY pid DESC limit " + str(int(psearch[0])*6-6) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
+            if datas is not None:
                 # 데이터만큼 반복
                 while datas:
+                    count += 1
                     new_data_in = dict()
                     new_data_in['pid'] = datas[0]
                     new_data_in['pcate'] = datas[1]
@@ -1818,6 +1817,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['preview_avg'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
+                new_data.append({"product_count": count})
             # 데이터가 없으면
             else:
                 # DB와 접속 종료
