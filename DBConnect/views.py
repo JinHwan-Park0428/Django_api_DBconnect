@@ -12,6 +12,13 @@ from . import sms_send
 import requests
 import json
 
+global_unickname = ''
+global_oname = ''
+global_ophone = ''
+global_oaddress = ''
+global_order_date = ''
+global_oprice = ''
+global_product = dict()
 
 # 각각의 클래스는 필요한 기능에 따른 SQL 쿼리문을 작성할 것
 # 각각의 클래스의 함수에 접근 하기 위한 주소 예시
@@ -1587,7 +1594,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
+            if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -2085,7 +2092,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
+            if datas is not None:
                 # 데이터만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -2270,14 +2277,6 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 return Response(0)
 
-
-global_unickname = ''
-global_oname = ''
-global_ophone = ''
-global_oaddress = ''
-global_order_date = ''
-global_oprice = ''
-global_product = dict()
 
 # 결제 기록 테이블
 # 카카오 페이 admin key : 28743e8e95f287447491df3d2ea26c22
@@ -2483,9 +2482,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(1)
 
     # sql 인젝션 되는 코드
-    # 결제 결과 출력
+    # 결제 결과 전부 출력
     @action(detail=False, methods=['POST'])
-    def user_paid_output(self, request):
+    def admin_paid_output(self, request):
         # 데이터 저장을 위한 리스트 선언
         new_data = list()
         try:
@@ -2507,8 +2506,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"order_count": datas[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(
-                opage * 10 - 10) + ", 10"
+            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(opage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
@@ -2516,6 +2514,81 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # 데이터가 있으면
             if len(datas) != 0:
+                # 데이터 수만큼 반복
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['oid'] = datas[0]
+                    new_data_in['uid'] = datas[1]
+                    new_data_in['oname'] = datas[2]
+                    new_data_in['ophone'] = datas[3]
+                    new_data_in['oaddress'] = datas[4]
+                    new_data_in['order_date'] = datas[5]
+                    new_data_in['oprice'] = datas[6]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드에 0 전송
+                return Response(0)
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"user_paid_output 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 결제 결과 유저꺼 출력
+    @action(detail=False, methods=['POST'])
+    def user_paid_output(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            unickname = request.data['unickname']
+            opage = request.data['opage']
+            opage = int(opage)
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT uid FROM skdevsec_user where unickname='" + unickname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            uid = cursor.fetchone()
+
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid='" + uid[0] + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            datas = cursor.fetchone()
+
+            # 주문 내역 갯수 저장
+            new_data.append({"order_count": datas[0]})
+
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser WHERE uid='" + uid[0] + "' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -2560,7 +2633,7 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
     # 결제 내역 출력
     @action(detail=False, methods=['POST'])
     def pay_result_output(self, request):
-        new_data = dict()
+        new_data = list()
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
@@ -2573,15 +2646,18 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
-                for data in datas:
-                    new_data['pname'] = data[0]
-                    new_data['pcate'] = data[1]
-                    new_data['pprice'] = data[2]
-                    new_data['pcount'] = data[3]
+            if datas is not None:
+                while datas:
+                    new_data_in = dict()
+                    new_data_in['pname'] = datas[0]
+                    new_data_in['pcate'] = datas[1]
+                    new_data_in['pprice'] = datas[2]
+                    new_data_in['pcount'] = datas[3]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
             # 데이터가 없으면
             else:
                 # DB와 접속 종료
@@ -2589,12 +2665,6 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
                 connection.close()
                 # 프론트엔드로 0 전송
                 return Response(0)
-
-            # # SQL 쿼리문 작성
-            # strsql1 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + oid + "', '" + pname + "', '" + pcate + "', '" + pprice + "', '" + bcount + "')"
-            #
-            # # DB에 명령문 전송
-            # cursor.execute(strsql1)
 
             # DB와 접속 종료
             connection.commit()
@@ -2608,4 +2678,4 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 성공 했을 시, 프론트엔드에 1 전송
         else:
-            return Response(1)
+            return Response(new_data)
