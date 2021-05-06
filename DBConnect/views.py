@@ -19,6 +19,7 @@ global_oaddress = ''
 global_order_date = ''
 global_oprice = ''
 global_product = dict()
+global_bagcode = ''
 
 # 각각의 클래스는 필요한 기능에 따른 SQL 쿼리문을 작성할 것
 # 각각의 클래스의 함수에 접근 하기 위한 주소 예시
@@ -1790,11 +1791,9 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # 상품 명 0, 카테고리 1
             if pcode == 0:
                 # SQL 쿼리문 작성
-                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + \
-                         psearch[0] + "%')"
+                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[0] + "%')"
             elif pcode == 1:
-                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + \
-                         psearch[0] + "%') AND (pcate='"
+                strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[0] + "%') AND (pcate='"
                 for pcate in psearch[1:]:
                     strsql = strsql + pcate + "' OR pcate='"
                 strsql = strsql + "')"
@@ -2330,6 +2329,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             global global_product
             # POST 메소드로 날라온 Request의 데이터 각각 추출
+            # print(request.data)
+            # temp = request.data
+            # if len(temp[0].keys()) > 2 :
             global_product = request.data
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
@@ -2345,7 +2347,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['POST'])
     def kakaopay(self, request):
         try:
-            global global_unickname, global_oname, global_ophone, global_oaddress, global_order_date, global_oprice
+            global global_unickname, global_oname, global_ophone, global_oaddress, global_order_date, global_oprice, global_bagcode
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             global_unickname = request.data['unickname']
@@ -2354,6 +2356,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             global_oaddress = request.data['oaddress']
             global_order_date = request.data['order_date']
             global_oprice = request.data['oprice']
+            global_bagcode = request.data['bagcode']
 
             # Kakao Pay 결제 API
             url = "https://kapi.kakao.com"
@@ -2376,7 +2379,6 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             }
             response = requests.post(url + "/v1/payment/ready", params=params, headers=headers)
             response = json.loads(response.text)
-            print(response)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -2403,69 +2405,80 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             uid = cursor.fetchone()
 
             # SQL 쿼리문 작성
-            strsql1 = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + uid[0] + "', '" + global_oname + "', '" + global_ophone + "', '" + global_oaddress + "', '" + global_oaddress + "', '" + global_oprice + "')"
+            strsql1 = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + str(uid[0]) + "', '" + global_oname + "', '" + str(global_ophone) + "', '" + global_oaddress + "', '" + global_oaddress + "', '" + str(global_oprice) + "')"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
             connection.commit()
 
-            for temp_dict in global_product:
-                temp_list = list()
-                for value in temp_dict.values():
-                    temp_list.append(value)
+            try:
+                for temp_dict in global_product:
+                    temp_list = list()
+                    for value in temp_dict.values():
+                        temp_list.append(value)
 
-                strsql2 = "UPDATE skdevsec_product SET pcount=pcount-'" + temp_list[1] + "' WHERE pid='" + temp_list[0] + "'"
-
-                # DB에 명령문 전송
-                cursor.execute(strsql2)
-                connection.commit()
-
-                pname, pcate, pprice = '', '', ''
-
-                # SQL 쿼리문 작성
-                strsql3 = "SELECT pname, pcate, pprice FROM skdevsec_product WHERE pid='" + temp_list[0] + "'"
-
-                # DB에 명령문 전송
-                cursor.execute(strsql3)
-                datas = cursor.fetchall()
-
-                # 데이터가 있으면
-                if len(datas) != 0:
-                    for data in datas:
-                        pname = data[0]
-                        pcate = data[1]
-                        pprice = data[2]
-
-                # 데이터가 없으면
-                else:
-                    # DB와 접속 종료
-                    connection.commit()
-                    connection.close()
-                    # 프론트엔드로 0 전송
-                    return Response(0)
-
-                # SQL 쿼리문 작성
-                strsql4 = "SELECT oid FROM skdevsec_orderuser WHERE uid='" + uid[0] + "' ORDER BY oid DESC"
-
-                # DB에 명령문 전송
-                cursor.execute(strsql4)
-                oid = cursor.fetchall()
-
-                # 데이터가 있으면
-                if len(datas) != 0:
-                    # SQL 쿼리문 작성
-                    strsql5 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + str(oid[0][0]) + "', '" + str(pname) + "', '" + str(pcate) + "', '" + str(pprice) + "', '" + str(temp_list[1]) + "')"
+                    strsql2 = "UPDATE skdevsec_product SET pcount=pcount-'" + str(temp_list[1]) + "' WHERE pid='" + str(temp_list[0]) + "'"
 
                     # DB에 명령문 전송
-                    cursor.execute(strsql5)
-
-                # 데이터가 없으면
-                else:
-                    # DB와 접속 종료
+                    cursor.execute(strsql2)
                     connection.commit()
-                    connection.close()
-                    # 프론트엔드로 0 전송
-                    return Response(0)
+
+                    pname, pcate, pprice = '', '', ''
+
+                    # SQL 쿼리문 작성
+                    strsql3 = "SELECT pname, pcate, pprice FROM skdevsec_product WHERE pid='" + str(temp_list[0]) + "'"
+
+                    # DB에 명령문 전송
+                    cursor.execute(strsql3)
+                    datas = cursor.fetchall()
+
+                    # 데이터가 있으면
+                    if len(datas) != 0:
+                        for data in datas:
+                            pname = data[0]
+                            pcate = data[1]
+                            pprice = data[2]
+
+                    # 데이터가 없으면
+                    else:
+                        # DB와 접속 종료
+                        connection.commit()
+                        connection.close()
+                        # 프론트엔드로 0 전송
+                        return Response(0)
+
+                    # SQL 쿼리문 작성
+                    strsql4 = "SELECT oid FROM skdevsec_orderuser WHERE uid='" + str(uid[0]) + "' ORDER BY oid DESC"
+
+                    # DB에 명령문 전송
+                    cursor.execute(strsql4)
+                    oid = cursor.fetchall()
+
+                    # 데이터가 있으면
+                    if len(oid) != 0:
+                        # SQL 쿼리문 작성
+                        strsql5 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + str(oid[0][0]) + "', '" + str(pname) + "', '" + str(pcate) + "', '" + str(pprice) + "', '" + str(temp_list[1]) + "')"
+
+                        # DB에 명령문 전송
+                        cursor.execute(strsql5)
+
+                    # 데이터가 없으면
+                    else:
+                        # DB와 접속 종료
+                        connection.commit()
+                        connection.close()
+                        # 프론트엔드로 0 전송
+                        return Response(0)
+
+            except Exception as e:
+                connection.rollback()
+                print(f"pay_success 에러: {e}")
+                return Response(0)
+
+            else:
+                if global_bagcode == "1":
+                    strsql6 = "DELETE FROM skdevsec_bag WHERE uid='" + uid[0] + "'"
+                    cursor.execute(strsql6)
 
             # DB와 접속 종료
             connection.commit()
