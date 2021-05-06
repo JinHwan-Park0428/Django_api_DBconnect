@@ -2414,7 +2414,6 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 temp_list = list()
                 for value in temp_dict.values():
                     temp_list.append(value)
-                print(temp_list)
 
                 strsql2 = "UPDATE skdevsec_product SET pcount=pcount-'" + temp_list[1] + "' WHERE pid='" + temp_list[0] + "'"
 
@@ -2430,7 +2429,6 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 # DB에 명령문 전송
                 cursor.execute(strsql3)
                 datas = cursor.fetchall()
-                print(datas)
 
                 # 데이터가 있으면
                 if len(datas) != 0:
@@ -2453,7 +2451,6 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 # DB에 명령문 전송
                 cursor.execute(strsql4)
                 oid = cursor.fetchall()
-                print(oid)
 
                 # 데이터가 있으면
                 if len(datas) != 0:
