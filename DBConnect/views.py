@@ -925,6 +925,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     def board_search(self, request):
         # 데이터 저장을 위한 리스트 선언
         new_data = list()
+        count = 0
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
@@ -933,21 +934,23 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bcode = request.data['bcode']
             bcate = request.data['bcate']
             bsearch = request.data['bsearch']
+            bpage = request.data['bpage']
             bcode = int(bcode)
+            bpage = int(bpage)
 
             # 검색 조건 코드 분류
             # 전체 0, 제목 1, 내용 2, 작성자 3, 제목 + 내용 4
             # SQL 쿼리문 작성
             if bcode == 0:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "'"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
             elif bcode == 1:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "'"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
             elif bcode == 2:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "'"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
             elif bcode == 3:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "'"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
             elif bcode == 4:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "'"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
             else:
                 return Response("코드 값 잘못 보냄!!")
 
@@ -959,6 +962,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             if len(datas) != 0:
                 # 데이터만큼 반복
                 while datas:
+                    count += 1
                     new_data_in = dict()
                     new_data_in['bid'] = datas[0]
                     new_data_in['btitle'] = datas[1]
@@ -977,6 +981,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 connection.close()
                 # 프론트엔드에 0 전송
                 return Response(0)
+
+            new_data.append({"board_count": count})
 
             # DB와 접속 종료
             connection.commit()
