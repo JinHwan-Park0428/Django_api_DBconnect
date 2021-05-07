@@ -1029,7 +1029,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"board_count": datas[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where unickname='" + unickname + "' order by bcreate_date desc limit " + str(
+            strsql1 = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, bcate, b_lock FROM skdevsec_board where unickname='" + unickname + "' order by bcreate_date desc limit " + str(
                 bpage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
@@ -1048,7 +1048,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['bcomment'] = datas[4]
                     new_data_in['unickname'] = datas[5]
                     new_data_in['bcreate_date'] = datas[6]
-                    new_data_in['b_lock'] = datas[7]
+                    new_data_in['bcate'] = datas[7]
+                    new_data_in['b_lock'] = datas[8]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             # 데이터가 없으면
