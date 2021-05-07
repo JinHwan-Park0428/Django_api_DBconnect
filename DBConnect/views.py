@@ -21,6 +21,7 @@ global_oprice = ''
 global_product = dict()
 global_bagcode = ''
 
+
 # 각각의 클래스는 필요한 기능에 따른 SQL 쿼리문을 작성할 것
 # 각각의 클래스의 함수에 접근 하기 위한 주소 예시
 # ex) http://localhost:8000/테이블명/함수명/
@@ -598,8 +599,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"board_count": datas[0]})
 
             # SQL 쿼리문 작성
-            strsql = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(
-                bpage * 10 - 10) + ", 10"
+            strsql = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(bpage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -942,15 +942,20 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # 전체 0, 제목 1, 내용 2, 작성자 3, 제목 + 내용 4
             # SQL 쿼리문 작성
             if bcode == 0:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
+                    bpage * 10 - 10) + ", 10"
             elif bcode == 1:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
+                    bpage * 10 - 10) + ", 10"
             elif bcode == 2:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
+                    bpage * 10 - 10) + ", 10"
             elif bcode == 3:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
+                    bpage * 10 - 10) + ", 10"
             elif bcode == 4:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(bpage*10-10) + ", 10"
+                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
+                    bpage * 10 - 10) + ", 10"
             else:
                 return Response("코드 값 잘못 보냄!!")
 
@@ -959,7 +964,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
+            if datas is not None:
                 # 데이터만큼 반복
                 while datas:
                     count += 1
@@ -1793,16 +1798,18 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             # psearch = ["페이지", "검색단어", "카테고리", "카테고리", ...]
             # SQL 쿼리문 작성
-            strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[1] + "%')"
+            strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + \
+                     psearch[1] + "%')"
             if len(psearch) >= 3:
                 if psearch[2] == "":
-                    strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + psearch[1] + "%')"
+                    strsql = "SELECT pid, pcate, pimage, pname, pprice, preview, preview_avg FROM skdevsec_product WHERE (pname LIKE '%" + \
+                             psearch[1] + "%')"
                 else:
                     strsql = strsql + " AND (pcate='"
                     for pcate in psearch[1:]:
                         strsql = strsql + pcate + "' OR pcate='"
                     strsql = strsql + "')"
-            strsql = strsql + " ORDER BY pid DESC limit " + str(int(psearch[0])*6-6) + ", 6"
+            strsql = strsql + " ORDER BY pid DESC limit " + str(int(psearch[0]) * 6 - 6) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -1856,11 +1863,22 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # SQL 쿼리문 작성
-            strsql = "SELECT * FROM skdevsec_product order by pcreate_date desc limit 6"
+            ppage = request.data['ppage']
+            ppage = int(ppage)
+
+            strsql = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pcreate_date DESC limit " + str(ppage*6-6) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
+            count = cursor.fetchone()
+
+            new_data.append({"product_count":count[0]})
+
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit " + str(ppage*6-6) + ", 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
             datas = cursor.fetchone()
 
             # 데이터가 있으면
@@ -1912,11 +1930,23 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # SQL 쿼리문 작성
-            strsql = "SELECT * FROM skdevsec_product order by pprice desc limit 6"
+            ppage = request.data['ppage']
+            ppage = int(ppage)
+
+            strsql = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit " + str(
+                ppage * 6 - 6) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
+            count = cursor.fetchone()
+
+            new_data.append({"product_count": count[0]})
+
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT * FROM skdevsec_product order by pprice desc limit " + str(ppage*6-6) + ", 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
             datas = cursor.fetchone()
 
             # 데이터가 있으면
@@ -1968,11 +1998,23 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            # SQL 쿼리문 작성
-            strsql = "SELECT * FROM skdevsec_product order by pprice asc limit 6"
+            ppage = request.data['ppage']
+            ppage = int(ppage)
+
+            strsql = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit " + str(
+                ppage * 6 - 6) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
+            count = cursor.fetchone()
+
+            new_data.append({"product_count": count[0]})
+
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT * FROM skdevsec_product order by pprice asc limit 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
             datas = cursor.fetchone()
 
             # 데이터가 있으면
@@ -2023,6 +2065,18 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
+
+            ppage = request.data['ppage']
+            ppage = int(ppage)
+
+            strsql = "SELECT COUNT(*) FROM skdevsec_product order by preview DESC, preview_avg DESC limit " + str(
+                ppage * 6 - 6) + ", 6"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            count = cursor.fetchone()
+
+            new_data.append({"product_count": count[0]})
 
             # SQL 쿼리문 작성
             strsql = "SELECT * FROM skdevsec_product order by preview DESC, preview_avg DESC LIMIT 6"
@@ -2411,7 +2465,10 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             uid = cursor.fetchone()
 
             # SQL 쿼리문 작성
-            strsql1 = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + str(uid[0]) + "', '" + global_oname + "', '" + str(global_ophone) + "', '" + global_oaddress + "', '" + global_oaddress + "', '" + str(global_oprice) + "')"
+            strsql1 = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + str(
+                uid[0]) + "', '" + global_oname + "', '" + str(
+                global_ophone) + "', '" + global_oaddress + "', '" + global_oaddress + "', '" + str(
+                global_oprice) + "')"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
@@ -2423,7 +2480,8 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     for value in temp_dict.values():
                         temp_list.append(value)
 
-                    strsql2 = "UPDATE skdevsec_product SET pcount=pcount-'" + str(temp_list[1]) + "' WHERE pid='" + str(temp_list[0]) + "'"
+                    strsql2 = "UPDATE skdevsec_product SET pcount=pcount-'" + str(temp_list[1]) + "' WHERE pid='" + str(
+                        temp_list[0]) + "'"
 
                     # DB에 명령문 전송
                     cursor.execute(strsql2)
@@ -2463,7 +2521,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     # 데이터가 있으면
                     if len(oid) != 0:
                         # SQL 쿼리문 작성
-                        strsql5 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + str(oid[0][0]) + "', '" + str(pname) + "', '" + str(pcate) + "', '" + str(pprice) + "', '" + str(temp_list[1]) + "')"
+                        strsql5 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES('" + str(
+                            oid[0][0]) + "', '" + str(pname) + "', '" + str(pcate) + "', '" + str(
+                            pprice) + "', '" + str(temp_list[1]) + "')"
 
                         # DB에 명령문 전송
                         cursor.execute(strsql5)
@@ -2525,7 +2585,8 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"order_count": datas[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(
+                opage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
@@ -2600,7 +2661,8 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"order_count": datas[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser WHERE uid='" + uid[0] + "' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser WHERE uid='" + \
+                      uid[0] + "' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
