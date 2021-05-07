@@ -2468,7 +2468,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             # SQL 쿼리문 작성
             strsql1 = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) VALUES('" + str(
                 uid[0]) + "', '" + global_oname + "', '" + str(
-                global_ophone) + "', '" + global_oaddress + "', '" + global_oaddress + "', '" + str(
+                global_ophone) + "', '" + global_oaddress + "', '" + global_order_date + "', '" + str(
                 global_oprice) + "')"
 
             # DB에 명령문 전송
@@ -2638,6 +2638,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
+            cursor1 = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
@@ -2656,14 +2657,13 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
-            datas = cursor.fetchone()
+            count = cursor.fetchone()
 
             # 주문 내역 갯수 저장
-            new_data.append({"order_count": datas[0]})
+            new_data.append({"order_count": count[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser WHERE uid='" + \
-                      uid[0] + "' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+            strsql1 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[0] + "' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
@@ -2673,7 +2673,13 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
+                    strsql2 = "SELECT pname, COUNT(pname) FROM skdevsec_orderproduct WHERE oid='" + str(datas[0]) + "'"
+                    cursor1.execute(strsql2)
+                    pnames = cursor1.fetchone()
+                    print(pnames)
                     new_data_in = dict()
+                    new_data_in['pname'] = pnames[0]
+                    new_data_in['product_count'] = pnames[1]
                     new_data_in['oid'] = datas[0]
                     new_data_in['uid'] = datas[1]
                     new_data_in['oname'] = datas[2]
@@ -2699,6 +2705,68 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as e:
             connection.rollback()
             print(f"user_paid_output 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 결제 내역 날짜 검색
+    @action(detail=False, methods=['POST'])
+    def pay_result_date(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        count = 0
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            unickname = request.data['unickname']
+            start_date = request.data['start_date']
+            end_date = request.data['end_date']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_orderuser WHERE order_date BETWEEN '" + start_date + "' AND '" + end_date + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if datas is not None:
+                # 데이터만큼 반복
+                while datas:
+                    count += 1
+                    new_data_in = dict()
+                    new_data_in['oid'] = datas[0]
+                    new_data_in['uid'] = datas[1]
+                    new_data_in['oname'] = datas[2]
+                    new_data_in['ophone'] = datas[3]
+                    new_data_in['oaddress'] = datas[4]
+                    new_data_in['order_date'] = datas[5]
+                    new_data_in['oprice'] = datas[6]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드에 0 전송
+                return Response(0)
+
+            new_data.append({"order_count": count})
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"pay_result_date 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
@@ -2761,3 +2829,5 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
         # 성공 했을 시, 프론트엔드에 1 전송
         else:
             return Response(new_data)
+
+
