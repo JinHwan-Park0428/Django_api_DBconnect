@@ -2796,6 +2796,125 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(new_data)
 
     # sql 인젝션 되는 코드
+    # 결제 내역 날짜 조건 검색
+    @action(detail=False, methods=['POST'])
+    def user_paid_date_code(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+            cursor1 = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            unickname = request.data['unickname']
+            ocode = request.data['ocode']
+            opage = request.data['opage']
+            opage = int(opage)
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT uid FROM skdevsec_user where unickname='" + unickname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            uid = cursor.fetchone()
+
+            if ocode == "1":
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid='" + uid[
+                    0] + "'AND (order_date BETWEEN date_add(now(), interval -7 day) AND NOW())"
+            elif ocode == "2":
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid='" + uid[
+                    0] + "'AND (order_date BETWEEN date_add(now(), interval -1 MONTH) AND NOW())"
+            elif ocode == "3":
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid='" + uid[
+                    0] + "'AND (order_date BETWEEN date_add(now(), interval -3 MONTH) AND NOW())"
+            elif ocode == "4":
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid='" + uid[
+                    0] + "'AND (order_date BETWEEN date_add(now(), interval -6 MONTH) AND NOW())"
+            else:
+                return Response(0)
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            count = cursor.fetchone()
+
+            # 주문 내역 갯수 저장
+            new_data.append({"order_count": count[0]})
+
+            if ocode == "1":
+                # SQL 쿼리문 작성
+                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                    0] + "' AND (order_date BETWEEN date_add(now(), interval -7 day) AND NOW()) order by oid desc limit " + str(
+                    opage * 10 - 10) + ", 10"
+            elif ocode == "2":
+                # SQL 쿼리문 작성
+                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                    0] + "' AND (order_date BETWEEN date_add(now(), interval -1 MONTH) AND NOW()) order by oid desc limit " + str(
+                    opage * 10 - 10) + ", 10"
+            elif ocode == "3":
+                # SQL 쿼리문 작성
+                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                    0] + "' AND (order_date BETWEEN date_add(now(), interval -3 MONTH) AND NOW()) order by oid desc limit " + str(
+                    opage * 10 - 10) + ", 10"
+            elif ocode == "4":
+                # SQL 쿼리문 작성
+                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                    0] + "' AND (order_date BETWEEN date_add(now(), interval -6 MONTH) AND NOW()) order by oid desc limit " + str(
+                    opage * 10 - 10) + ", 10"
+            else:
+                return Response(0)
+
+            # DB에 명령문 전송
+            cursor.execute(strsql2)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if datas is not None:
+                # 데이터 수만큼 반복
+                while datas:
+                    strsql3 = "SELECT pname, COUNT(pname) FROM skdevsec_orderproduct WHERE oid='" + str(
+                        datas[0]) + "'"
+                    cursor1.execute(strsql3)
+                    pnames = cursor1.fetchone()
+                    new_data_in = dict()
+                    new_data_in['pname'] = pnames[0]
+                    new_data_in['product_count'] = pnames[1]
+                    new_data_in['oid'] = datas[0]
+                    new_data_in['uid'] = datas[1]
+                    new_data_in['oname'] = datas[2]
+                    new_data_in['ophone'] = datas[3]
+                    new_data_in['oaddress'] = datas[4]
+                    new_data_in['order_date'] = datas[5]
+                    new_data_in['oprice'] = datas[6]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드에 0 전송
+                return Response(0)
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"user_paid_date 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
     # 결제 결과 내역 출력
     @action(detail=False, methods=['POST'])
     def user_paid_input(self, request):
