@@ -2725,7 +2725,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
             start_date = request.data['start_date']
-            end_date = request.data['end_date']
+            end_date = request.data['end_date'] + " 23:59"
             opage = request.data['opage']
             opage = int(opage)
 
@@ -2739,6 +2739,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             # SQL 쿼리문 작성
             strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid='" + uid[0] + "' AND (order_date BETWEEN '" + start_date + "' AND '" + end_date + "')"
 
+            print(strsql1)
             # DB에 명령문 전송
             cursor.execute(strsql1)
             count = cursor.fetchone()
