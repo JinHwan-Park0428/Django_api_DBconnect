@@ -7,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
 from DBtest.settings import EMAIL_HOST_USER
+from . import sms_send
+
 
 # 회원 정보 관련 테이블
 class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -553,5 +555,154 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(0)
 
         # 삭제 되면 프론트엔드에 1 전송
+        else:
+            return Response(1)
+
+    # sql 인젝션 되는 코드
+    # 아이디 찾기 전 이메일 인증
+    @action(detail=False, methods=['POST'])
+    def find_id_email(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            uname = request.data['uname']
+            umail = request.data['umail']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_user WHERE umail='" + umail + "' AND uname='" + uname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchall()
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"email_check 에러: {e}")
+            return Response(0)
+
+        # 데이터가 존재하지않으면 프론트엔드에 0을 전송 아니면 이메일 전송 작업 시작
+        else:
+            if len(datas) == 0:
+                return Response(0)
+            else:
+                try:
+                    # 8자리 난수를 생성해서 인증번호로서, 메일 전송
+                    i = randint(10000000, 99999999)
+                    # 이메일 제목
+                    mail_title = "이메일 인증을 완료해주세요"
+                    # 이메일 제목, 내용, 보내는 사람, 받을 사람, 옵션 순서
+                    send_mail(mail_title, f"인증번호 : {i}", EMAIL_HOST_USER, [umail], fail_silently=False)
+                    # 프론트 엔드에 인증번호 전송
+                    return Response(i)
+
+                # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+                except Exception as e:
+                    connection.rollback()
+                    print(f"email_send 에러: {e}")
+                    return Response(0)
+
+    # sql 인젝션 되는 코드
+    # 아이디 찾기
+    @action(detail=False, methods=['POST'])
+    def find_id(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            uname = request.data['uname']
+            umail = request.data['umail']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT uid FROM skdevsec_user WHERE umail='" + umail + "' AND uname='" + uname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            uid = cursor.fetchall()
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"email_check 에러: {e}")
+            return Response(0)
+
+        # 데이터가 존재하면(중복이면) 프론트엔드에 1을 전송 아니면 이메일 전송 작업 시작
+        else:
+            if len(uid) != 0:
+                return Response(uid[0][0])
+            else:
+                return Response(0)
+
+    # sql 인젝션 되는 코드
+    # 결제 전 핸드폰 인증
+    @action(detail=False, methods=['POST'])
+    def find_pwd_sms(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            uid = request.data['uid']
+            uname = request.data['uname']
+
+            strsql = "SELECT uphone FROM skedevsec_user WHERE uid='" + uid + "' AND uname='" + uname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            uphone = cursor.fetchall()
+            # 문자 전송
+            rand_num = sms_send(uphone[0][0])
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"find_pwd_sms 에러: {e}")
+            return Response(0)
+        # 성공 했을 시, 전송했던 인증 번호를 프론트엔드에 전달
+        else:
+            return Response(rand_num)
+
+    # sql 인젝션 되는 코드
+    # 결제 전 핸드폰 인증
+    @action(detail=False, methods=['POST'])
+    def find_pwd(self, request):
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            uid = request.data['uid']
+            upwd = request.data['upwd']
+
+            strsql = "UPDATE skedevsec_user SET upwd='" + upwd + "' WHERE uid='" + uid + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"find_pwd 에러: {e}")
+            return Response(0)
+        # 성공 했을 시, 프론트에 1 전달
         else:
             return Response(1)
