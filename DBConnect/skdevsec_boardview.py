@@ -219,18 +219,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['bcate'] = request.data['bcate']
             new_data['b_lock'] = request.data['b_lock']
 
-            print(f"""
-            btitle {new_data['btitle']}
-            btext {new_data['btext']}
-            bfile {new_data['bfile']}
-            bview {new_data['bview']}
-            bcomment {new_data['bcomment']}
-            unickname {new_data['unickname']}
-            bcreate_date {new_data['bcreate_date']}
-            bcate {new_data['bcate']}
-            b_lock {new_data['b_lock']}
-            """)
-
             # SQL 쿼리문 작성
             strsql = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
 
