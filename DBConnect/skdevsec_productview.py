@@ -208,22 +208,33 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             cursor.execute(strsql)
             datas = cursor.fetchall()
-
-            # 파일이 존재하면 삭제
-            if datas[0][0] != "0":
-                os.remove(datas[0][0])
+            image_path = datas[0][0]
+            image_name = image_path.split("/")[1]
 
             # DB에 저장하기 위해 시리얼라이저 함수 사용
-            file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
+            file_serializer = SkdevsecProductSerializer(data_check, data=new_data)
 
             # 수정할 데이터를 업데이트함
-            if file_serializer.is_valid():
-                file_serializer.update(data_check, file_serializer.validated_data)
-            # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
+            if new_data['pimage'] != image_name:
+                if file_serializer.is_valid():
+                    file_serializer.update(data_check, file_serializer.validated_data)
+                    # 파일이 존재하면 삭제
+                    if datas[0][0] != "0":
+                        os.remove(datas[0][0])
+                # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
+                else:
+                    print("serializer 에러")
+                    return Response(0)
             else:
-                print("serializer 에러")
-                return Response(0)
+                strsql1 = "UPDATE skdevsec_product SET pname='" + new_data['pname'] + "', pcate='" + new_data['pcate'] + \
+                    "', ptext='" + new_data['ptext'] + "', pprice='" + new_data['pprice'] + "', pcount='" + new_data['pcount'] + \
+                    "' WHERE pid='" + pid + "'"
 
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+
+            connection.commit()
+            connection.close()
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()

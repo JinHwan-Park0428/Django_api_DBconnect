@@ -154,6 +154,9 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['bcate'] = request.data['bcate']
             new_data['b_lock'] = request.data['b_lock']
 
+            print(request.data['bfile'])
+            print(type(request.data['bfile']))
+
             # 업로드할 파일이 없으면
             if new_data['bfile'] == "0":
                 # DB 접근할 cursor
@@ -226,20 +229,30 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchall()
 
-            # 게시물 기존 파일이 존재하면 삭제
-            if datas[0][0] != "0":
-                os.remove(datas[0][0])
+            if new_data['bfile'] == "0":
+                strsql1 = "UPDATE skdevsec_board SET btitle='" + new_data['btitle'] + "', btext='" + new_data['btext'] + \
+                          "', bfile='" + new_data['bfile'] + "', bcate='" + new_data['bcate'] + "', b_lock='" + new_data['b_lock'] + \
+                    "' WHERE bid='" + bid + "'"
 
-            # DB에 저장하기 위해 시리얼라이저 함수 사용
-            file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
-
-            # 수정할 데이터를 업데이트함
-            if file_serializer.is_valid():
-                file_serializer.update(data_check, file_serializer.validated_data)
-            # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
             else:
-                print("serializer 에러")
-                return Response(0)
+                # DB에 저장하기 위해 시리얼라이저 함수 사용
+                file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
+
+                # 수정할 데이터를 업데이트함
+                if file_serializer.is_valid():
+                    file_serializer.update(data_check, file_serializer.validated_data)
+                    # 게시물 기존 파일이 존재하면 삭제
+                    if datas[0][0] != "0":
+                        os.remove(datas[0][0])
+                # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                else:
+                    print("serializer 에러")
+                    return Response(0)
+
+            connection.commit()
+            connection.close()
 
         # 에러가 발생했을 경우 벡엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:

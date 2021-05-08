@@ -311,6 +311,79 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(new_data)
 
     # sql 인젝션 되는 코드
+    # 결제 결과 검색
+    @action(detail=False, methods=['POST'])
+    def admin_paid_search(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        new_data = list()
+        count = 0
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            ocode = request.data['ocode']
+            osearch = request.data['osearch']
+            opage = request.data['opage']
+            ocode = int(ocode)
+            opage = int(opage)
+
+            if ocode == 0:
+                # SQL 쿼리문 작성
+                strsql = "SELECT * FROM skdevsec_orderuser WHERE (uid LIKE '%" + osearch + "%' OR oname LIKE '%" + osearch + "%') order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+            elif ocode == 1:
+                # SQL 쿼리문 작성
+                strsql = "SELECT * FROM skdevsec_orderuser WHERE uid LIKE '%" + osearch + "%' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+            elif ocode == 2:
+                # SQL 쿼리문 작성
+                strsql = "SELECT * FROM skdevsec_orderuser WHERE oname LIKE '%" + osearch + "%' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+            else:
+                return Response(0)
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchone()
+
+            # 데이터가 있으면
+            if datas is not None:
+                # 데이터 수만큼 반복
+                while datas:
+                    count += 1
+                    new_data_in = dict()
+                    new_data_in['oid'] = datas[0]
+                    new_data_in['uid'] = datas[1]
+                    new_data_in['oname'] = datas[2]
+                    new_data_in['ophone'] = datas[3]
+                    new_data_in['oaddress'] = datas[4]
+                    new_data_in['order_date'] = datas[5]
+                    new_data_in['oprice'] = datas[6]
+                    new_data.append(new_data_in)
+                    datas = cursor.fetchone()
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
+                # 프론트엔드에 0 전송
+                return Response(0)
+
+            new_data.append({"order_count": count})
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"admin_paid_output 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            return Response(new_data)
+
+    # sql 인젝션 되는 코드
     # 결제 결과 유저꺼 출력
     @action(detail=False, methods=['POST'])
     def user_paid_output(self, request):
