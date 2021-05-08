@@ -200,7 +200,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     def change_board(self, request):
         # 데이터 저장을 위한 딕셔너리 선언
         new_data = dict()
-        new_data1 = dict()
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
@@ -219,6 +218,18 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['bcreate_date'] = request.data['bcreate_date']
             new_data['bcate'] = request.data['bcate']
             new_data['b_lock'] = request.data['b_lock']
+
+            print(f"""
+            btitle {new_data['btitle']}
+            btext {new_data['btext']}
+            bfile {new_data['bfile']}
+            bview {new_data['bview']}
+            bcomment {new_data['bcomment']}
+            unickname {new_data['unickname']}
+            bcreate_date {new_data['bcreate_date']}
+            bcate {new_data['bcate']}
+            b_lock {new_data['b_lock']}
+            """)
 
             # SQL 쿼리문 작성
             strsql = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
@@ -242,29 +253,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 print("serializer 에러")
                 return Response(0)
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_board WHERE bid='" + bid + "'"
-
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchall()
-
-            # DB와 접속 종료
-            connection.commit()
-            connection.close()
-
-            # 게시물 정보 대입
-            for data in datas:
-                new_data1['bid'] = data[0]
-                new_data1['btitle'] = data[1]
-                new_data1['btext'] = data[2]
-                new_data1['bfile'] = data[3]
-                new_data1['bview'] = data[4]
-                new_data1['bcomment'] = data[5]
-                new_data1['unickname'] = data[6]
-                new_data1['bcreate_date'] = data[7]
-                new_data1['b_lock'] = data[8]
-
         # 에러가 발생했을 경우 벡엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
@@ -273,7 +261,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 수정된 게시물 정보를 프론트엔드에 전송
         else:
-            return Response(new_data1)
+            return Response(1)
 
     # sql 인젝션 되는 코드
     # 게시물 삭제

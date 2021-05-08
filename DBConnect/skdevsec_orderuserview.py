@@ -303,7 +303,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"user_paid_output 에러: {e}")
+            print(f"admin_paid_output 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
