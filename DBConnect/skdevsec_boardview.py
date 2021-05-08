@@ -121,7 +121,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data['bcomment'] = data[5]
                 new_data['unickname'] = data[6]
                 new_data['bcreate_date'] = data[7]
-                new_data['b_lock'] = data[8]
+                new_data['bcate'] = data[8]
+                new_data['b_lock'] = data[9]
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
