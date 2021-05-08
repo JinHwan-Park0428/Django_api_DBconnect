@@ -656,7 +656,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             uid = request.data['uid']
             uname = request.data['uname']
 
-            strsql = "SELECT uphone FROM skedevsec_user WHERE uid='" + uid + "' AND uname='" + uname + "'"
+            strsql = "SELECT uphone FROM skdevsec_user WHERE uid='" + uid + "' AND uname='" + uname + "'"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -693,7 +693,9 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             uid = request.data['uid']
             upwd = request.data['upwd']
 
-            strsql = "UPDATE skedevsec_user SET upwd='" + upwd + "' WHERE uid='" + uid + "'"
+            strsql=''
+
+            strsql = "UPDATE skdevsec_user SET upwd='" + upwd + "' WHERE uid='" + uid + "'"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
