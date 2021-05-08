@@ -45,7 +45,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
+            if datas is not None:
                 # 있는 만큼 반복
                 while datas:
                     # 게시물 정보를 딕셔너리에 저장 후 리스트에 추가

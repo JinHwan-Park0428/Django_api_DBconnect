@@ -634,7 +634,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"email_check 에러: {e}")
+            print(f"find_id 에러: {e}")
             return Response(0)
 
         # 데이터가 존재하면(중복이면) 프론트엔드에 1을 전송 아니면 이메일 전송 작업 시작
@@ -645,7 +645,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response(0)
 
     # sql 인젝션 되는 코드
-    # 결제 전 핸드폰 인증
+    # 비밀번호 찾기 전 핸드폰 인증
     @action(detail=False, methods=['POST'])
     def find_pwd_sms(self, request):
         try:
@@ -661,8 +661,12 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             cursor.execute(strsql)
             uphone = cursor.fetchall()
-            # 문자 전송
-            rand_num = sms_send(uphone[0][0])
+
+            if len(uphone) != 0:
+                # 문자 전송
+                rand_num = sms_send(uphone[0][0])
+            else:
+                return Response(0)
 
             # DB와 접속 종료
             connection.commit()
@@ -678,7 +682,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(rand_num)
 
     # sql 인젝션 되는 코드
-    # 결제 전 핸드폰 인증
+    # 비밀번호 교체
     @action(detail=False, methods=['POST'])
     def find_pwd(self, request):
         try:
