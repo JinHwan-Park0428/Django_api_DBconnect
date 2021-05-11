@@ -88,11 +88,11 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = request.data['bid']
-            unickname = request.data['unickname']
-            ctext = request.data['ctext']
-            ccreate_date = request.data['ccreate_date']
-            clock = request.data['clock']
+            bid = str(request.data['bid'])
+            unickname = str(request.data['unickname'])
+            ctext = str(request.data['ctext'])
+            ccreate_date = str(request.data['ccreate_date'])
+            clock = str(request.data['clock'])
 
             # SQL 쿼리문 작성
             strsql = "INSERT INTO skdevsec_comment(bid, unickname, ctext, ccreate_date, clock) VALUES('" + bid + "', '" + unickname + "', '" + ctext + "', '" + ccreate_date + "', '" + clock + "')"

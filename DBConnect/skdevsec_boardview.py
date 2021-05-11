@@ -28,20 +28,20 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bpage = int(bpage)
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE bcate='" + bcate + "'"
+            strsql = "SELECT COUNT(*) FROM skdevsec_board WHERE bcate='" + bcate + "'"
 
             # DB에 명령문 전송
-            cursor.execute(strsql1)
+            cursor.execute(strsql)
             datas = cursor.fetchone()
 
             # 게시물 갯수 저장
             new_data.append({"board_count": datas[0]})
 
             # SQL 쿼리문 작성
-            strsql = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(bpage * 10 - 10) + ", 10"
+            strsql1 = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(bpage * 10 - 10) + ", 10"
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
+            cursor.execute(strsql1)
             datas = cursor.fetchone()
 
             # 데이터가 있으면
@@ -169,6 +169,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                          new_data['bcreate_date'] + "', '" + new_data['bcate'] + "', '" + new_data['b_lock'] + "')"
 
                 # DB에 명령문 전송
+                print(strsql)
                 cursor.execute(strsql)
 
                 # DB와 접속 종료
@@ -237,19 +238,27 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 # DB에 명령문 전송
                 cursor.execute(strsql1)
             else:
-                # DB에 저장하기 위해 시리얼라이저 함수 사용
-                file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
+                image_path = datas[0][0]
+                if new_data['bfile'] != image_path:
+                    # DB에 저장하기 위해 시리얼라이저 함수 사용
+                    file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
 
-                # 수정할 데이터를 업데이트함
-                if file_serializer.is_valid():
-                    file_serializer.update(data_check, file_serializer.validated_data)
-                    # 게시물 기존 파일이 존재하면 삭제
-                    if datas[0][0] != "0":
-                        os.remove(datas[0][0])
-                # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                    # 수정할 데이터를 업데이트함
+                    if file_serializer.is_valid():
+                        file_serializer.update(data_check, file_serializer.validated_data)
+                        # 게시물 기존 파일이 존재하면 삭제
+                        if datas[0][0] != "0":
+                            os.remove(datas[0][0])
+                    # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                    else:
+                        print("serializer 에러")
+                        return Response(0)
                 else:
-                    print("serializer 에러")
-                    return Response(0)
+                    strsql1 = "UPDATE skdevsec_board SET btitle='" + new_data['btitle'] + "', btext='" + new_data[
+                        'btext'] + "', bcate='" + new_data['bcate'] + "', b_lock='" + new_data['b_lock'] + "' WHERE bid='" + bid + "'"
+
+                    # DB에 명령문 전송
+                    cursor.execute(strsql1)
 
             connection.commit()
             connection.close()
@@ -354,7 +363,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     def board_search(self, request):
         # 데이터 저장을 위한 리스트 선언
         new_data = list()
-        count = 0
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
@@ -373,20 +381,28 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             if bcode == 0:
                 strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
                     bpage * 10 - 10) + ", 10"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
             elif bcode == 1:
                 strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
                     bpage * 10 - 10) + ", 10"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
             elif bcode == 2:
                 strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
                     bpage * 10 - 10) + ", 10"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
             elif bcode == 3:
                 strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
                     bpage * 10 - 10) + ", 10"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
             elif bcode == 4:
                 strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
                     bpage * 10 - 10) + ", 10"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
             else:
                 return Response("코드 값 잘못 보냄!!")
+
+            cursor.execute(strsql1)
+            count = cursor.fetchone()
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -396,7 +412,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             if datas is not None:
                 # 데이터만큼 반복
                 while datas:
-                    count += 1
                     new_data_in = dict()
                     new_data_in['bid'] = datas[0]
                     new_data_in['btitle'] = datas[1]
@@ -416,7 +431,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 # 프론트엔드에 0 전송
                 return Response(0)
 
-            new_data.append({"board_count": count})
+            new_data.append({"board_count": count[0]})
 
             # DB와 접속 종료
             connection.commit()

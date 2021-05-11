@@ -314,7 +314,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     for pcate in psearch[1:]:
                         strsql = strsql + pcate + "' OR pcate='"
                     strsql = strsql + "')"
-            strsql = strsql + " ORDER BY pid DESC limit " + str(int(psearch[0]) * 6 - 6) + ", 6"
+            strsql = strsql + " ORDER BY pid DESC limit " + str(int(psearch[0]) * 8 - 8) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -371,7 +371,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             ppage = request.data['ppage']
             ppage = int(ppage)
 
-            strsql = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pcreate_date DESC limit " + str(ppage*6-6) + ", 6"
+            strsql = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pcreate_date DESC limit " + str(ppage*8-8) + ", 8"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -380,7 +380,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"product_count":count[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit " + str(ppage*6-6) + ", 6"
+            strsql1 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit " + str(ppage*8-8) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
@@ -439,7 +439,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             ppage = int(ppage)
 
             strsql = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit " + str(
-                ppage * 6 - 6) + ", 6"
+                ppage * 8 - 8) + ", 8"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -448,7 +448,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"product_count": count[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_product order by pprice desc limit " + str(ppage*6-6) + ", 6"
+            strsql1 = "SELECT * FROM skdevsec_product order by pprice desc limit " + str(ppage*8-8) + ", 6"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
@@ -507,7 +507,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             ppage = int(ppage)
 
             strsql = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit " + str(
-                ppage * 6 - 6) + ", 6"
+                ppage * 8 - 8) + ", 8"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -516,7 +516,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"product_count": count[0]})
 
             # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_product order by pprice asc limit 6"
+            strsql1 = "SELECT * FROM skdevsec_product order by pprice asc limit 8"
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
@@ -575,7 +575,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             ppage = int(ppage)
 
             strsql = "SELECT COUNT(*) FROM skdevsec_product order by preview DESC, preview_avg DESC limit " + str(
-                ppage * 6 - 6) + ", 6"
+                ppage * 8 - 8) + ", 8"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -584,7 +584,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data.append({"product_count": count[0]})
 
             # SQL 쿼리문 작성
-            strsql = "SELECT * FROM skdevsec_product order by preview DESC, preview_avg DESC LIMIT 6"
+            strsql = "SELECT * FROM skdevsec_product order by preview DESC, preview_avg DESC LIMIT 8"
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -675,9 +675,9 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['ptext'] = datas[4]
                     new_data_in['pprice'] = datas[5]
                     new_data_in['pcreate_date'] = datas[6]
-                    new_data_in['preview'] = datas[6]
-                    new_data_in['preview_avg'] = datas[6]
-                    new_data_in['pcount'] = datas[6]
+                    new_data_in['preview'] = datas[7]
+                    new_data_in['preview_avg'] = datas[8]
+                    new_data_in['pcount'] = datas[9]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
             # 데이터가 없으면
@@ -703,3 +703,39 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
         # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
             return Response(new_data)
+
+    # sql 인젝션 되는 코드
+    # 관리자 상품 검색
+    @action(detail=False, methods=['POST'])
+    def product_check(self, request):
+        # 데이터 저장을 위한 리스트 선언
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            pname = request.data['pname']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT * FROM skdevsec_product WHERE pname='" + pname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            datas = cursor.fetchall()
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"product_check 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            if len(datas) != 0:
+                return Response(1)
+            else:
+                return Response(0)

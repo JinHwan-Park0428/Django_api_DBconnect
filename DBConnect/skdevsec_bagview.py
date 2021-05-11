@@ -291,3 +291,47 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
         # 성공 했을 시, 데이터 전송
         else:
             return Response(new_data1)
+
+    # sql 인젝션 되는 코드
+    # 장바구니 갯수
+    @action(detail=False, methods=['POST'])
+    def bag_count(self, request):
+        # 데이터를 저장하기 위한 리스트 선언
+        new_data = list()
+        try:
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
+            # POST 메소드로 날라온 Request의 데이터 각각 추출
+            unickname = request.data['unickname']
+
+            # SQL 쿼리문 작성
+            strsql = "SELECT uid FROM skdevsec_user WHERE unickname='" + unickname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql)
+            uid = cursor.fetchone()
+
+            # SQL 쿼리문 작성
+            strsql1 = "SELECT COUNT(*) FROM skdevsec_bag where uid='" + uid[0] + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            count = cursor.fetchall()
+
+            # DB와 접속 종료
+            connection.commit()
+            connection.close()
+
+        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        except Exception as e:
+            connection.rollback()
+            print(f"bag_show 에러: {e}")
+            return Response(0)
+
+        # 성공 했을 시, 프론트엔드에 데이터 전송
+        else:
+            if len(count) != 0:
+                return Response({"bag_count": count[0][0]})
+            else:
+                return Response(0)

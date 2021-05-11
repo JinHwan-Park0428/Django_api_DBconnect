@@ -146,6 +146,9 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['POST'])
     def review_certified(self, request):
         try:
+            # 데이터 처리를 위한 리스트 선언
+            pname_list = list()
+
             # DB 접근할 cursor
             cursor = connection.cursor()
 
@@ -165,32 +168,37 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql1)
-            oid = cursor.fetchone()
+            oids = cursor.fetchall()
 
-            # SQL 쿼리문 작성
-            strsql2 = "SELECT pname FROM skdevsec_orderproduct WHERE oid='" + oid[0] + "'"
+            for oid in oids:
+                # SQL 쿼리문 작성
+                strsql2 = "SELECT pname FROM skdevsec_orderproduct WHERE oid='" + str(oid[0]) + "'"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql2)
-            pnames = cursor.fetchall()
+                # DB에 명령문 전송
+                cursor.execute(strsql2)
+                pnames = cursor.fetchall()
 
-            # 데이터 처리를 위한 리스트 선언
-            pname_list = list()
+                for _pname in pnames:
+                    pname_list.append(_pname[0])
 
-            for pname in pnames:
-                pname_list.append(pname[0])
+            pname_count = {}
+            for i in pname_list:
+                try:
+                    pname_count[i] += 1
+                except:
+                    pname_count[i] = 1
 
             # 만약 사용자가 상품을 구매했으면 리뷰한 적이 있는지 확인
             if pname in pname_list:
                 # SQL 쿼리문 작성
-                strsql3 = "SELECT pid FROM skdevsec_product WHERE pname='" + pnames + "'"
+                strsql3 = "SELECT pid FROM skdevsec_product WHERE pname='" + pname + "'"
 
                 # DB에 명령문 전송
                 cursor.execute(strsql3)
                 pid = cursor.fetchone()
 
                 # SQL 쿼리문 작성
-                strsql4 = "SELECT * FROM skdevsec_review WHERE pid='" + pid[0] + "' AND unickname='" + unickname + "'"
+                strsql4 = "SELECT COUNT(*) FROM skdevsec_review WHERE pid='" + str(pid[0]) + "' AND unickname='" + unickname + "'"
 
                 # DB에 명령문 전송
                 cursor.execute(strsql4)
@@ -211,7 +219,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 리뷰를 작성할 수 없으면 프론트엔드에 1 전송, 작성할 수 있으면 0 전송
         else:
-            if len(review) != 0:
+            if pname_count[pname] <= int(review[0][0]):
                 return Response(1)
             else:
                 return Response(0)

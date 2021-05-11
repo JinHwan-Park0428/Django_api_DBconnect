@@ -316,7 +316,6 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
     def admin_paid_search(self, request):
         # 데이터 저장을 위한 리스트 선언
         new_data = list()
-        count = 0
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
@@ -331,14 +330,21 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if ocode == 0:
                 # SQL 쿼리문 작성
                 strsql = "SELECT * FROM skdevsec_orderuser WHERE (uid LIKE '%" + osearch + "%' OR oname LIKE '%" + osearch + "%') order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE (uid LIKE '%" + osearch + "%' OR oname LIKE '%" + osearch + "%') order by oid desc"
             elif ocode == 1:
                 # SQL 쿼리문 작성
                 strsql = "SELECT * FROM skdevsec_orderuser WHERE uid LIKE '%" + osearch + "%' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+                strsql = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE uid LIKE '%" + osearch + "%' order by oid desc limit "
             elif ocode == 2:
                 # SQL 쿼리문 작성
                 strsql = "SELECT * FROM skdevsec_orderuser WHERE oname LIKE '%" + osearch + "%' order by oid desc limit " + str(opage * 10 - 10) + ", 10"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE oname LIKE '%" + osearch + "%' order by oid desc"
             else:
                 return Response(0)
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            count = cursor.fetchone()
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -348,7 +354,6 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
-                    count += 1
                     new_data_in = dict()
                     new_data_in['oid'] = datas[0]
                     new_data_in['uid'] = datas[1]
@@ -367,7 +372,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 # 프론트엔드에 0 전송
                 return Response(0)
 
-            new_data.append({"order_count": count})
+            new_data.append({"order_count": count[0]})
 
             # DB와 접속 종료
             connection.commit()
