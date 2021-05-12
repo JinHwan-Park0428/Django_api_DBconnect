@@ -333,17 +333,17 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 # SQL 쿼리문 작성
                 strsql = "SELECT * FROM skdevsec_orderuser WHERE (uid LIKE '%" + osearch + "%' OR oname LIKE '%" + osearch + "%') order by oid desc limit " + str(
                     opage * 10 - 10) + ", 10"
-                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE (uid LIKE '%" + osearch + "%' OR oname LIKE '%" + osearch + "%') order by oid desc"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE (uid LIKE '%" + osearch + "%' OR oname LIKE '%" + osearch + "%')"
             elif ocode == 1:
                 # SQL 쿼리문 작성
                 strsql = "SELECT * FROM skdevsec_orderuser WHERE uid LIKE '%" + osearch + "%' order by oid desc limit " + str(
                     opage * 10 - 10) + ", 10"
-                strsql = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE uid LIKE '%" + osearch + "%' order by oid desc limit "
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE uid LIKE '%" + osearch + "%'"
             elif ocode == 2:
                 # SQL 쿼리문 작성
                 strsql = "SELECT * FROM skdevsec_orderuser WHERE oname LIKE '%" + osearch + "%' order by oid desc limit " + str(
                     opage * 10 - 10) + ", 10"
-                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE oname LIKE '%" + osearch + "%' order by oid desc"
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE oname LIKE '%" + osearch + "%'"
             else:
                 return Response(0)
 
