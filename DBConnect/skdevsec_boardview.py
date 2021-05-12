@@ -34,8 +34,11 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 게시물 갯수 저장
-            new_data.append({"board_count": datas[0]})
+            if datas is not None:
+                # 게시물 갯수 저장
+                new_data.append({"board_count": datas[0]})
+            else:
+                new_data.append({"board_count": 0})
 
             # SQL 쿼리문 작성
             strsql1 = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(bpage * 10 - 10) + ", 10"
@@ -105,24 +108,24 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql2)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
+
+            # 게시물 정보 대입
+            if datas is not None:
+                new_data['bid'] = datas[0]
+                new_data['btitle'] = datas[1]
+                new_data['btext'] = datas[2]
+                new_data['bfile'] = datas[3]
+                new_data['bview'] = datas[4]
+                new_data['bcomment'] = datas[5]
+                new_data['unickname'] = datas[6]
+                new_data['bcreate_date'] = datas[7]
+                new_data['bcate'] = datas[8]
+                new_data['b_lock'] = datas[9]
 
             # DB와 접속 종료
             connection.commit()
             connection.close()
-
-            # 게시물 정보 대입
-            for data in datas:
-                new_data['bid'] = data[0]
-                new_data['btitle'] = data[1]
-                new_data['btext'] = data[2]
-                new_data['bfile'] = data[3]
-                new_data['bview'] = data[4]
-                new_data['bcomment'] = data[5]
-                new_data['unickname'] = data[6]
-                new_data['bcreate_date'] = data[7]
-                new_data['bcate'] = data[8]
-                new_data['b_lock'] = data[9]
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -154,9 +157,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['bcate'] = request.data['bcate']
             new_data['b_lock'] = request.data['b_lock']
 
-            print(request.data['bfile'])
-            print(type(request.data['bfile']))
-
             # 업로드할 파일이 없으면
             if new_data['bfile'] == "0":
                 # DB 접근할 cursor
@@ -169,7 +169,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                          new_data['bcreate_date'] + "', '" + new_data['bcate'] + "', '" + new_data['b_lock'] + "')"
 
                 # DB에 명령문 전송
-                print(strsql)
                 cursor.execute(strsql)
 
                 # DB와 접속 종료
@@ -228,7 +227,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             if new_data['bfile'] == "0":
                 strsql1 = "UPDATE skdevsec_board SET btitle='" + new_data['btitle'] + "', btext='" + new_data['btext'] + \
@@ -238,7 +237,11 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 # DB에 명령문 전송
                 cursor.execute(strsql1)
             else:
-                image_path = datas[0][0]
+                if datas is not None:
+                    image_path = datas[0]
+                else:
+                    return Response(0)
+
                 if new_data['bfile'] != image_path:
                     # DB에 저장하기 위해 시리얼라이저 함수 사용
                     file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
@@ -247,8 +250,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     if file_serializer.is_valid():
                         file_serializer.update(data_check, file_serializer.validated_data)
                         # 게시물 기존 파일이 존재하면 삭제
-                        if datas[0][0] != "0":
-                            os.remove(datas[0][0])
+                        if datas[0] != "0":
+                            os.remove(datas[0])
                     # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
                     else:
                         print("serializer 에러")
@@ -289,11 +292,12 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             # 파일이 존재하면 삭제
-            if datas[0][0] != "0":
-                os.remove(datas[0][0])
+            if datas is not None:
+                if datas[0] != "0":
+                    os.remove(datas[0])
 
             # SQL 쿼리문 작성
             strsql1 = "DELETE FROM skdevsec_board WHERE bid='" + bid + "'"
@@ -331,11 +335,12 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             # 파일 삭제
-            if datas[0][0] != "0":
-                os.remove(datas[0][0])
+            if datas is not None:
+                if datas[0] != "0":
+                    os.remove(datas[0])
 
             # SQL 쿼리문 작성
             strsql1 = "UPDATE skdevsec_board SET bfile=0 WHERE bid='" + bid + "'"
@@ -404,34 +409,38 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql1)
             count = cursor.fetchone()
 
-            # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            if count is not None:
+                # DB에 명령문 전송
+                cursor.execute(strsql)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
-                # 데이터만큼 반복
-                while datas:
-                    new_data_in = dict()
-                    new_data_in['bid'] = datas[0]
-                    new_data_in['btitle'] = datas[1]
-                    new_data_in['bfile'] = datas[2]
-                    new_data_in['bview'] = datas[3]
-                    new_data_in['bcomment'] = datas[4]
-                    new_data_in['unickname'] = datas[5]
-                    new_data_in['bcreate_date'] = datas[6]
-                    new_data_in['b_lock'] = 0
-                    new_data.append(new_data_in)
-                    datas = cursor.fetchone()
-            # 데이터가 없으면
+                # 데이터가 있으면
+                if datas is not None:
+                    # 데이터만큼 반복
+                    while datas:
+                        new_data_in = dict()
+                        new_data_in['bid'] = datas[0]
+                        new_data_in['btitle'] = datas[1]
+                        new_data_in['bfile'] = datas[2]
+                        new_data_in['bview'] = datas[3]
+                        new_data_in['bcomment'] = datas[4]
+                        new_data_in['unickname'] = datas[5]
+                        new_data_in['bcreate_date'] = datas[6]
+                        new_data_in['b_lock'] = 0
+                        new_data.append(new_data_in)
+                        datas = cursor.fetchone()
+                # 데이터가 없으면
+                else:
+                    # DB와 접속 종료
+                    connection.commit()
+                    connection.close()
+                    # 프론트엔드에 0 전송
+                    return Response(0)
+
+                new_data.append({"board_count": count[0]})
+
             else:
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
-
-            new_data.append({"board_count": count[0]})
+                new_data.append({"board_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -469,8 +478,11 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 게시물 갯수 저장
-            new_data.append({"board_count": datas[0]})
+            if datas is not None:
+                # 게시물 갯수 저장
+                new_data.append({"board_count": datas[0]})
+            else:
+                new_data.append({"board_count": 0})
 
             # SQL 쿼리문 작성
             strsql1 = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, bcate, b_lock FROM skdevsec_board where unickname='" + unickname + "' order by bcreate_date desc limit " + str(
@@ -481,7 +493,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            if len(datas) != 0:
+            if datas is not None:
                 # 데이터 갯수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -524,7 +536,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     def my_board_search(self, request):
         # 데이터 저장을 위한 리스트 선언
         new_data = list()
-        count = 0
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
@@ -538,6 +549,11 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # SQL 쿼리문 작성
             strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND unickname='" + unickname + "' ORDER BY bid DESC limit " + str(
                 bpage * 10 - 10) + ", 10"
+            strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND unickname='" + unickname + "'"
+
+            # DB에 명령문 전송
+            cursor.execute(strsql1)
+            count = cursor.fetchone()
 
             # DB에 명령문 전송
             cursor.execute(strsql)
@@ -567,7 +583,10 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 # 프론트엔드에 0 전송
                 return Response(0)
 
-            new_data.append({"board_count": count})
+            if count is not None:
+                new_data.append({"board_count": count[0]})
+            else:
+                new_data.append({"board_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -576,7 +595,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"board_search 에러: {e}")
+            print(f"my_board_search 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송

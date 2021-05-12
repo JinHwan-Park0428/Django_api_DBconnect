@@ -33,8 +33,11 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 댓글 갯수 저장
-            new_data.append({"comment_count": datas[0]})
+            if datas is not None:
+                # 댓글 갯수 저장
+                new_data.append({"comment_count": datas[0]})
+            else:
+                new_data.append({"comment_count": 0})
 
             # SQL 쿼리문 작성
             strsql1 = "SELECT cid, unickname, ctext, ccreate_date, clock FROM skdevsec_comment where bid='" + bid + "' order by cid LIMIT " + str(
@@ -45,7 +48,6 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             datas = cursor.fetchone()
 
             # 데이터가 있으면
-            # if len(datas) != 0:
             if datas is not None:
                 # 데이터 갯수만큼 반복
                 while datas:

@@ -32,12 +32,16 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             uid = cursor.fetchone()
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT bag_id, pid, bcount FROM skdevsec_bag where uid='" + uid[0] + "'"
+            if uid is not None:
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT bag_id, pid, bcount FROM skdevsec_bag where uid='" + uid[0] + "'"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchall()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchall()
+
+            else:
+                return Response(0)
 
             # 장바구니 목록이 있으면
             if len(datas) != 0:
@@ -51,7 +55,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor.execute(strsql2)
                     products = cursor.fetchone()
                     # 상품이 있으면
-                    if len(products) != 0:
+                    if products is not None:
                         new_data_in['bag_id'] = data[0]
                         new_data_in['pid'] = data[1]
                         new_data_in['pname'] = products[0]
@@ -137,11 +141,14 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             uid = cursor.fetchone()
 
-            # SQL 쿼리문 작성
-            strsql1 = "DELETE FROM skdevsec_bag WHERE uid='" + uid[0] + "'"
+            if uid is not None:
+                # SQL 쿼리문 작성
+                strsql1 = "DELETE FROM skdevsec_bag WHERE uid='" + uid[0] + "'"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+            else:
+                return Response(0)
 
             # DB와 접속 종료
             connection.commit()
@@ -177,12 +184,15 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             uid = cursor.fetchone()
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT uid FROM skdevsec_bag WHERE uid='" + uid[0] + "' AND pid='" + pid + "'"
+            if uid is not None:
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT uid FROM skdevsec_bag WHERE uid='" + uid[0] + "' AND pid='" + pid + "'"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            uid1 = cursor.fetchall()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                uid1 = cursor.fetchall()
+            else:
+                return Response(0)
 
             # 장바구니에 상품이 있으면
             if len(uid1) != 0:
@@ -214,6 +224,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
 
     # sql 인젝션 되는 코드
     # 장바구니 결제
+    # 미사용 함수?
     @action(detail=False, methods=['POST'])
     def bag_pay(self, request):
         # 데이터 저장을 위한 리스트 선언
@@ -312,12 +323,15 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             uid = cursor.fetchone()
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT COUNT(*) FROM skdevsec_bag where uid='" + uid[0] + "'"
+            if uid is not None:
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT COUNT(*) FROM skdevsec_bag where uid='" + uid[0] + "'"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            count = cursor.fetchall()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                count = cursor.fetchone()
+            else:
+                return Response(0)
 
             # DB와 접속 종료
             connection.commit()
@@ -331,7 +345,4 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
-            if len(count) != 0:
-                return Response({"bag_count": count[0][0]})
-            else:
-                return Response(0)
+            return Response({"bag_count": count[0]})

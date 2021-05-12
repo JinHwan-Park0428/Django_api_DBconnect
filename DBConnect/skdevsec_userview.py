@@ -42,8 +42,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 cursor.execute(strsql1)
                 datas = cursor.fetchone()
 
-                # 전체 유저 수를 저장
-                new_data.append({"user_count": datas[0]})
+                if datas is not None:
+                    # 전체 유저 수를 저장
+                    new_data.append({"user_count": datas[0]})
+                else:
+                    new_data.append({"user_count": 0})
 
                 # SQL 쿼리문 작성
                 strsql = "SELECT * FROM skdevsec_user order by ucreate_date desc limit " + str(upage * 10 - 10) + ", 10"
@@ -100,7 +103,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         if request.data['authority'] == '1' and request.data['unickname'] == 'admin':
             # 데이터 저장을 위한 리스트 선언
             new_data = list()
-            count = 0
             try:
                 # POST 메소드로 날라온 Request의 데이터 각각 추출
                 ucode = request.data['ucode']
@@ -116,16 +118,25 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 # 0: 전체 검색 / 1 : 이름 / 2 : 닉네임 / 3 : 아이디 / 4 : 이메일
                 if ucode == 0:
                     strsql = "SELECT * FROM skdevsec_user where (uname LIKE '%" + usearch + "%' OR unickname LIKE '%" + usearch + "%' OR uid LIKE '%" + usearch + "%' OR umail LIKE '%" + usearch + "%') order by ucreate_date desc limit " + str(upage * 10 - 10) + ", 10"
+                    strsql1 = "SELECT COUNT(*) FROM skdevsec_user where (uname LIKE '%" + usearch + "%' OR unickname LIKE '%" + usearch + "%' OR uid LIKE '%" + usearch + "%' OR umail LIKE '%" + usearch + "%')"
                 elif ucode == 1:
                     strsql = "SELECT * FROM skdevsec_user where uname LIKE '%" + usearch + "%' order by ucreate_date desc limit " + str(upage * 10 - 10) + ", 10"
+                    strsql1 = "SELECT COUNT(*) FROM skdevsec_user where uname LIKE '%" + usearch + "%'"
                 elif ucode == 2:
                     strsql = "SELECT * FROM skdevsec_user where unickname LIKE '%" + usearch + "%' order by ucreate_date desc limit " + str(upage * 10 - 10) + ", 10"
+                    strsql1 = "SELECT COUNT(*) FROM skdevsec_user where unickname LIKE '%" + usearch + "%'"
                 elif ucode == 3:
                     strsql = "SELECT * FROM skdevsec_user where uid LIKE '%" + usearch + "%' order by ucreate_date desc limit " + str(upage * 10 - 10) + ", 10"
+                    strsql1 = "SELECT COUNT(*) FROM skdevsec_user where uid LIKE '%" + usearch + "%'"
                 elif ucode == 4:
                     strsql = "SELECT * FROM skdevsec_user where umail LIKE '%" + usearch + "%' order by ucreate_date desc limit " + str(upage * 10 - 10) + ", 10"
+                    strsql1 = "SELECT COUNT(*) FROM skdevsec_user where umail LIKE '%" + usearch + "%'"
                 else:
                     return Response("코드 값 잘못 보냄!!")
+
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                count = cursor.fetchone()
 
                 # DB에 명령문 전송
                 cursor.execute(strsql)
@@ -135,7 +146,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 if datas is not None:
                     # 데이터 만큼 반복
                     while datas:
-                        count += 1
                         new_data_in = dict()
                         new_data_in['uid'] = datas[0]
                         # new_data_in['upwd'] = datas[1]
@@ -155,7 +165,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     # 프론트엔드에 0 전송
                     return Response(0)
 
-                new_data.append({"user_count": count})
+                new_data.append({"user_count": count[0]})
 
                 # DB와 접속 종료
                 connection.commit()
@@ -350,16 +360,18 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             # DB와 접속 종료
             connection.commit()
             connection.close()
 
             # 불러온 데이터를 딕셔너리 형태로 저장
-            for data in datas:
-                new_data['unickname'] = data[0]
-                new_data['authority'] = data[1]
+            if datas is not None:
+                new_data['unickname'] = datas[0]
+                new_data['authority'] = datas[1]
+            else:
+                return Response(0)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -369,15 +381,12 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 관리자 로그인이면 2 일반 사용자이면 1 로그인 실패면 0을 프론트엔드에 전송
         else:
-            if len(new_data) != 0:
-                if new_data['authority'] == 1:
-                    new_data['login_check'] = 2
-                    return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
-                else:
-                    new_data['login_check'] = 1
-                    return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+            if new_data['authority'] == 1:
+                new_data['login_check'] = 2
+                return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
             else:
-                return Response(0)
+                new_data['login_check'] = 1
+                return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
 
     # sql 인젝션 되는 코드
     # 내 정보 보기
@@ -397,20 +406,22 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             # DB와 접속 종료
             connection.commit()
             connection.close()
 
             # 정보를 딕셔너리 형태로 저장
-            for data in datas:
-                new_data['uid'] = data[0]
-                new_data['unickname'] = data[1]
-                new_data['uname'] = data[2]
-                new_data['umail'] = data[3]
-                new_data['uphone'] = data[4]
-                new_data['ucreate_date'] = data[5]
+            if datas is not None:
+                new_data['uid'] = datas[0]
+                new_data['unickname'] = datas[1]
+                new_data['uname'] = datas[2]
+                new_data['umail'] = datas[3]
+                new_data['uphone'] = datas[4]
+                new_data['ucreate_date'] = datas[5]
+            else:
+                return Response(0)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -420,10 +431,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 데이터가 있으면 프론트엔드에 데이터 전송 없으면 0 전송
         else:
-            if len(new_data) != 0:
-                return Response(new_data)
-            else:
-                return Response(0)
+            return Response(new_data)
 
     # sql 인젝션 되는 코드
     # 회원 정보 수정 인증
@@ -442,7 +450,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             # DB와 접속 종료
             connection.commit()
@@ -456,7 +464,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 데이터가 존재하면 1, 없으면 0을 프론트엔드에 전송
         else:
-            if len(datas) != 0:
+            if datas is not None :
                 return Response(1)
             else:
                 return Response(0)
@@ -575,7 +583,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchall()
+            datas = cursor.fetchone()
 
             # DB와 접속 종료
             connection.commit()
@@ -584,12 +592,12 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"email_check 에러: {e}")
+            print(f"find_id_email 에러: {e}")
             return Response(0)
 
         # 데이터가 존재하지않으면 프론트엔드에 0을 전송 아니면 이메일 전송 작업 시작
         else:
-            if len(datas) == 0:
+            if datas is not None:
                 return Response(0)
             else:
                 try:
@@ -605,7 +613,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
                 except Exception as e:
                     connection.rollback()
-                    print(f"email_send 에러: {e}")
+                    print(f"find_id_email 에러: {e}")
                     return Response(0)
 
     # sql 인젝션 되는 코드
@@ -625,7 +633,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            uid = cursor.fetchall()
+            uid = cursor.fetchone()
 
             # DB와 접속 종료
             connection.commit()
@@ -639,7 +647,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 데이터가 존재하면(중복이면) 프론트엔드에 1을 전송 아니면 이메일 전송 작업 시작
         else:
-            if len(uid) != 0:
+            if uid is not None:
                 return Response(uid[0][0])
             else:
                 return Response(0)
@@ -660,11 +668,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            uphone = cursor.fetchall()
+            uphone = cursor.fetchone()
 
-            if len(uphone) != 0:
+            if uphone is not None:
                 # 문자 전송
-                rand_num = sms_send(uphone[0][0])
+                rand_num = sms_send(uphone[0])
             else:
                 return Response(0)
 
@@ -692,8 +700,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
             upwd = request.data['upwd']
-
-            strsql=''
 
             strsql = "UPDATE skdevsec_user SET upwd='" + upwd + "' WHERE uid='" + uid + "'"
 
