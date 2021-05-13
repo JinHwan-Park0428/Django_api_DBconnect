@@ -29,24 +29,18 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchone()
+            count = cursor.fetchone()
 
-            if datas is not None:
+            if count is not None:
                 # 상품 갯수 저장
-                new_data.append({"product_count": datas[0]})
-            else:
-                new_data.append({"product_count": 0})
+                new_data.append({"product_count": count[0]})
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT * FROM skdevsec_product order by pid desc limit " + str(ppage * 8 - 8) + ", 8"
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_product order by pid desc limit " + str(ppage * 8 - 8) + ", 8"
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
-
-            # 데이터가 있으면
-            if datas is not None:
-                # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
                     new_data_in['pid'] = datas[0]
@@ -61,14 +55,11 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['pcount'] = datas[9]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
             else:
-                # DB와 접속 종료
-                connection.commit()
                 connection.close()
-                return Response(0)
+                return Response({"product_count": 0})
 
-            # DB와 접속 종료
+                # DB와 접속 종료
             connection.commit()
             connection.close()
 
@@ -221,7 +212,6 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 저장하기 위해 시리얼라이저 함수 사용
             file_serializer = SkdevsecProductSerializer(data_check, data=new_data)
 
-
             # 수정할 데이터를 업데이트함
             if new_data['pimage'] != image_path:
                 if file_serializer.is_valid():
@@ -343,8 +333,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
+            if count is not None:
                 # 데이터만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -357,17 +346,11 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['preview_avg'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-                if count is not None:
-                    new_data.append({"product_count": count[0]})
-                else:
-                    new_data.append({"product_count": 0})
-            # 데이터가 없으면
+                new_data.append({"product_count": count[0]})
+
             else:
-                # DB와 접속 종료
-                connection.commit()
                 connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
+                return Response({"product_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -405,19 +388,15 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             if count is not None:
                 new_data.append({"product_count": count[0]})
-            else:
-                new_data.append({"product_count": 0})
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit " + str(ppage * 8 - 8) + ", 8"
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit " + str(
+                    ppage * 8 - 8) + ", 8"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
-                # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
                     new_data_in['pid'] = datas[0]
@@ -432,13 +411,9 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['pcount'] = datas[9]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
             else:
-                # DB와 접속 종료
-                connection.commit()
                 connection.close()
-                # 프론트엔드로 0 전송
-                return Response(0)
+                return Response({"product_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -473,20 +448,17 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             cursor.execute(strsql)
             count = cursor.fetchone()
+
             if count is not None:
                 new_data.append({"product_count": count[0]})
-            else:
-                new_data.append({"product_count": 0})
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_product order by pprice desc limit " + str(ppage * 8 - 8) + ", 8"
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT * FROM skdevsec_product order by pprice desc limit " + str(ppage * 8 - 8) + ", 8"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -502,13 +474,8 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['pcount'] = datas[9]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
             else:
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-                # 프론트엔드로 0 전송
-                return Response(0)
+                connection.close({"product_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -545,18 +512,14 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             count = cursor.fetchone()
             if count is not None:
                 new_data.append({"product_count": count[0]})
-            else:
-                new_data.append({"product_count": 0})
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_product order by pprice asc limit 8"
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT * FROM skdevsec_product order by pprice asc limit 8"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -572,13 +535,8 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['pcount'] = datas[9]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
             else:
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-                # 프론트엔드로 0 전송
-                return Response(0)
+                return Response({"product_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -616,19 +574,14 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             if count is not None:
                 new_data.append({"product_count": count[0]})
-            else:
-                new_data.append({"product_count": 0})
 
-            # SQL 쿼리문 작성
-            strsql = "SELECT * FROM skdevsec_product order by preview DESC, preview_avg DESC LIMIT 8"
+                # SQL 쿼리문 작성
+                strsql = "SELECT * FROM skdevsec_product order by preview DESC, preview_avg DESC LIMIT 8"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
-                # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
                     new_data_in['pid'] = datas[0]
@@ -643,13 +596,9 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['pcount'] = datas[9]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
+
             else:
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
+                return Response({"product_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -707,11 +656,8 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
-                # 데이터만큼 반복
+            if count is not None:
                 while datas:
-                    count += 1
                     new_data_in = dict()
                     new_data_in['pid'] = datas[0]
                     new_data_in['pname'] = datas[1]
@@ -725,17 +671,11 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['pcount'] = datas[9]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
-            else:
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
-            if count is not None:
+
                 new_data.append({"product_count": count[0]})
             else:
-                new_data.append({"product_count": 0})
+                connection.close()
+                return Response({"product_count": 0})
 
             # DB와 접속 종료
             connection.commit()

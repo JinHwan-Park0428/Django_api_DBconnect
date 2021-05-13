@@ -31,24 +31,20 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchone()
+            count = cursor.fetchone()
 
-            if datas is not None:
+            if count is not None:
                 # 댓글 갯수 저장
-                new_data.append({"comment_count": datas[0]})
-            else:
-                new_data.append({"comment_count": 0})
+                new_data.append({"comment_count": count[0]})
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT cid, unickname, ctext, ccreate_date, clock FROM skdevsec_comment where bid='" + bid + "' order by cid LIMIT " + str(
-                cpage * 10 - 10) + " , 10"
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT cid, unickname, ctext, ccreate_date, clock FROM skdevsec_comment where bid='" + bid + "' order by cid LIMIT " + str(
+                    cpage * 10 - 10) + " , 10"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
                 # 데이터 갯수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -59,13 +55,10 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['clock'] = datas[4]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
+
             else:
-                # DB와 접속 종료
-                connection.commit()
                 connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
+                return Response({"comment_count": 0})
 
             # DB와 접속 종료
             connection.commit()

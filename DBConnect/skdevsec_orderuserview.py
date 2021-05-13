@@ -261,23 +261,20 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # DB에 명령문 전송
             cursor.execute(strsql)
-            datas = cursor.fetchone()
-            if datas is not None:
+            count = cursor.fetchone()
+
+            if count is not None:
                 # 주문 내역 갯수 저장
-                new_data.append({"order_count": datas[0]})
-            else:
-                new_data.append({"order_count": 0})
+                new_data.append({"order_count": count[0]})
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(
-                opage * 10 - 10) + ", 10"
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT oid, uid, oname, ophone, oaddress, order_date, oprice FROM skdevsec_orderuser order by oid desc limit " + str(
+                    opage * 10 - 10) + ", 10"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -290,13 +287,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['oprice'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
             else:
-                # DB와 접속 종료
-                connection.commit()
                 connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
+                return Response({"order_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -355,8 +348,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(strsql)
             datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
+            if count is not None:
                 # 데이터 수만큼 반복
                 while datas:
                     new_data_in = dict()
@@ -369,18 +361,11 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['oprice'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
-            else:
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
 
-            if count is not None:
                 new_data.append({"order_count": count[0]})
             else:
-                new_data.append({"order_count": 0})
+                connection.close()
+                return Response({"order_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -389,7 +374,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"admin_paid_output 에러: {e}")
+            print(f"admin_paid_search 에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
@@ -432,22 +417,18 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if count is not None:
                 # 주문 내역 갯수 저장
                 new_data.append({"order_count": count[0]})
-            else:
-                new_data.append({"order_count": 0})
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[0] + "' order by oid desc limit " + str(
-                opage * 10 - 10) + ", 10"
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[0] + "' order by oid desc limit " + str(
+                    opage * 10 - 10) + ", 10"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
-                # 데이터 수만큼 반복
                 while datas:
-                    strsql2 = "SELECT pname, COUNT(pname) FROM skdevsec_orderproduct WHERE oid='" + str(datas[0]) + "'"
+                    strsql2 = "SELECT pname, COUNT(pname) FROM skdevsec_orderproduct WHERE oid='" + str(
+                        datas[0]) + "'"
                     cursor1.execute(strsql2)
                     pnames = cursor1.fetchone()
                     print(pnames)
@@ -463,13 +444,10 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['oprice'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
+
             else:
-                # DB와 접속 종료
-                connection.commit()
                 connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
+                return Response({"order_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -521,23 +499,19 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if count is not None:
                 # 주문 내역 갯수 저장
                 new_data.append({"order_count": count[0]})
-            else:
-                new_data.append({"order_count": 0})
 
-            # SQL 쿼리문 작성
-            strsql1 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
-                0] + "' AND (order_date BETWEEN '" + start_date + "' AND '" + end_date + "') order by oid desc limit " + str(
-                opage * 10 - 10) + ", 10"
+                # SQL 쿼리문 작성
+                strsql1 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                    0] + "' AND (order_date BETWEEN '" + start_date + "' AND '" + end_date + "') order by oid desc limit " + str(
+                    opage * 10 - 10) + ", 10"
 
-            # DB에 명령문 전송
-            cursor.execute(strsql1)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql1)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
-                # 데이터 수만큼 반복
                 while datas:
-                    strsql2 = "SELECT pname, COUNT(pname) FROM skdevsec_orderproduct WHERE oid='" + str(datas[0]) + "'"
+                    strsql2 = "SELECT pname, COUNT(pname) FROM skdevsec_orderproduct WHERE oid='" + str(
+                        datas[0]) + "'"
                     cursor1.execute(strsql2)
                     pnames = cursor1.fetchone()
                     new_data_in = dict()
@@ -552,13 +526,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['oprice'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
             else:
-                # DB와 접속 종료
-                connection.commit()
                 connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
+                return Response({"order_count": 0})
 
             # DB와 접속 종료
             connection.commit()
@@ -623,38 +593,34 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if count is not None:
                 # 주문 내역 갯수 저장
                 new_data.append({"order_count": count[0]})
-            else:
-                new_data.append({"order_count": 0})
 
-            if ocode == "1":
-                # SQL 쿼리문 작성
-                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
-                    0] + "' AND (order_date BETWEEN date_add(now(), interval -7 day) AND NOW()) order by oid desc limit " + str(
-                    opage * 10 - 10) + ", 10"
-            elif ocode == "2":
-                # SQL 쿼리문 작성
-                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
-                    0] + "' AND (order_date BETWEEN date_add(now(), interval -1 MONTH) AND NOW()) order by oid desc limit " + str(
-                    opage * 10 - 10) + ", 10"
-            elif ocode == "3":
-                # SQL 쿼리문 작성
-                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
-                    0] + "' AND (order_date BETWEEN date_add(now(), interval -3 MONTH) AND NOW()) order by oid desc limit " + str(
-                    opage * 10 - 10) + ", 10"
-            elif ocode == "4":
-                # SQL 쿼리문 작성
-                strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
-                    0] + "' AND (order_date BETWEEN date_add(now(), interval -6 MONTH) AND NOW()) order by oid desc limit " + str(
-                    opage * 10 - 10) + ", 10"
-            else:
-                return Response(0)
+                if ocode == "1":
+                    # SQL 쿼리문 작성
+                    strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                        0] + "' AND (order_date BETWEEN date_add(now(), interval -7 day) AND NOW()) order by oid desc limit " + str(
+                        opage * 10 - 10) + ", 10"
+                elif ocode == "2":
+                    # SQL 쿼리문 작성
+                    strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                        0] + "' AND (order_date BETWEEN date_add(now(), interval -1 MONTH) AND NOW()) order by oid desc limit " + str(
+                        opage * 10 - 10) + ", 10"
+                elif ocode == "3":
+                    # SQL 쿼리문 작성
+                    strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                        0] + "' AND (order_date BETWEEN date_add(now(), interval -3 MONTH) AND NOW()) order by oid desc limit " + str(
+                        opage * 10 - 10) + ", 10"
+                elif ocode == "4":
+                    # SQL 쿼리문 작성
+                    strsql2 = "SELECT * FROM skdevsec_orderuser WHERE uid='" + uid[
+                        0] + "' AND (order_date BETWEEN date_add(now(), interval -6 MONTH) AND NOW()) order by oid desc limit " + str(
+                        opage * 10 - 10) + ", 10"
+                else:
+                    return Response(0)
 
-            # DB에 명령문 전송
-            cursor.execute(strsql2)
-            datas = cursor.fetchone()
+                # DB에 명령문 전송
+                cursor.execute(strsql2)
+                datas = cursor.fetchone()
 
-            # 데이터가 있으면
-            if datas is not None:
                 # 데이터 수만큼 반복
                 while datas:
                     strsql3 = "SELECT pname, COUNT(pname) FROM skdevsec_orderproduct WHERE oid='" + str(
@@ -673,13 +639,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in['oprice'] = datas[6]
                     new_data.append(new_data_in)
                     datas = cursor.fetchone()
-            # 데이터가 없으면
+
             else:
-                # DB와 접속 종료
-                connection.commit()
-                connection.close()
-                # 프론트엔드에 0 전송
-                return Response(0)
+                return Response({"order_count": 0})
 
             # DB와 접속 종료
             connection.commit()
