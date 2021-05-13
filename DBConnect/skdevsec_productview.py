@@ -215,15 +215,15 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             if datas is not None:
                 image_path = datas[0]
-                image_name = image_path.split("/")[1]
             else:
                 return Response(0)
 
             # DB에 저장하기 위해 시리얼라이저 함수 사용
             file_serializer = SkdevsecProductSerializer(data_check, data=new_data)
 
+
             # 수정할 데이터를 업데이트함
-            if new_data['pimage'] != image_name:
+            if new_data['pimage'] != image_path:
                 if file_serializer.is_valid():
                     file_serializer.update(data_check, file_serializer.validated_data)
                     # 파일이 존재하면 삭제
