@@ -184,6 +184,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     file_serializer.save()
                 # 저장이 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
                 else:
+                    print(file_serializer.errors)
                     print("serializer 에러")
                     return Response(0)
 
@@ -254,6 +255,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                             os.remove(datas[0])
                     # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
                     else:
+                        print(file_serializer.errors)
                         print("serializer 에러")
                         return Response(0)
                 else:

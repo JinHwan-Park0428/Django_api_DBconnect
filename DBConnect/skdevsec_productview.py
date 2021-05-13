@@ -231,6 +231,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                         os.remove(datas[0])
                 # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
                 else:
+                    print(file_serializer.errors)
                     print("serializer 에러")
                     return Response(0)
             else:
