@@ -167,6 +167,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 file_serializer.save()
             # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
             else:
+                print(file_serializer.errors)
                 print("serializer 에러")
                 return Response(0)
 
@@ -781,6 +782,6 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
         # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
             if len(datas) != 0:
-                return Response(1)
-            else:
                 return Response(0)
+            else:
+                return Response(1)
