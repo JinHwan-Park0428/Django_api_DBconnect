@@ -113,9 +113,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 'total_amount': global_oprice,
                 'vat_amount': 0,
                 'tax_free_amount': 0,
-                'approval_url': 'http://www.kilhyomin.com/item/ordersuccess',
-                'fail_url': 'http://www.kilhyomin.com/item/orderfail',
-                'cancel_url': 'http://www.kilhyomin.com/item/orderfail',
+                'approval_url': 'http://localhost:8080/item/ordersuccess',
+                'fail_url': 'http://10.60.15.210:8000',
+                'cancel_url': 'http://10.60.15.210:8000',
             }
             response = requests.post(url + "/v1/payment/ready", params=params, headers=headers)
             response = json.loads(response.text)
