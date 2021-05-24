@@ -1,8 +1,10 @@
 # 모듈 임포트
 import os
 from pathlib import Path
-import mysettings
+import sys
 
+sys.path.append(Path(__file__).resolve().parent)
+import mysettings
 
 # 베이스 디렉토리 경로 (ex : C:\Users\soopeng\PycharmProjects)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -97,10 +99,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 FILE_UPLOAD_HANDLERS = [
-        "django.core.files.uploadhandler.MemoryFileUploadHandler",
-        "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
-
 
 # 기타 설정들
 LANGUAGE_CODE = 'ko-kr'
