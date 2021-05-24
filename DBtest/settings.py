@@ -1,10 +1,8 @@
 # 모듈 임포트
 import os
 from pathlib import Path
-import sys
-
-sys.path.append(Path(__file__).resolve().parent)
 import mysettings
+
 
 # 베이스 디렉토리 경로 (ex : C:\Users\soopeng\PycharmProjects)
 BASE_DIR = Path(__file__).resolve().parent.parent
