@@ -50,7 +50,7 @@ MIDDLEWARE = [
 ]
 
 # 외부 웹사이트 접근 허용 여부
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = ['http://www.kilhyomin.com/', ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -79,20 +79,6 @@ WSGI_APPLICATION = 'DBtest.wsgi.application'
 
 # MYSQL 데이터베이스 설정
 DATABASES = mysettings.DATABASES
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'yeonsiwoo3',
-        'USER': 'yeonsiwoo3',
-        'PASSWORD': 'Hyomin2332@',
-        'HOST': 'nodejs-009.cafe24.com',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
-     }
-}
 
 # 아직까지 건들 일 없음
 AUTH_PASSWORD_VALIDATORS = [
