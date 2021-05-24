@@ -11,7 +11,6 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecOrderproduct.objects.all()
     serializer_class = SkdevsecOrderproductSerializer
 
-    # sql 인젝션 되는 코드
     # 결제 내역 출력
     @action(detail=False, methods=['POST'])
     def pay_result_output(self, request):
@@ -24,39 +23,37 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
             oid = request.data['oid']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT opid, pname, pcate, pprice, pcount FROM skdevsec_orderproduct WHERE oid='" + oid + "'"
+            sql_query = "SELECT * FROM skdevsec_orderproduct WHERE oid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query, (oid, ))
+            data = cursor.fetchone()
 
             # 데이터가 있으면
-            if datas is not None:
-                while datas:
+            if data is not None:
+                while data:
                     new_data_in = dict()
-                    new_data_in['opid'] = datas[0]
-                    new_data_in['pname'] = datas[1]
-                    new_data_in['pcate'] = datas[2]
-                    new_data_in['pprice'] = datas[3]
-                    new_data_in['pcount'] = datas[4]
+                    new_data_in['opid'] = data[0]
+                    new_data_in['pname'] = data[2]
+                    new_data_in['pcate'] = data[3]
+                    new_data_in['pprice'] = data[4]
+                    new_data_in['pcount'] = data[5]
                     new_data.append(new_data_in)
-                    datas = cursor.fetchone()
+                    data = cursor.fetchone()
             # 데이터가 없으면
             else:
                 # DB와 접속 종료
-                connection.commit()
                 connection.close()
                 # 프론트엔드로 0 전송
                 return Response(0)
 
             # DB와 접속 종료
-            connection.commit()
             connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드로 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"pay_result_output 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 1 전송
