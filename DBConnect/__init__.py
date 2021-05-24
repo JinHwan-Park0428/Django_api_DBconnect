@@ -7,7 +7,8 @@ import hmac
 import time
 import requests
 import json
-from random import *
+import random
+import string
 
 # 실제 파일을 저장할 경로 및 파일 명 생성
 def file_upload_path(filename):
@@ -22,7 +23,11 @@ def file_upload_path_for_db(intance, filename):
 # 인증 SMS 전송
 def sms_send(phone):
     # 인증을 위한 랜덤값 생성
-    rand_num = randint(100000, 1000000)
+    pw_candidate = string.ascii_lowercase + string.digits
+    authentication_number = ''
+
+    for i in range(8):
+        authentication_number += random.choice(pw_candidate)
 
     # api url 생성
     url = "https://sens.apigw.ntruss.com"
@@ -34,7 +39,7 @@ def sms_send(phone):
     # signature생성을 위한 파라미터 생성
     signature = make_signature(string_to_sign)
 
-    message = f"인증번호 [{rand_num}]를 입력해주세요."
+    message = f"인증번호 [{authentication_number}]를 입력해주세요."
 
     headers = {
         'Content-Type': "application/json; charset=UTF-8",
@@ -55,7 +60,7 @@ def sms_send(phone):
     response = requests.post(api_url, headers=headers, data=body)
     response.raise_for_status()
 
-    return rand_num
+    return authentication_number
 
 # 해더에 포함되는 signature를 생성하는 함수
 def make_signature(string):
