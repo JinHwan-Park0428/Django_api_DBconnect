@@ -627,7 +627,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                               fail_silently=False)
 
                     # 프론트 엔드에 인증번호 전송
-                    print(authentication_number)
                     return Response(authentication_number)
 
                     # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
