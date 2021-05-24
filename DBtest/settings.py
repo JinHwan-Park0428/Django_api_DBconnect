@@ -78,10 +78,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'DBtest.wsgi.application'
 
 # MYSQL 데이터베이스 설정
-<<<<<<< Updated upstream
 DATABASES = mysettings.DATABASES
 
-=======
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -95,7 +93,7 @@ DATABASES = {
         }
      }
 }
->>>>>>> Stashed changes
+
 # 아직까지 건들 일 없음
 AUTH_PASSWORD_VALIDATORS = [
     {
