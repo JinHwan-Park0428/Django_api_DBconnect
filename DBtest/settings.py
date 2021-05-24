@@ -22,7 +22,7 @@ EMAIL_USE_SSL = mysettings.EMAIL_USE_SSL
 DEBUG = True
 
 # 접속 가능한 호스트('*' <== 전부 허용)
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['ec2-50-18-81-3.us-west-1.compute.amazonaws.com']
 
 # 앱
 INSTALLED_APPS = [
