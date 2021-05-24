@@ -111,7 +111,6 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             return Response(1)
 
-    # sql 인젝션 되는 코드
     # 댓글 삭제
     @action(detail=False, methods=['POST'])
     def comment_delete(self, request):
