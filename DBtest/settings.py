@@ -78,7 +78,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'DBtest.wsgi.application'
 
 # MYSQL 데이터베이스 설정
-DATABASES = mysettings.DATABASES
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': "/DBtest/mysql.cnf",
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
+}
 
 # 아직까지 건들 일 없음
 AUTH_PASSWORD_VALIDATORS = [
