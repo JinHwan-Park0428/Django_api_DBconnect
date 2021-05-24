@@ -113,12 +113,19 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 'total_amount': global_oprice,
                 'vat_amount': 0,
                 'tax_free_amount': 0,
+<<<<<<< Updated upstream
                 'approval_url': 'http://localhost:8080/item/ordersuccess',
                 'fail_url': 'http://10.60.15.210:8000',
                 'cancel_url': 'http://10.60.15.210:8000',
+=======
+                'approval_url': 'http://kilhyomin.com/item/ordersuccess',
+                'fail_url': 'http://kilhyomin.com/item/orderfail',
+                'cancel_url': 'http://kilhyomin.com/item/orderfail',
+>>>>>>> Stashed changes
             }
             response = requests.post(url + "/v1/payment/ready", params=params, headers=headers)
             response = json.loads(response.text)
+            print(response)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:

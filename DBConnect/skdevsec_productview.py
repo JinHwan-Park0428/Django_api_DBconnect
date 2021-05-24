@@ -149,7 +149,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['preview'] = request.data['preview']
             new_data['preview_avg'] = request.data['preview_avg']
             new_data['pcount'] = request.data['pcount']
-
+            print(new_data)
             # DB에 저장하기 위해 시리얼라이저 함수 사용
             file_serializer = SkdevsecProductSerializer(data=new_data)
 

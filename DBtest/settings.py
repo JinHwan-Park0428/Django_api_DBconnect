@@ -78,8 +78,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'DBtest.wsgi.application'
 
 # MYSQL 데이터베이스 설정
+<<<<<<< Updated upstream
 DATABASES = mysettings.DATABASES
 
+=======
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'yeonsiwoo3',
+        'USER': 'yeonsiwoo3',
+        'PASSWORD': 'Hyomin2332@',
+        'HOST': 'nodejs-009.cafe24.com',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+     }
+}
+>>>>>>> Stashed changes
 # 아직까지 건들 일 없음
 AUTH_PASSWORD_VALIDATORS = [
     {
