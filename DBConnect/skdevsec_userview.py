@@ -600,7 +600,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             cursor.execute(sql_query, (umail, uname))
             data = cursor.fetchone()
-            print(data)
 
             # DB와 접속 종료
             connection.close()
@@ -613,8 +612,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 데이터가 존재하지않으면 프론트엔드에 0을 전송 아니면 이메일 전송 작업 시작
         else:
-            if data is not None:
-                print("에러체크")
+            if data is None:
                 return Response(0)
             else:
                 try:
