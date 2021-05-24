@@ -19,7 +19,7 @@ EMAIL_USE_TLS = mysettings.EMAIL_USE_TLS
 EMAIL_USE_SSL = mysettings.EMAIL_USE_SSL
 
 # Debug 허용/비허용 (나중에 False 해야함)
-DEBUG = True
+DEBUG = False
 
 # 접속 가능한 호스트('*' <== 전부 허용)
 ALLOWED_HOSTS = ['ec2-50-18-81-3.us-west-1.compute.amazonaws.com']
