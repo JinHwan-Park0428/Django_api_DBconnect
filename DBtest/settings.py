@@ -1,7 +1,7 @@
 # 모듈 임포트
 import os
 from pathlib import Path
-from DBtest import mysettings
+import mysettings
 
 
 # 베이스 디렉토리 경로 (ex : C:\Users\soopeng\PycharmProjects)
