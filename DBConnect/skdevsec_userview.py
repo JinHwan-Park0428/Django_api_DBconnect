@@ -600,6 +600,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB에 명령문 전송
             cursor.execute(sql_query, (umail, uname))
             data = cursor.fetchone()
+            print(data)
 
             # DB와 접속 종료
             connection.close()
