@@ -23,7 +23,7 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
             oid = int(request.data['oid'])
 
             # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_orderproduct WHERE oid=%d"
+            sql_query = "SELECT * FROM skdevsec_orderproduct WHERE oid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query, (oid, ))

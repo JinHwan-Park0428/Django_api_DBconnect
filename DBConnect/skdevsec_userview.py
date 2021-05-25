@@ -45,7 +45,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data.append({"user_count": 0})
 
                 # SQL 쿼리문 작성
-                strsql = "SELECT * FROM skdevsec_user order by ucreate_date desc limit %d, 10 "
+                strsql = "SELECT * FROM skdevsec_user order by ucreate_date desc limit %s, 10 "
 
                 # DB에 명령문 전송
                 cursor.execute(strsql, (upage*10-10,))
@@ -109,7 +109,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 # 0: 전체 검색 / 1 : 이름 / 2 : 닉네임 / 3 : 아이디 / 4 : 이메일
                 if ucode == 0:
                     sql_query_1 = "SELECT * FROM skdevsec_user where (uname LIKE %s OR unickname LIKE %s OR uid LIKE " \
-                                  "%s OR umail LIKE %s) order by ucreate_date desc limit %d, 10"
+                                  "%s OR umail LIKE %s) order by ucreate_date desc limit %s, 10"
                     sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where (uname LIKE %s OR unickname LIKE %s OR " \
                                   "uid LIKE %s OR umail LIKE %s)"
                     # DB에 명령문 전송
@@ -123,7 +123,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 elif ucode == 1:
                     sql_query_1 = "SELECT * FROM skdevsec_user where uname LIKE %s order by ucreate_date desc limit " \
-                                  "%d, 10 "
+                                  "%s, 10 "
                     sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where uname LIKE %s"
 
                     # DB에 명령문 전송
@@ -135,7 +135,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 elif ucode == 2:
                     sql_query_1 = "SELECT * FROM skdevsec_user where unickname LIKE %s order by ucreate_date desc " \
-                                  "limit %d, 10 "
+                                  "limit %s, 10 "
                     sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where unickname LIKE %s"
 
                     # DB에 명령문 전송
@@ -146,7 +146,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     data = cursor_data.fetchone()
 
                 elif ucode == 3:
-                    sql_query_1 = "SELECT * FROM skdevsec_user where uid LIKE %s order by ucreate_date desc limit %d, " \
+                    sql_query_1 = "SELECT * FROM skdevsec_user where uid LIKE %s order by ucreate_date desc limit %s, " \
                                   "10 "
                     sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where uid LIKE %s"
 
@@ -159,7 +159,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 elif ucode == 4:
                     sql_query_1 = "SELECT * FROM skdevsec_user where umail LIKE %s order by ucreate_date desc limit " \
-                                  "%d, 10 "
+                                  "%s, 10 "
                     sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where umail LIKE %s"
 
                     # DB에 명령문 전송
@@ -232,7 +232,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             authority = int(request.data['authority'])
 
             # SQL 쿼리문 작성
-            sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %d)"
+            sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
             # DB에 명령문 전송
             cursor.execute(sql_query, (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority))

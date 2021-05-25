@@ -25,7 +25,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cpage = int(request.data['cpage'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_comment WHERE bid=%d"
+            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_comment WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (bid, ))
@@ -36,7 +36,7 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data.append({"comment_count": count[0]})
 
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_comment where bid=%d order by cid LIMIT %d, 10"
+                sql_query_2 = "SELECT * FROM skdevsec_comment where bid=%s order by cid LIMIT %s, 10"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (bid, cpage*10-10))
@@ -85,14 +85,14 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             clock = request.data['clock']
 
             # SQL 쿼리문 작성
-            sql_query_1 = "INSERT INTO skdevsec_comment(bid, unickname, ctext, ccreate_date, clock) VALUES(%d, %s, %s, %s, %s)"
+            sql_query_1 = "INSERT INTO skdevsec_comment(bid, unickname, ctext, ccreate_date, clock) VALUES(%s, %s, %s, %s, %s)"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (bid, unickname, ctext, ccreate_date, clock, ))
             connection.commit()
 
             # SQL 쿼리문 작성
-            sql_query_2 = "UPDATE skdevsec_board SET bcomment=bcomment+1 WHERE bid=%d"
+            sql_query_2 = "UPDATE skdevsec_board SET bcomment=bcomment+1 WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_2, (bid, ))
@@ -123,14 +123,14 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cid = int(request.data['cid'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "DELETE FROM skdevsec_comment WHERE cid=%d"
+            sql_query_1 = "DELETE FROM skdevsec_comment WHERE cid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (cid, ))
             connection.commit()
 
             # SQL 쿼리문 작성
-            sql_query_2 = "UPDATE skdevsec_board SET bcomment=bcomment-1 WHERE bid=%d"
+            sql_query_2 = "UPDATE skdevsec_board SET bcomment=bcomment-1 WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_2, (bid, ))

@@ -123,7 +123,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if uid is not None:
                 # SQL 쿼리문 작성
                 sql_query_2 = "INSERT INTO skdevsec_orderuser(uid, oname, ophone, oaddress, order_date, oprice) " \
-                              "VALUES(%s, %s, %s, %s, %s, %d) "
+                              "VALUES(%s, %s, %s, %s, %s, %s) "
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (uid[0], global_oname, global_ophone, global_oaddress,
@@ -138,14 +138,14 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     for value in temp_dict.values():
                         temp_list.append(value)
 
-                    sql_query_3 = "UPDATE skdevsec_product SET pcount=pcount-%d WHERE pid=%d"
+                    sql_query_3 = "UPDATE skdevsec_product SET pcount=pcount-%s WHERE pid=%s"
 
                     # DB에 명령문 전송
                     cursor.execute(sql_query_3, (temp_list[1], int(temp_list[0]), ))
                     connection.commit()
 
                     # SQL 쿼리문 작성
-                    sql_query_4 = "SELECT * FROM skdevsec_product WHERE pid=%d"
+                    sql_query_4 = "SELECT * FROM skdevsec_product WHERE pid=%s"
 
                     # DB에 명령문 전송
                     cursor.execute(sql_query_4, (int(temp_list[0]), ))
@@ -175,7 +175,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     if oid is not None:
                         # SQL 쿼리문 작성
                         sql_query_6 = "INSERT INTO skdevsec_orderproduct(oid, pname, pcate, pprice, pcount) VALUES(" \
-                                      "%d, %s, %s, %d, %d) "
+                                      "%s, %s, %s, %s, %s) "
 
                         # DB에 명령문 전송
                         cursor.execute(sql_query_6, (int(oid[0]), pname, pcate, pprice, int(temp_list[1]), ))
@@ -236,7 +236,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data.append({"order_count": count[0]})
 
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_orderuser order by oid desc limit %d, 10"
+                sql_query_2 = "SELECT * FROM skdevsec_orderuser order by oid desc limit %s, 10"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (opage*10-10, ))
@@ -288,7 +288,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             if ocode == 0:
                 # SQL 쿼리문 작성
                 sql_query_1 = "SELECT * FROM skdevsec_orderuser WHERE (uid LIKE %s OR oname LIKE %s) order by oid " \
-                              "desc limit %d, 10 "
+                              "desc limit %s, 10 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE (uid LIKE %s OR oname LIKE %s)"
 
                 # DB에 명령문 전송
@@ -301,7 +301,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             elif ocode == 1:
                 # SQL 쿼리문 작성
-                sql_query_1 = "SELECT * FROM skdevsec_orderuser WHERE uid LIKE %s order by oid desc limit %d, 10"
+                sql_query_1 = "SELECT * FROM skdevsec_orderuser WHERE uid LIKE %s order by oid desc limit %s, 10"
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE uid LIKE %s"
 
                 # DB에 명령문 전송
@@ -314,7 +314,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             elif ocode == 2:
                 # SQL 쿼리문 작성
-                sql_query_1 = "SELECT * FROM skdevsec_orderuser WHERE oname LIKE %s order by oid desc limit %d, 10"
+                sql_query_1 = "SELECT * FROM skdevsec_orderuser WHERE oname LIKE %s order by oid desc limit %s, 10"
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE oname LIKE %s"
 
                 # DB에 명령문 전송
@@ -396,14 +396,14 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data.append({"order_count": count[0]})
 
                 # SQL 쿼리문 작성
-                sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s order by oid desc limit %d, 10"
+                sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s order by oid desc limit %s, 10"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_3, (uid[0], opage*10-10, ))
                 data = cursor.fetchone()
 
                 while data:
-                    sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%d"
+                    sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%s"
                     cursor_pname.execute(sql_query_4, (int(data[0]), ))
                     pname = cursor_pname.fetchone()
 
@@ -473,14 +473,14 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 # SQL 쿼리문 작성
                 sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN %s AND %s) order " \
-                              "by oid desc limit %d, 10 "
+                              "by oid desc limit %s, 10 "
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_3, (uid[0], start_date, end_date, opage*10-10, ))
                 data = cursor.fetchone()
 
                 while data:
-                    sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%d"
+                    sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%s"
                     cursor_pname.execute(sql_query_4, (int(data[0]), ))
                     pname = cursor_pname.fetchone()
                     new_data_in = dict()
@@ -564,19 +564,19 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 if ocode == 1:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
-                                  "now(), interval -7 day) AND NOW()) order by oid desc limit %d, 10 "
+                                  "now(), interval -7 day) AND NOW()) order by oid desc limit %s, 10 "
                 elif ocode == 2:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
-                                  "now(), interval -1 MONTH) AND NOW()) order by oid desc limit %d, 10 "
+                                  "now(), interval -1 MONTH) AND NOW()) order by oid desc limit %s, 10 "
                 elif ocode == 3:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
-                                  "now(), interval -3 MONTH) AND NOW()) order by oid desc limit %d, 10 "
+                                  "now(), interval -3 MONTH) AND NOW()) order by oid desc limit %s, 10 "
                 elif ocode == 4:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
-                                  "now(), interval -6 MONTH) AND NOW()) order by oid desc limit %d, 10 "
+                                  "now(), interval -6 MONTH) AND NOW()) order by oid desc limit %s, 10 "
                 else:
                     return Response(0)
 
@@ -586,7 +586,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 # 데이터 수만큼 반복
                 while data:
-                    sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%d"
+                    sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%s"
                     cursor_pname.execute(sql_query_4, (int(data[0]), ))
                     pname = cursor_pname.fetchone()
                     new_data_in = dict()
@@ -631,7 +631,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             oid = int(request.data['oid'])
 
             # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_orderuser where oid=%d"
+            sql_query = "SELECT * FROM skdevsec_orderuser where oid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query, (oid, ))

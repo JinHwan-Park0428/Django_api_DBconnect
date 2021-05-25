@@ -35,10 +35,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             if count is not None:
                 # 게시물 갯수 저장
                 new_data.append({"board_count": count[0]})
-                print(bpage)
-                print(type(bpage))
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_board where bcate=%s order by bid desc limit %d, 10"
+                sql_query_2 = "SELECT * FROM skdevsec_board where bcate=%s order by bid desc limit %s, 10"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (bcate, bpage*10-10,))
@@ -88,14 +86,14 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bid = int(request.data['bid'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "UPDATE skdevsec_board SET bview = bview+1 WHERE bid=%d"
+            sql_query_1 = "UPDATE skdevsec_board SET bview = bview+1 WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (bid,))
             connection.commit()
 
             # SQL 쿼리문 작성
-            sql_query_2 = "SELECT * FROM skdevsec_board WHERE bid=%d"
+            sql_query_2 = "SELECT * FROM skdevsec_board WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_2, (bid,))
@@ -150,7 +148,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
                 # SQL 쿼리문 작성
                 sql_query = "INSERT INTO skdevsec_board(btitle, btext, bfile, bview, bcomment, unickname, " \
-                            "bcreate_date, bcate, b_lock) VALUES(%s, %s, %s, %d, %d, %s, %s, %s, %s) "
+                            "bcreate_date, bcate, b_lock) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s) "
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query, (new_data['btitle'], new_data['btext'], new_data['bfile'], new_data['bview'],
@@ -208,14 +206,14 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['b_lock'] = request.data['b_lock']
 
             # SQL 쿼리문 작성
-            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
+            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (bid,))
             data = cursor.fetchone()
 
             if new_data['bfile'] == "0":
-                sql_query_2 = "UPDATE skdevsec_board SET btitle=%s, btext=%s, bfile=%s, bcate=%s, b_lock=%s WHERE bid=%d"
+                sql_query_2 = "UPDATE skdevsec_board SET btitle=%s, btext=%s, bfile=%s, bcate=%s, b_lock=%s WHERE bid=%s"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (new_data['btitle'], new_data['btext'], new_data['bfile'],
@@ -242,7 +240,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                         print(f"에러: {file_serializer.errors}")
                         return Response(0)
                 else:
-                    sql_query_3 = "UPDATE skdevsec_board SET btitle=%s, btext=%s, bcate=%s, b_lock=%s WHERE bid=%d"
+                    sql_query_3 = "UPDATE skdevsec_board SET btitle=%s, btext=%s, bcate=%s, b_lock=%s WHERE bid=%s"
 
                     # DB에 명령문 전송
                     cursor.execute(sql_query_3, (new_data['btitle'], new_data['btext'], new_data['bcate'],
@@ -272,7 +270,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bid = int(request.data['bid'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
+            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (bid,))
@@ -284,7 +282,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     os.remove(data[0])
 
             # SQL 쿼리문 작성
-            sql_query_2 = "DELETE FROM skdevsec_board WHERE bid=%d"
+            sql_query_2 = "DELETE FROM skdevsec_board WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_2, (bid,))
@@ -314,7 +312,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bid = int(request.data['bid'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
+            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (bid,))
@@ -326,7 +324,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     os.remove(data[0])
 
             # SQL 쿼리문 작성
-            sql_query_2 = "UPDATE skdevsec_board SET bfile=0 WHERE bid=%d"
+            sql_query_2 = "UPDATE skdevsec_board SET bfile=0 WHERE bid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_2, (bid,))
@@ -365,7 +363,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # SQL 쿼리문 작성
             if bcode == 0:
                 sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR unickname LIKE " \
-                              "%s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC limit %d, 10 "
+                              "%s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC limit %s, 10 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR " \
                               "unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC "
 
@@ -383,7 +381,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             elif bcode == 1:
                 sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
-                              "bid DESC limit %d, 10 "
+                              "bid DESC limit %s, 10 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s " \
                               "ORDER BY bid DESC "
 
@@ -400,7 +398,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             elif bcode == 2:
                 sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
-                              "bid DESC limit %d, 10 "
+                              "bid DESC limit %s, 10 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s " \
                               "ORDER BY bid DESC "
 
@@ -417,7 +415,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             elif bcode == 3:
                 sql_query_1 = "SELECT * FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER " \
-                              "BY bid DESC limit %d, 10 "
+                              "BY bid DESC limit %s, 10 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND " \
                               "bcate=%s ORDER BY bid DESC "
 
@@ -434,7 +432,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             elif bcode == 4:
                 sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND b_lock=0 AND " \
-                              "bcate=%s ORDER BY bid DESC limit %d, 10 "
+                              "bcate=%s ORDER BY bid DESC limit %s, 10 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND " \
                               "b_lock=0 AND bcate=%s ORDER BY bid DESC "
 
@@ -505,7 +503,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data.append({"board_count": count[0]})
 
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_board where unickname=%s order by bcreate_date desc limit %d, 10"
+                sql_query_2 = "SELECT * FROM skdevsec_board where unickname=%s order by bcreate_date desc limit %s, 10"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (unickname, bpage*10-10,))
@@ -556,7 +554,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s " \
-                          "ORDER BY bid DESC limit %d, 10 "
+                          "ORDER BY bid DESC limit %s, 10 "
             sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s"
 
             # DB에 명령문 전송

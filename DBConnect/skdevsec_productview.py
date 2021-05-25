@@ -34,7 +34,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 # 상품 갯수 저장
                 new_data.append({"product_count": count[0]})
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_product order by pid desc limit %d, 8"
+                sql_query_2 = "SELECT * FROM skdevsec_product order by pid desc limit %s, 8"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (ppage*8-8, ))
@@ -83,7 +83,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_product WHERE pid=%d"
+            sql_query = "SELECT * FROM skdevsec_product WHERE pid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query, (pid, ))
@@ -190,7 +190,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['pcount'] = int(request.data['pcount'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "SELECT * FROM skdevsec_product WHERE pid=%d"
+            sql_query_1 = "SELECT * FROM skdevsec_product WHERE pid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (pid, ))
@@ -216,8 +216,8 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     print(f"에러: {file_serializer.errors}")
                     return Response(0)
             else:
-                sql_query_2 = "UPDATE skdevsec_product SET pname=%s, pcate=%s, ptext=%s, pprice=%d, pcount=%d WHERE " \
-                              "pid=%d "
+                sql_query_2 = "UPDATE skdevsec_product SET pname=%s, pcate=%s, ptext=%s, pprice=%s, pcount=%s WHERE " \
+                              "pid=%s "
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (new_data['pname'], new_data['pcate'], new_data['ptext'],
@@ -247,7 +247,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "SELECT * FROM skdevsec_product WHERE pid=%d"
+            sql_query_1 = "SELECT * FROM skdevsec_product WHERE pid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (pid, ))
@@ -261,7 +261,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response(0)
 
             # SQL 쿼리문 작성
-            sql_query_2 = "DELETE FROM skdevsec_product WHERE pid=%d"
+            sql_query_2 = "DELETE FROM skdevsec_product WHERE pid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_2, (pid, ))
@@ -308,7 +308,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                         sql_query2 = sql_query2 + pcate + "' OR pcate='"
                     sql_query1 = sql_query1 + "')"
                     sql_query2 = sql_query2 + "')"
-            sql_query1 = sql_query1 + " ORDER BY pid DESC limit %d, 8"
+            sql_query1 = sql_query1 + " ORDER BY pid DESC limit %s, 8"
 
             # DB에 명령문 전송
             cursor.execute(sql_query2, ('%' + psearch[1] + '%', ))
@@ -361,7 +361,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             ppage = int(request.data['ppage'])
 
-            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pcreate_date DESC limit %d, 8"
+            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pcreate_date DESC limit %s, 8"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (ppage*8-8, ))
@@ -371,7 +371,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data.append({"product_count": count[0]})
 
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit %d, 8"
+                sql_query_2 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit %s, 8"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (ppage*8-8, ))
@@ -416,7 +416,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             ppage = int(request.data['ppage'])
 
-            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit %d, 8"
+            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit %s, 8"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (ppage*8-8, ))
@@ -426,7 +426,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data.append({"product_count": count[0]})
 
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_product order by pprice desc limit %d, 8"
+                sql_query_2 = "SELECT * FROM skdevsec_product order by pprice desc limit %s, 8"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (ppage*8-8, ))
@@ -471,7 +471,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             ppage = int(request.data['ppage'])
 
-            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit %d, 8"
+            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit %s, 8"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (ppage*8-8, ))
@@ -525,7 +525,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             ppage = int(request.data['ppage'])
 
-            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product order by preview DESC, preview_avg DESC limit %d, 8"
+            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product order by preview DESC, preview_avg DESC limit %s, 8"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (ppage*8-8, ))
@@ -587,7 +587,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # 0 : 전체 검색 / 1 : 상품 명 검색 / 2 : 카테고리 검색
             if pcode == 0:
                 sql_query_1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s) ORDER BY pid " \
-                              "DESC limit %d, 8 "
+                              "DESC limit %s, 8 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s)"
 
                 # DB에 명령문 전송
@@ -599,7 +599,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 data = cursor.fetchone()
 
             elif pcode == 1:
-                sql_query_1 = "SELECT * FROM skdevsec_product WHERE pname LIKE %s ORDER BY pid DESC limit %d, 8"
+                sql_query_1 = "SELECT * FROM skdevsec_product WHERE pname LIKE %s ORDER BY pid DESC limit %s, 8"
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE pname LIKE %s"
 
                 # DB에 명령문 전송
@@ -611,7 +611,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 data = cursor.fetchone()
 
             elif pcode == 2:
-                sql_query_1 = "SELECT * FROM skdevsec_product WHERE pcate LIKE %s ORDER BY pid DESC limit %d, 8"
+                sql_query_1 = "SELECT * FROM skdevsec_product WHERE pcate LIKE %s ORDER BY pid DESC limit %s, 8"
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE pcate LIKE %s"
 
                 # DB에 명령문 전송

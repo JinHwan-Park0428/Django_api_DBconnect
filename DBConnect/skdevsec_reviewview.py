@@ -23,7 +23,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_review where pid=%d order by rid desc"
+            sql_query = "SELECT * FROM skdevsec_review where pid=%s order by rid desc"
 
             # DB에 명령문 전송
             cursor.execute(sql_query, (pid, ))
@@ -74,15 +74,15 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             rcreate_date = request.data['rcreate_date']
 
             # SQL 쿼리문 작성
-            sql_query_1 = "INSERT INTO skdevsec_review(pid, rstar, unickname, rcreate_date) VALUES(%d, %f, %s, %s)"
+            sql_query_1 = "INSERT INTO skdevsec_review(pid, rstar, unickname, rcreate_date) VALUES(%s, %f, %s, %s)"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (pid, rstar, unickname, rcreate_date))
             connection.commit()
 
             # SQL 쿼리문 작성
-            sql_query_2 = "UPDATE skdevsec_product SET preview = (SELECT COUNT(*) FROM skdevsec_review WHERE pid=%d), " \
-                          "preview_avg =(SELECT round(avg(rstar),1) FROM skdevsec_review WHERE pid=%d)  WHERE pid=%d "
+            sql_query_2 = "UPDATE skdevsec_product SET preview = (SELECT COUNT(*) FROM skdevsec_review WHERE pid=%s), " \
+                          "preview_avg =(SELECT round(avg(rstar),1) FROM skdevsec_review WHERE pid=%s)  WHERE pid=%s "
 
             # DB에 명령문 전송
             cursor.execute(sql_query_2, (pid, pid, pid))
@@ -113,7 +113,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
-            sql_query_1 = "DELETE FROM skdevsec_review WHERE rid=%d"
+            sql_query_1 = "DELETE FROM skdevsec_review WHERE rid=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (rid, ))
@@ -175,7 +175,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
 
             while oid:
                 # SQL 쿼리문 작성
-                sql_query_3 = "SELECT * FROM skdevsec_orderproduct WHERE oid=%d"
+                sql_query_3 = "SELECT * FROM skdevsec_orderproduct WHERE oid=%s"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_3, (int(oid[0]), ))
@@ -202,7 +202,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                 pid = cursor.fetchone()
 
                 # SQL 쿼리문 작성
-                sql_query_5 = "SELECT COUNT(*) FROM skdevsec_review WHERE pid=%d AND unickname=%s"
+                sql_query_5 = "SELECT COUNT(*) FROM skdevsec_review WHERE pid=%s AND unickname=%s"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_5, (int(pid[0]), unickname, ))

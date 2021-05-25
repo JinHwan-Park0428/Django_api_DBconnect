@@ -48,7 +48,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
                 while data:
                     new_data_in = dict()
                     # SQL 쿼리문 작성
-                    sql_query_3 = "SELECT * FROM skdevsec_product WHERE pid=%d"
+                    sql_query_3 = "SELECT * FROM skdevsec_product WHERE pid=%s"
                     # DB에 명령문 전송
                     cursor.execute(sql_query_3, (int(data[2]), ))
                     products = cursor.fetchone()
@@ -100,7 +100,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             bag_id = int(request.data['bag_id'])
 
             # SQL 쿼리문 작성
-            sql_query = "DELETE FROM skdevsec_bag WHERE bag_id=%d"
+            sql_query = "DELETE FROM skdevsec_bag WHERE bag_id=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query, (bag_id, ))
@@ -140,7 +140,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
 
             if uid is not None:
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_bag WHERE uid=%s AND pid=%d"
+                sql_query_2 = "SELECT * FROM skdevsec_bag WHERE uid=%s AND pid=%s"
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_2, (uid[0], pid,))
@@ -151,12 +151,12 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             # 장바구니에 상품이 있으면
             if data is not None:
                 # SQL 쿼리문 작성
-                sql_query_3 = "UPDATE skdevsec_bag SET bcount=bcount+%d WHERE pid=%d AND uid=%s"
+                sql_query_3 = "UPDATE skdevsec_bag SET bcount=bcount+%s WHERE pid=%s AND uid=%s"
                 # DB에 명령문 전송
                 cursor.execute(sql_query_3, (bcount, pid, uid[0]))
             else:
                 # SQL 쿼리문 작성
-                sql_query_3 = "INSERT INTO skdevsec_bag(uid, pid, bcount) VALUES(%s, %d, %d)"
+                sql_query_3 = "INSERT INTO skdevsec_bag(uid, pid, bcount) VALUES(%s, %s, %s)"
                 # DB에 명령문 전송
                 cursor.execute(sql_query_3, (uid[0], pid, bcount))
 
