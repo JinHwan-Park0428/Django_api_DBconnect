@@ -51,7 +51,7 @@ MIDDLEWARE = [
 
 # 외부 웹사이트 접근 허용 여부
 CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = ['http://www.kilhyomin.com:80', ]
+CORS_ORIGIN_WHITELIST = ['http://www.kilhyomin.com', ]
 CORS_ALLOW_CREDENTIALS = True
 
 # 아직까지 건들 일 없음
