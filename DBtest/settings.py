@@ -120,7 +120,7 @@ USE_TZ = True
 
 # static 폴더 경로 지정 및 접근 URL 경로 지정
 STATIC_URL = '/static/'
-STATIC_DIR = os.path.join(BASE_DIR, '/static')
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
