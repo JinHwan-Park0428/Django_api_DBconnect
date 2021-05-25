@@ -35,7 +35,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             if count is not None:
                 # 게시물 갯수 저장
                 new_data.append({"board_count": count[0]})
-
+                print(bpage)
+                print(type(bpage))
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT * FROM skdevsec_board where bcate=%s order by bid desc limit %d, 10"
 
