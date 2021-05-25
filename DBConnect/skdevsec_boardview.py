@@ -12,7 +12,6 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecBoard.objects.all()
     serializer_class = SkdevsecBoardSerializer
 
-    # sql 인젝션 되는 코드
     # 게시판 출력
     @action(detail=False, methods=['POST'])
     def board_output(self, request):
@@ -25,41 +24,38 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             bcate = request.data['bcate']
             bpage = request.data['bpage']
-            bpage = int(bpage)
 
             # SQL 쿼리문 작성
-            strsql = "SELECT COUNT(*) FROM skdevsec_board WHERE bcate='" + bcate + "'"
+            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_board WHERE bcate=%s"
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query_1, (bcate,))
+            count = cursor.fetchone()
 
-            if datas is not None:
+            if count is not None:
                 # 게시물 갯수 저장
-                new_data.append({"board_count": datas[0]})
+                new_data.append({"board_count": count[0]})
 
                 # SQL 쿼리문 작성
-                strsql1 = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, b_lock FROM skdevsec_board where bcate='" + bcate + "' order by bid desc limit " + str(
-                    bpage * 10 - 10) + ", 10"
+                sql_query_2 = "SELECT * FROM skdevsec_board where bcate=%s order by bid desc limit %d, 10"
 
                 # DB에 명령문 전송
-                cursor.execute(strsql1)
-                datas = cursor.fetchone()
+                cursor.execute(sql_query_2, (bcate, bpage,))
+                data = cursor.fetchone()
 
                 # 있는 만큼 반복
-                while datas:
+                while data:
                     # 게시물 정보를 딕셔너리에 저장 후 리스트에 추가
                     new_data_in = dict()
-                    new_data_in['bid'] = datas[0]
-                    new_data_in['btitle'] = datas[1]
-                    new_data_in['bfile'] = datas[2]
-                    new_data_in['bview'] = datas[3]
-                    new_data_in['bcomment'] = datas[4]
-                    new_data_in['unickname'] = datas[5]
-                    new_data_in['bcreate_date'] = datas[6]
-                    new_data_in['b_lock'] = datas[7]
+                    new_data_in['bid'] = data[0]
+                    new_data_in['btitle'] = data[1]
+                    new_data_in['bview'] = data[4]
+                    new_data_in['bcomment'] = data[5]
+                    new_data_in['unickname'] = data[6]
+                    new_data_in['bcreate_date'] = data[7]
+                    new_data_in['b_lock'] = data[8]
                     new_data.append(new_data_in)
-                    datas = cursor.fetchone()
+                    data = cursor.fetchone()
 
             else:
                 connection.close()
@@ -71,14 +67,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"board_output 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 데이터가 저장 됐으면, 프론트엔드에 데이터 전송
         else:
             return Response(new_data)
 
-    # sql 인젝션 되는 코드
     # 게시물 상세 보기
     @action(detail=False, methods=['POST'])
     def board_inside(self, request):
@@ -92,49 +87,45 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bid = request.data['bid']
 
             # SQL 쿼리문 작성
-            strsql1 = "UPDATE skdevsec_board SET bview = bview+1 WHERE bid='" + bid + "'"
+            sql_query_1 = "UPDATE skdevsec_board SET bview = bview+1 WHERE bid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql1)
+            cursor.execute(sql_query_1, (bid,))
+            connection.commit()
 
             # SQL 쿼리문 작성
-            strsql2 = "SELECT * FROM skdevsec_board WHERE bid='" + bid + "'"
+            sql_query_2 = "SELECT * FROM skdevsec_board WHERE bid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql2)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query_2, (bid,))
+            data = cursor.fetchone()
 
             # 게시물 정보 대입
-            if datas is not None:
-                new_data['bid'] = datas[0]
-                new_data['btitle'] = datas[1]
-                new_data['btext'] = datas[2]
-                new_data['bfile'] = datas[3]
-                new_data['bview'] = datas[4]
-                new_data['bcomment'] = datas[5]
-                new_data['unickname'] = datas[6]
-                new_data['bcreate_date'] = datas[7]
-                new_data['bcate'] = datas[8]
-                new_data['b_lock'] = datas[9]
+            if data is not None:
+                new_data['bid'] = data[0]
+                new_data['btitle'] = data[1]
+                new_data['btext'] = data[2]
+                new_data['bfile'] = data[3]
+                new_data['bview'] = data[4]
+                new_data['bcomment'] = data[5]
+                new_data['unickname'] = data[6]
+                new_data['bcreate_date'] = data[7]
+                new_data['bcate'] = data[8]
+                new_data['b_lock'] = data[9]
 
             # DB와 접속 종료
-            connection.commit()
             connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"board_inside 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 데이터를 저장했으면, 프론트엔드에 데이터 전송
         else:
-            if len(new_data) != 0:
-                return Response(new_data)
-            else:
-                return Response(0)
+            return Response(new_data)
 
-    # sql 인젝션 되는 코드
     # 게시물 등록
     @action(detail=False, methods=['POST'])
     def board_upload(self, request):
@@ -157,13 +148,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 cursor = connection.cursor()
 
                 # SQL 쿼리문 작성
-                strsql = "INSERT INTO skdevsec_board(btitle, btext, bfile, bview, bcomment, unickname, bcreate_date, bcate, b_lock) VALUES('" + \
-                         new_data['btitle'] + "', '" + new_data['btext'] + "', '" + new_data['bfile'] + "', '" + \
-                         new_data['bview'] + "', '" + new_data['bcomment'] + "', '" + new_data['unickname'] + "', '" + \
-                         new_data['bcreate_date'] + "', '" + new_data['bcate'] + "', '" + new_data['b_lock'] + "')"
+                sql_query = "INSERT INTO skdevsec_board(btitle, btext, bfile, bview, bcomment, unickname, " \
+                            "bcreate_date, bcate, b_lock) VALUES(%s, %s, %s, %d, %d, %s, %s, %s, %s) "
 
                 # DB에 명령문 전송
-                cursor.execute(strsql)
+                cursor.execute(sql_query, (new_data['btitle'], new_data['btext'], new_data['bfile'], new_data['bview'],
+                                           new_data['bcomment'], new_data['unickname'], new_data['bcreate_date'],
+                                           new_data['bcate'], new_data['b_lock'],))
 
                 # DB와 접속 종료
                 connection.commit()
@@ -178,21 +169,19 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     file_serializer.save()
                 # 저장이 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
                 else:
-                    print(file_serializer.errors)
-                    print("serializer 에러")
+                    print(f"에러: {file_serializer.errors}")
                     return Response(0)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"board_upload 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 1 전송
         else:
             return Response(1)
 
-    # sql 인젝션 되는 코드
     # 게시물 수정
     @action(detail=False, methods=['POST'])
     def change_board(self, request):
@@ -218,22 +207,22 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['b_lock'] = request.data['b_lock']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
+            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query_1, (bid,))
+            data = cursor.fetchone()
 
             if new_data['bfile'] == "0":
-                strsql1 = "UPDATE skdevsec_board SET btitle='" + new_data['btitle'] + "', btext='" + new_data['btext'] + \
-                          "', bfile='" + new_data['bfile'] + "', bcate='" + new_data['bcate'] + "', b_lock='" + new_data['b_lock'] + \
-                    "' WHERE bid='" + bid + "'"
+                sql_query_2 = "UPDATE skdevsec_board SET btitle=%s, btext=%s, bfile=%s, bcate=%s, b_lock=%s WHERE bid=%d"
 
                 # DB에 명령문 전송
-                cursor.execute(strsql1)
+                cursor.execute(sql_query_2, (new_data['btitle'], new_data['btext'], new_data['bfile'],
+                                             new_data['bcate'], new_data['b_lock'], bid))
+                connection.commit()
             else:
-                if datas is not None:
-                    image_path = datas[0]
+                if data is not None:
+                    image_path = data[0]
                 else:
                     return Response(0)
 
@@ -245,19 +234,18 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     if file_serializer.is_valid():
                         file_serializer.update(data_check, file_serializer.validated_data)
                         # 게시물 기존 파일이 존재하면 삭제
-                        if datas[0] != "0":
-                            os.remove(datas[0])
+                        if data[0] != "0":
+                            os.remove(data[0])
                     # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
                     else:
-                        print(file_serializer.errors)
-                        print("serializer 에러")
+                        print(f"에러: {file_serializer.errors}")
                         return Response(0)
                 else:
-                    strsql1 = "UPDATE skdevsec_board SET btitle='" + new_data['btitle'] + "', btext='" + new_data[
-                        'btext'] + "', bcate='" + new_data['bcate'] + "', b_lock='" + new_data['b_lock'] + "' WHERE bid='" + bid + "'"
+                    sql_query_3 = "UPDATE skdevsec_board SET btitle=%s, btext=%s, bcate=%s, b_lock=%s WHERE bid=%d"
 
                     # DB에 명령문 전송
-                    cursor.execute(strsql1)
+                    cursor.execute(sql_query_3, (new_data['btitle'], new_data['btext'], new_data['bcate'],
+                                                 new_data['b_lock'], bid))
 
             connection.commit()
             connection.close()
@@ -265,14 +253,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 벡엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"change_board 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 수정된 게시물 정보를 프론트엔드에 전송
         else:
             return Response(1)
 
-    # sql 인젝션 되는 코드
     # 게시물 삭제
     @action(detail=False, methods=['POST'])
     def board_delete(self, request):
@@ -284,22 +271,22 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bid = request.data['bid']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
+            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query_1, (bid,))
+            data = cursor.fetchone()
 
             # 파일이 존재하면 삭제
-            if datas is not None:
-                if datas[0] != "0":
-                    os.remove(datas[0])
+            if data is not None:
+                if data[0] != "0":
+                    os.remove(data[0])
 
             # SQL 쿼리문 작성
-            strsql1 = "DELETE FROM skdevsec_board WHERE bid='" + bid + "'"
+            sql_query_2 = "DELETE FROM skdevsec_board WHERE bid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql1)
+            cursor.execute(sql_query_2, (bid,))
 
             # DB와 접속 종료
             connection.commit()
@@ -308,14 +295,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"board_delete 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 삭제되면, 프론트엔드에 1 전송
         else:
             return Response(1)
 
-    # sql 인젝션 되는 코드
     # 파일 삭제
     @action(detail=False, methods=['POST'])
     def file_delete(self, request):
@@ -327,22 +313,22 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bid = request.data['bid']
 
             # SQL 쿼리문 작성
-            strsql = "SELECT bfile FROM skdevsec_board WHERE bid='" + bid + "'"
+            sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query_1, (bid,))
+            data = cursor.fetchone()
 
             # 파일 삭제
-            if datas is not None:
-                if datas[0] != "0":
-                    os.remove(datas[0])
+            if data is not None:
+                if data[0] != "0":
+                    os.remove(data[0])
 
             # SQL 쿼리문 작성
-            strsql1 = "UPDATE skdevsec_board SET bfile=0 WHERE bid='" + bid + "'"
+            sql_query_2 = "UPDATE skdevsec_board SET bfile=0 WHERE bid=%d"
 
             # DB에 명령문 전송
-            cursor.execute(strsql1)
+            cursor.execute(sql_query_2, (bid,))
 
             # DB와 접속 종료
             connection.commit()
@@ -351,14 +337,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"file_delete 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 1 전송송
         else:
             return Response(1)
 
-    # sql 인젝션 되는 코드
     # 게시물 검색
     @action(detail=False, methods=['POST'])
     def board_search(self, request):
@@ -373,62 +358,113 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bcate = request.data['bcate']
             bsearch = request.data['bsearch']
             bpage = request.data['bpage']
-            bcode = int(bcode)
-            bpage = int(bpage)
 
             # 검색 조건 코드 분류
             # 전체 0, 제목 1, 내용 2, 작성자 3, 제목 + 내용 4
             # SQL 쿼리문 작성
             if bcode == 0:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
-                    bpage * 10 - 10) + ", 10"
-                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%' OR unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
+                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR unickname LIKE " \
+                              "%s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC limit %d, 10 "
+                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR " \
+                              "unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC "
+
+                cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', '%' + bsearch + '%', bcate,))
+                count = cursor.fetchone()
+
+                if count is not None:
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', '%' + bsearch + '%', bcate,
+                                                 bpage,))
+                    data = cursor.fetchone()
+                else:
+                    connection.close()
+                    return Response({"board_count": 0})
+
             elif bcode == 1:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
-                    bpage * 10 - 10) + ", 10"
-                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
+                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
+                              "bid DESC limit %d, 10 "
+                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s " \
+                              "ORDER BY bid DESC "
+
+                cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
+                count = cursor.fetchone()
+
+                if count is not None:
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage,))
+                    data = cursor.fetchone()
+                else:
+                    connection.close()
+                    return Response({"board_count": 0})
+
             elif bcode == 2:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
-                    bpage * 10 - 10) + ", 10"
-                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
+                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
+                              "bid DESC limit %d, 10 "
+                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s " \
+                              "ORDER BY bid DESC "
+
+                cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
+                count = cursor.fetchone()
+
+                if count is not None:
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage,))
+                    data = cursor.fetchone()
+                else:
+                    connection.close()
+                    return Response({"board_count": 0})
+
             elif bcode == 3:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
-                    bpage * 10 - 10) + ", 10"
-                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (unickname LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
+                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER " \
+                              "BY bid DESC limit %d, 10 "
+                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND " \
+                              "bcate=%s ORDER BY bid DESC "
+
+                cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
+                count = cursor.fetchone()
+
+                if count is not None:
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage,))
+                    data = cursor.fetchone()
+                else:
+                    connection.close()
+                    return Response({"board_count": 0})
+
             elif bcode == 4:
-                strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC limit " + str(
-                    bpage * 10 - 10) + ", 10"
-                strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND b_lock=0 AND bcate='" + bcate + "' ORDER BY bid DESC"
+                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND b_lock=0 AND " \
+                              "bcate=%s ORDER BY bid DESC limit %d, 10 "
+                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND " \
+                              "b_lock=0 AND bcate=%s ORDER BY bid DESC "
+
+                cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', bcate,))
+                count = cursor.fetchone()
+
+                if count is not None:
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', bcate, bpage,))
+                    data = cursor.fetchone()
+                else:
+                    connection.close()
+                    return Response({"board_count": 0})
+
             else:
                 return Response("코드 값 잘못 보냄!!")
 
-            cursor.execute(strsql1)
-            count = cursor.fetchone()
+            # 데이터만큼 반복
+            while data:
+                new_data_in = dict()
+                new_data_in['bid'] = data[0]
+                new_data_in['btitle'] = data[1]
+                new_data_in['bview'] = data[4]
+                new_data_in['bcomment'] = data[5]
+                new_data_in['unickname'] = data[6]
+                new_data_in['bcreate_date'] = data[7]
+                new_data_in['b_lock'] = data[9]
+                new_data.append(new_data_in)
+                data = cursor.fetchone()
 
-            if count is not None:
-                # DB에 명령문 전송
-                cursor.execute(strsql)
-                datas = cursor.fetchone()
-
-                # 데이터만큼 반복
-                while datas:
-                    new_data_in = dict()
-                    new_data_in['bid'] = datas[0]
-                    new_data_in['btitle'] = datas[1]
-                    new_data_in['bfile'] = datas[2]
-                    new_data_in['bview'] = datas[3]
-                    new_data_in['bcomment'] = datas[4]
-                    new_data_in['unickname'] = datas[5]
-                    new_data_in['bcreate_date'] = datas[6]
-                    new_data_in['b_lock'] = 0
-                    new_data.append(new_data_in)
-                    datas = cursor.fetchone()
-
-                new_data.append({"board_count": count[0]})
-
-            else:
-                connection.close()
-                return Response({"board_count": 0})
+            new_data.append({"board_count": count[0]})
 
             # DB와 접속 종료
             connection.close()
@@ -436,14 +472,13 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"board_search 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
             return Response(new_data)
 
-    # sql 인젝션 되는 코드
     # 내 게시물 보기(마이페이지)
     @action(detail=False, methods=['POST'])
     def my_board(self, request):
@@ -456,59 +491,54 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이타 각각 추출
             unickname = request.data['unickname']
             bpage = request.data['bpage']
-            bpage = int(bpage)
 
             # SQL 쿼리문 작성
-            strsql = "SELECT COUNT(*) FROM skdevsec_board WHERE unickname='" + unickname + "'"
+            sql_query_1 = "SELECT COUNT(*) FROM skdevsec_board WHERE unickname=%s"
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query_1, (unickname, ))
+            count = cursor.fetchone()
 
-            if datas is not None:
+            if count is not None:
                 # 게시물 갯수 저장
-                new_data.append({"board_count": datas[0]})
+                new_data.append({"board_count": count[0]})
 
                 # SQL 쿼리문 작성
-                strsql1 = "SELECT bid, btitle ,bfile, bview, bcomment, unickname, bcreate_date, bcate, b_lock FROM skdevsec_board where unickname='" + unickname + "' order by bcreate_date desc limit " + str(
-                    bpage * 10 - 10) + ", 10"
+                sql_query_2 = "SELECT * FROM skdevsec_board where unickname=%s order by bcreate_date desc limit %d, 10"
 
                 # DB에 명령문 전송
-                cursor.execute(strsql1)
-                datas = cursor.fetchone()
+                cursor.execute(sql_query_2, (unickname, bpage,))
+                data = cursor.fetchone()
 
                 # 데이터 갯수만큼 반복
-                while datas:
+                while data:
                     new_data_in = dict()
-                    new_data_in['bid'] = datas[0]
-                    new_data_in['btitle'] = datas[1]
-                    new_data_in['bfile'] = datas[2]
-                    new_data_in['bview'] = datas[3]
-                    new_data_in['bcomment'] = datas[4]
-                    new_data_in['unickname'] = datas[5]
-                    new_data_in['bcreate_date'] = datas[6]
-                    new_data_in['bcate'] = datas[7]
-                    new_data_in['b_lock'] = datas[8]
+                    new_data_in['bid'] = data[0]
+                    new_data_in['btitle'] = data[1]
+                    new_data_in['bview'] = data[4]
+                    new_data_in['bcomment'] = data[5]
+                    new_data_in['unickname'] = data[6]
+                    new_data_in['bcreate_date'] = data[7]
+                    new_data_in['bcate'] = data[8]
+                    new_data_in['b_lock'] = data[9]
                     new_data.append(new_data_in)
-                    datas = cursor.fetchone()
+                    data = cursor.fetchone()
             else:
                 return Response({"board_count": 0})
 
             # DB와 접속 종료
-            connection.commit()
             connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"my_board 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
             return Response(new_data)
 
-    # sql 인젝션 되는 코드
     # 게시물 검색
     @action(detail=False, methods=['POST'])
     def my_board_search(self, request):
@@ -522,34 +552,32 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             unickname = request.data['unickname']
             bsearch = request.data['bsearch']
             bpage = request.data['bpage']
-            bpage = int(bpage)
 
             # SQL 쿼리문 작성
-            strsql = "SELECT bid, btitle, bfile, bview, bcomment, unickname, bcreate_date FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND unickname='" + unickname + "' ORDER BY bid DESC limit " + str(
-                bpage * 10 - 10) + ", 10"
-            strsql1 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE '%" + bsearch + "%' OR btext LIKE '%" + bsearch + "%') AND unickname='" + unickname + "'"
+            sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s " \
+                          "ORDER BY bid DESC limit %d, 10 "
+            sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s"
 
             # DB에 명령문 전송
-            cursor.execute(strsql1)
+            cursor.execute(sql_query_2)
             count = cursor.fetchone()
 
             # DB에 명령문 전송
-            cursor.execute(strsql)
-            datas = cursor.fetchone()
+            cursor.execute(sql_query_1)
+            data = cursor.fetchone()
 
             if count is not None:
-                while datas:
+                while data:
                     new_data_in = dict()
-                    new_data_in['bid'] = datas[0]
-                    new_data_in['btitle'] = datas[1]
-                    new_data_in['bfile'] = datas[2]
-                    new_data_in['bview'] = datas[3]
-                    new_data_in['bcomment'] = datas[4]
-                    new_data_in['unickname'] = datas[5]
-                    new_data_in['bcreate_date'] = datas[6]
-                    new_data_in['b_lock'] = 0
+                    new_data_in['bid'] = data[0]
+                    new_data_in['btitle'] = data[1]
+                    new_data_in['bview'] = data[4]
+                    new_data_in['bcomment'] = data[5]
+                    new_data_in['unickname'] = data[6]
+                    new_data_in['bcreate_date'] = data[7]
+                    new_data_in['b_lock'] = data[9]
                     new_data.append(new_data_in)
-                    datas = cursor.fetchone()
+                    data = cursor.fetchone()
                 new_data.append({"board_count": count[0]})
             else:
                 connection.close()
@@ -562,7 +590,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"my_board_search 에러: {e}")
+            print(f"에러: {e}")
             return Response(0)
 
         # 성공 했을 시, 프론트엔드에 데이터 전송
