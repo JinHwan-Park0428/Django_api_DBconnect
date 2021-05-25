@@ -4,7 +4,6 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
-from rest_framework.permissions import IsAuthenticated
 
 
 # 장바구니 테이블
@@ -12,7 +11,6 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecBag.objects.all()
     serializer_class = SkdevsecBagSerializer
-    permission_classes = [IsAuthenticated]
 
     # 장바구니 목록 출력
     @action(detail=False, methods=['POST'])

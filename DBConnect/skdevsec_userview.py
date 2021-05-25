@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from DBConnect.serializers import *
 from DBtest.settings import EMAIL_HOST_USER
 from . import sms_send
-from rest_framework.permissions import IsAuthenticated
 
 
 # 회원 정보 관련 테이블
@@ -17,7 +16,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
     # 테이블 출력을 위한 최소 코드
     queryset = SkdevsecUser.objects.all()
     serializer_class = SkdevsecUserSerializer
-    permission_classes = [IsAuthenticated]
 
     # 관리자 페이지 (회원 정보 보기)
     @action(detail=False, methods=['POST'])

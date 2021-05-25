@@ -4,13 +4,12 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
-from rest_framework.permissions import IsAuthenticated
+
 
 # 댓글 관련 테이블
 class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecComment.objects.all()
     serializer_class = SkdevsecCommentSerializer
-    permission_classes = [IsAuthenticated]
 
     # 댓글 출력
     @action(detail=False, methods=['POST'])
