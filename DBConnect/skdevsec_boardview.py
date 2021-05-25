@@ -5,12 +5,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
+from rest_framework.permissions import IsAuthenticated
 
 
 # 게시판 관련 테이블
 class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecBoard.objects.all()
     serializer_class = SkdevsecBoardSerializer
+    permission_classes = [IsAuthenticated]
 
     # 게시판 출력
     @action(detail=False, methods=['POST'])

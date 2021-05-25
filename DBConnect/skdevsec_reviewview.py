@@ -4,11 +4,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
+from rest_framework.permissions import IsAuthenticated
+
 
 # 상품 리뷰 관련 테이블
 class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecReview.objects.all()
     serializer_class = SkdevsecReviewSerializer
+    permission_classes = [IsAuthenticated]
 
     # 리뷰 출력
     @action(detail=False, methods=['POST'])

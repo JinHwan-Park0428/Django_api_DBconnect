@@ -8,6 +8,7 @@ from DBConnect.serializers import *
 from . import sms_send
 import requests
 import json
+from rest_framework.permissions import IsAuthenticated
 
 global_unickname = ''
 global_oname = ''
@@ -24,6 +25,7 @@ global_bagcode = ''
 class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecOrderuser.objects.all()
     serializer_class = SkdevsecOrderuserSerializer
+    permission_classes = [IsAuthenticated]
 
     # 결제 전 핸드폰 인증
     @action(detail=False, methods=['POST'])

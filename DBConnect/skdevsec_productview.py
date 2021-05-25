@@ -5,12 +5,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
+from rest_framework.permissions import IsAuthenticated
 
 
 # 상품 관련 테이블
 class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecProduct.objects.all()
     serializer_class = SkdevsecProductSerializer
+    permission_classes = [IsAuthenticated]
 
     # 상품 리스트 출력
     @action(detail=False, methods=['POST'])
