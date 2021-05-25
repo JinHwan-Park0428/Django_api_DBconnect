@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from DBtest import mysettings
 
-
 # 베이스 디렉토리 경로 (ex : C:\Users\soopeng\PycharmProjects)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
