@@ -24,6 +24,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             bcate = request.data['bcate']
             bpage = request.data['bpage']
+            print(bpage)
+            print(type(bpage))
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_board WHERE bcate=%s"
