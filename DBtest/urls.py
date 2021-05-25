@@ -6,4 +6,8 @@ from django.conf import settings
 # 접근 가능한 url 패턴 목록
 urlpatterns = [path('', include('DBConnect.urls')), ]
 
-urlpatterns += staticfiles_urlpatterns()
+urlpatterns += patterns('', (
+    r'^static/(?P<path>.*)$',
+    'django.views.static.serve',
+    {'document_root': settings.STATIC_ROOT}
+))
