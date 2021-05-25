@@ -20,7 +20,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            pid = request.data['pid']
+            pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
             sql_query = "SELECT * FROM skdevsec_review where pid=%d order by rid desc"
@@ -34,8 +34,8 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                 # 데이터만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['rid'] = data[0]
-                    new_data_in['rstar'] = data[2]
+                    new_data_in['rid'] = int(data[0])
+                    new_data_in['rstar'] = float(data[2])
                     new_data_in['unickname'] = data[3]
                     new_data_in['rcreate_date'] = data[4]
                     new_data.append(new_data_in)
@@ -68,8 +68,8 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            pid = request.data['pid']
-            rstar = request.data['rstar']
+            pid = int(request.data['pid'])
+            rstar = float(request.data['rstar'])
             unickname = request.data['unickname']
             rcreate_date = request.data['rcreate_date']
 
@@ -109,8 +109,8 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            rid = request.data['rid']
-            pid = request.data['pid']
+            rid = int(request.data['rid'])
+            pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "DELETE FROM skdevsec_review WHERE rid=%d"
@@ -164,7 +164,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
 
             if uid is not None:
                 # SQL 쿼리문 작성
-                sql_query_2 = "SELECT * FROM skdevsec_orderuser WHERE uid=%d"
+                sql_query_2 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s"
 
                 # DB에 명령문 전송
                 cursor_oid.execute(sql_query_2, (uid[0], ))
@@ -178,7 +178,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_3 = "SELECT * FROM skdevsec_orderproduct WHERE oid=%d"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_3, (oid[0], ))
+                cursor.execute(sql_query_3, (int(oid[0]), ))
                 _pname = cursor.fetchone()
 
                 pname_list.append(_pname[2])
@@ -205,7 +205,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_5 = "SELECT COUNT(*) FROM skdevsec_review WHERE pid=%d AND unickname=%s"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_5, (pid[0], unickname, ))
+                cursor.execute(sql_query_5, (int(pid[0]), unickname, ))
                 review = cursor.fetchone()
             # 구매한적이 없으면 프론트엔드로 0 전송
             else:

@@ -23,7 +23,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             bcate = request.data['bcate']
-            bpage = request.data['bpage']
+            bpage = int(request.data['bpage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_board WHERE bcate=%s"
@@ -40,7 +40,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_2 = "SELECT * FROM skdevsec_board where bcate=%s order by bid desc limit %d, 10"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_2, (bcate, bpage,))
+                cursor.execute(sql_query_2, (bcate, bpage*10-10,))
                 data = cursor.fetchone()
 
                 # 있는 만큼 반복
@@ -49,8 +49,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     new_data_in = dict()
                     new_data_in['bid'] = data[0]
                     new_data_in['btitle'] = data[1]
-                    new_data_in['bview'] = data[4]
-                    new_data_in['bcomment'] = data[5]
+                    new_data_in['bview'] = int(data[4])
+                    new_data_in['bcomment'] = int(data[5])
                     new_data_in['unickname'] = data[6]
                     new_data_in['bcreate_date'] = data[7]
                     new_data_in['b_lock'] = data[8]
@@ -84,7 +84,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = request.data['bid']
+            bid = int(request.data['bid'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "UPDATE skdevsec_board SET bview = bview+1 WHERE bid=%d"
@@ -102,12 +102,12 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # 게시물 정보 대입
             if data is not None:
-                new_data['bid'] = data[0]
+                new_data['bid'] = int(data[0])
                 new_data['btitle'] = data[1]
                 new_data['btext'] = data[2]
                 new_data['bfile'] = data[3]
-                new_data['bview'] = data[4]
-                new_data['bcomment'] = data[5]
+                new_data['bview'] = int(data[4])
+                new_data['bcomment'] = int(data[5])
                 new_data['unickname'] = data[6]
                 new_data['bcreate_date'] = data[7]
                 new_data['bcate'] = data[8]
@@ -135,8 +135,8 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['btitle'] = request.data['btitle']
             new_data['btext'] = request.data['btext']
             new_data['bfile'] = request.data['bfile']
-            new_data['bview'] = request.data['bview']
-            new_data['bcomment'] = request.data['bcomment']
+            new_data['bview'] = int(request.data['bview'])
+            new_data['bcomment'] = int(request.data['bcomment'])
             new_data['unickname'] = request.data['unickname']
             new_data['bcreate_date'] = request.data['bcreate_date']
             new_data['bcate'] = request.data['bcate']
@@ -192,15 +192,15 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # 수정할 게시물 번호를 받아서 해당 DB를 저장
-            data_check = SkdevsecBoard.objects.get(bid=request.data['bid'])
+            data_check = SkdevsecBoard.objects.get(bid=int(request.data['bid']))
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = request.data['bid']
+            bid = int(request.data['bid'])
             new_data['btitle'] = request.data['btitle']
             new_data['btext'] = request.data['btext']
             new_data['bfile'] = request.data['bfile']
-            new_data['bview'] = request.data['bview']
-            new_data['bcomment'] = request.data['bcomment']
+            new_data['bview'] = int(request.data['bview'])
+            new_data['bcomment'] = int(request.data['bcomment'])
             new_data['unickname'] = request.data['unickname']
             new_data['bcreate_date'] = request.data['bcreate_date']
             new_data['bcate'] = request.data['bcate']
@@ -268,7 +268,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = request.data['bid']
+            bid = int(request.data['bid'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
@@ -310,7 +310,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = request.data['bid']
+            bid = int(request.data['bid'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT bfile FROM skdevsec_board WHERE bid=%d"
@@ -354,10 +354,10 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bcode = request.data['bcode']
+            bcode = int(request.data['bcode'])
             bcate = request.data['bcate']
             bsearch = request.data['bsearch']
-            bpage = request.data['bpage']
+            bpage = int(request.data['bpage'])
 
             # 검색 조건 코드 분류
             # 전체 0, 제목 1, 내용 2, 작성자 3, 제목 + 내용 4
@@ -374,7 +374,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 if count is not None:
                     # DB에 명령문 전송
                     cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', '%' + bsearch + '%', bcate,
-                                                 bpage,))
+                                                 bpage*10-10,))
                     data = cursor.fetchone()
                 else:
                     connection.close()
@@ -391,7 +391,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
                 if count is not None:
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage,))
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
                     data = cursor.fetchone()
                 else:
                     connection.close()
@@ -408,7 +408,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
                 if count is not None:
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage,))
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
                     data = cursor.fetchone()
                 else:
                     connection.close()
@@ -425,7 +425,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
                 if count is not None:
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage,))
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
                     data = cursor.fetchone()
                 else:
                     connection.close()
@@ -442,22 +442,22 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
                 if count is not None:
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', bcate, bpage,))
+                    cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', bcate, bpage*10-10,))
                     data = cursor.fetchone()
                 else:
                     connection.close()
                     return Response({"board_count": 0})
 
             else:
-                return Response("코드 값 잘못 보냄!!")
+                return Response(0)
 
             # 데이터만큼 반복
             while data:
                 new_data_in = dict()
-                new_data_in['bid'] = data[0]
+                new_data_in['bid'] = int(data[0])
                 new_data_in['btitle'] = data[1]
-                new_data_in['bview'] = data[4]
-                new_data_in['bcomment'] = data[5]
+                new_data_in['bview'] = int(data[4])
+                new_data_in['bcomment'] = int(data[5])
                 new_data_in['unickname'] = data[6]
                 new_data_in['bcreate_date'] = data[7]
                 new_data_in['b_lock'] = data[9]
@@ -490,7 +490,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이타 각각 추출
             unickname = request.data['unickname']
-            bpage = request.data['bpage']
+            bpage = int(request.data['bpage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_board WHERE unickname=%s"
@@ -507,16 +507,16 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_2 = "SELECT * FROM skdevsec_board where unickname=%s order by bcreate_date desc limit %d, 10"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_2, (unickname, bpage,))
+                cursor.execute(sql_query_2, (unickname, bpage*10-10,))
                 data = cursor.fetchone()
 
                 # 데이터 갯수만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['bid'] = data[0]
+                    new_data_in['bid'] = int(data[0])
                     new_data_in['btitle'] = data[1]
-                    new_data_in['bview'] = data[4]
-                    new_data_in['bcomment'] = data[5]
+                    new_data_in['bview'] = int(data[4])
+                    new_data_in['bcomment'] = int(data[5])
                     new_data_in['unickname'] = data[6]
                     new_data_in['bcreate_date'] = data[7]
                     new_data_in['bcate'] = data[8]
@@ -551,7 +551,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
             bsearch = request.data['bsearch']
-            bpage = request.data['bpage']
+            bpage = int(request.data['bpage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s " \
@@ -559,20 +559,20 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_2)
+            cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', unickname,))
             count = cursor.fetchone()
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1)
+            cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', unickname, bpage*10-10))
             data = cursor.fetchone()
 
             if count is not None:
                 while data:
                     new_data_in = dict()
-                    new_data_in['bid'] = data[0]
+                    new_data_in['bid'] = int(data[0])
                     new_data_in['btitle'] = data[1]
-                    new_data_in['bview'] = data[4]
-                    new_data_in['bcomment'] = data[5]
+                    new_data_in['bview'] = int(data[4])
+                    new_data_in['bcomment'] = int(data[5])
                     new_data_in['unickname'] = data[6]
                     new_data_in['bcreate_date'] = data[7]
                     new_data_in['b_lock'] = data[9]

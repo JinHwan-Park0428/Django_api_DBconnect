@@ -20,7 +20,7 @@ class SkdevsecOrderproductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            oid = request.data['oid']
+            oid = int(request.data['oid'])
 
             # SQL 쿼리문 작성
             sql_query = "SELECT * FROM skdevsec_orderproduct WHERE oid=%d"

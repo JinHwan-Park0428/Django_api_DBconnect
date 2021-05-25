@@ -21,8 +21,8 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = request.data['bid']
-            cpage = request.data['cpage']
+            bid = int(request.data['bid'])
+            cpage = int(request.data['cpage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_comment WHERE bid=%d"
@@ -39,13 +39,13 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_2 = "SELECT * FROM skdevsec_comment where bid=%d order by cid LIMIT %d, 10"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_2, (bid, cpage))
+                cursor.execute(sql_query_2, (bid, cpage*10-10))
                 data = cursor.fetchone()
 
                 # 데이터 갯수만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['cid'] = data[0]
+                    new_data_in['cid'] = int(data[0])
                     new_data_in['unickname'] = data[2]
                     new_data_in['ctext'] = data[3]
                     new_data_in['ccreate_date'] = data[4]
@@ -78,11 +78,11 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = str(request.data['bid'])
-            unickname = str(request.data['unickname'])
-            ctext = str(request.data['ctext'])
-            ccreate_date = str(request.data['ccreate_date'])
-            clock = str(request.data['clock'])
+            bid = int(request.data['bid'])
+            unickname = request.data['unickname']
+            ctext = request.data['ctext']
+            ccreate_date = request.data['ccreate_date']
+            clock = request.data['clock']
 
             # SQL 쿼리문 작성
             sql_query_1 = "INSERT INTO skdevsec_comment(bid, unickname, ctext, ccreate_date, clock) VALUES(%d, %s, %s, %s, %s)"
@@ -119,8 +119,8 @@ class SkdevsecCommentViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bid = request.data['bid']
-            cid = request.data['cid']
+            bid = int(request.data['bid'])
+            cid = int(request.data['cid'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "DELETE FROM skdevsec_comment WHERE cid=%d"

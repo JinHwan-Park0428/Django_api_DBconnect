@@ -72,8 +72,8 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             global_ophone = request.data['ophone']
             global_oaddress = request.data['oaddress']
             global_order_date = request.data['order_date']
-            global_oprice = request.data['oprice']
-            global_bagcode = request.data['bagcode']
+            global_oprice = int(request.data['oprice'])
+            global_bagcode = int(request.data['bagcode'])
 
             # Kakao Pay 결제 API
             url = "https://kapi.kakao.com"
@@ -141,21 +141,21 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     sql_query_3 = "UPDATE skdevsec_product SET pcount=pcount-%d WHERE pid=%d"
 
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_3, (temp_list[1], temp_list[0], ))
+                    cursor.execute(sql_query_3, (temp_list[1], int(temp_list[0]), ))
                     connection.commit()
 
                     # SQL 쿼리문 작성
                     sql_query_4 = "SELECT * FROM skdevsec_product WHERE pid=%d"
 
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_4, (temp_list[0], ))
+                    cursor.execute(sql_query_4, (int(temp_list[0]), ))
                     data = cursor.fetchone()
 
                     # 데이터가 있으면
                     if data is not None:
                         pname = data[1]
                         pcate = data[2]
-                        pprice = data[5]
+                        pprice = int(data[5])
 
                     # 데이터가 없으면
                     else:
@@ -178,7 +178,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                                       "%d, %s, %s, %d, %d) "
 
                         # DB에 명령문 전송
-                        cursor.execute(sql_query_6, (oid[0], pname, pcate, pprice, temp_list[1], ))
+                        cursor.execute(sql_query_6, (int(oid[0]), pname, pcate, pprice, int(temp_list[1]), ))
 
                     # 데이터가 없으면
                     else:
@@ -194,7 +194,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response(0)
 
             else:
-                if global_bagcode == "1":
+                if global_bagcode == 1:
                     sql_query_7 = "DELETE FROM skdevsec_bag WHERE uid=%s"
                     cursor.execute(sql_query_7, (uid[0], ))
 
@@ -222,7 +222,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            opage = request.data['opage']
+            opage = int(request.data['opage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_orderuser"
@@ -239,7 +239,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_2 = "SELECT * FROM skdevsec_orderuser order by oid desc limit %d, 10"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_2, (opage, ))
+                cursor.execute(sql_query_2, (opage*10-10, ))
                 data = cursor.fetchone()
 
                 # 데이터 수만큼 반복
@@ -281,13 +281,14 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            ocode = request.data['ocode']
+            ocode = int(request.data['ocode'])
             osearch = request.data['osearch']
-            opage = request.data['opage']
+            opage = int(request.data['opage'])
 
             if ocode == 0:
                 # SQL 쿼리문 작성
-                sql_query_1 = "SELECT * FROM skdevsec_orderuser WHERE (uid LIKE %s OR oname LIKE %s) order by oid desc limit %d, 10"
+                sql_query_1 = "SELECT * FROM skdevsec_orderuser WHERE (uid LIKE %s OR oname LIKE %s) order by oid " \
+                              "desc limit %d, 10 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser WHERE (uid LIKE %s OR oname LIKE %s)"
 
                 # DB에 명령문 전송
@@ -295,7 +296,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 count = cursor.fetchone()
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + osearch + '%', '%' + osearch + '%', opage))
+                cursor.execute(sql_query_1, ('%' + osearch + '%', '%' + osearch + '%', opage*10-10))
                 data = cursor.fetchone()
 
             elif ocode == 1:
@@ -308,7 +309,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 count = cursor.fetchone()
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + osearch + '%', opage))
+                cursor.execute(sql_query_1, ('%' + osearch + '%', opage*10-10))
                 data = cursor.fetchone()
 
             elif ocode == 2:
@@ -321,7 +322,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 count = cursor.fetchone()
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + osearch + '%', opage))
+                cursor.execute(sql_query_1, ('%' + osearch + '%', opage*10-10))
                 data = cursor.fetchone()
 
             else:
@@ -331,13 +332,13 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 # 데이터 수만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['oid'] = data[0]
+                    new_data_in['oid'] = int(data[0])
                     new_data_in['uid'] = data[1]
                     new_data_in['oname'] = data[2]
                     new_data_in['ophone'] = data[3]
                     new_data_in['oaddress'] = data[4]
                     new_data_in['order_date'] = data[5]
-                    new_data_in['oprice'] = data[6]
+                    new_data_in['oprice'] = int(data[6])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
 
@@ -371,7 +372,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
-            opage = request.data['opage']
+            opage = int(request.data['opage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT uid FROM skdevsec_user where unickname=%s"
@@ -398,24 +399,24 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s order by oid desc limit %d, 10"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_3, (uid[0], opage, ))
+                cursor.execute(sql_query_3, (uid[0], opage*10-10, ))
                 data = cursor.fetchone()
 
                 while data:
                     sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%d"
-                    cursor_pname.execute(sql_query_4, (data[0], ))
+                    cursor_pname.execute(sql_query_4, (int(data[0]), ))
                     pname = cursor_pname.fetchone()
 
                     new_data_in = dict()
                     new_data_in['pname'] = pname[2]
                     new_data_in['product_count'] = pname[6]
-                    new_data_in['oid'] = data[0]
+                    new_data_in['oid'] = int(data[0])
                     new_data_in['uid'] = data[1]
                     new_data_in['oname'] = data[2]
                     new_data_in['ophone'] = data[3]
                     new_data_in['oaddress'] = data[4]
                     new_data_in['order_date'] = data[5]
-                    new_data_in['oprice'] = data[6]
+                    new_data_in['oprice'] = int(data[6])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
 
@@ -450,7 +451,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             unickname = request.data['unickname']
             start_date = request.data['start_date']
             end_date = request.data['end_date'] + " 23:59"
-            opage = request.data['opage']
+            opage = int(request.data['opage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user where unickname=%s"
@@ -475,23 +476,23 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                               "by oid desc limit %d, 10 "
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_3, (uid[0], start_date, end_date, opage, ))
+                cursor.execute(sql_query_3, (uid[0], start_date, end_date, opage*10-10, ))
                 data = cursor.fetchone()
 
                 while data:
                     sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%d"
-                    cursor_pname.execute(sql_query_4, (data[0], ))
+                    cursor_pname.execute(sql_query_4, (int(data[0]), ))
                     pname = cursor_pname.fetchone()
                     new_data_in = dict()
                     new_data_in['pname'] = pname[2]
                     new_data_in['product_count'] = pname[6]
-                    new_data_in['oid'] = data[0]
+                    new_data_in['oid'] = int(data[0])
                     new_data_in['uid'] = data[1]
                     new_data_in['oname'] = data[2]
                     new_data_in['ophone'] = data[3]
                     new_data_in['oaddress'] = data[4]
                     new_data_in['order_date'] = data[5]
-                    new_data_in['oprice'] = data[6]
+                    new_data_in['oprice'] = int(data[6])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
             else:
@@ -523,8 +524,8 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
-            ocode = request.data['ocode']
-            opage = request.data['opage']
+            ocode = int(request.data['ocode'])
+            opage = int(request.data['opage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user where unickname=%s"
@@ -533,19 +534,19 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(sql_query_1, (unickname, ))
             uid = cursor.fetchone()
 
-            if ocode == "1":
+            if ocode == 1:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid=%s AND (order_date BETWEEN date_add(" \
                               "now(), interval -7 day) AND NOW()) "
-            elif ocode == "2":
+            elif ocode == 2:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid=%s AND (order_date BETWEEN " \
                               "date_add(now(), interval -1 MONTH) AND NOW()) "
-            elif ocode == "3":
+            elif ocode == 3:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid=%s AND (order_date BETWEEN date_add(" \
                               "now(), interval -3 MONTH) AND NOW()) "
-            elif ocode == "4":
+            elif ocode == 4:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_orderuser where uid=%s AND (order_date BETWEEN date_add(" \
                               "now(), interval -6 MONTH) AND NOW()) "
@@ -560,19 +561,19 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 # 주문 내역 갯수 저장
                 new_data.append({"order_count": count[0]})
 
-                if ocode == "1":
+                if ocode == 1:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
                                   "now(), interval -7 day) AND NOW()) order by oid desc limit %d, 10 "
-                elif ocode == "2":
+                elif ocode == 2:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
                                   "now(), interval -1 MONTH) AND NOW()) order by oid desc limit %d, 10 "
-                elif ocode == "3":
+                elif ocode == 3:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
                                   "now(), interval -3 MONTH) AND NOW()) order by oid desc limit %d, 10 "
-                elif ocode == "4":
+                elif ocode == 4:
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s AND (order_date BETWEEN date_add(" \
                                   "now(), interval -6 MONTH) AND NOW()) order by oid desc limit %d, 10 "
@@ -580,24 +581,24 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     return Response(0)
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_3, (uid[0], opage, ))
+                cursor.execute(sql_query_3, (uid[0], opage*10-10, ))
                 data = cursor.fetchone()
 
                 # 데이터 수만큼 반복
                 while data:
                     sql_query_4 = "SELECT *, COUNT(pname) FROM skdevsec_orderproduct WHERE oid=%d"
-                    cursor_pname.execute(sql_query_4, (data[0], ))
+                    cursor_pname.execute(sql_query_4, (int(data[0]), ))
                     pname = cursor_pname.fetchone()
                     new_data_in = dict()
                     new_data_in['pname'] = pname[2]
                     new_data_in['product_count'] = pname[6]
-                    new_data_in['oid'] = data[0]
+                    new_data_in['oid'] = int(data[0])
                     new_data_in['uid'] = data[1]
                     new_data_in['oname'] = data[2]
                     new_data_in['ophone'] = data[3]
                     new_data_in['oaddress'] = data[4]
                     new_data_in['order_date'] = data[5]
-                    new_data_in['oprice'] = data[6]
+                    new_data_in['oprice'] = int(data[6])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
 
@@ -627,7 +628,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            oid = request.data['oid']
+            oid = int(request.data['oid'])
 
             # SQL 쿼리문 작성
             sql_query = "SELECT * FROM skdevsec_orderuser where oid=%d"
@@ -641,13 +642,13 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 # 데이터 수만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['oid'] = data[0]
+                    new_data_in['oid'] = int(data[0])
                     new_data_in['uid'] = data[1]
                     new_data_in['oname'] = data[2]
                     new_data_in['ophone'] = data[3]
                     new_data_in['oaddress'] = data[4]
                     new_data_in['order_date'] = data[5]
-                    new_data_in['oprice'] = data[6]
+                    new_data_in['oprice'] = int(data[6])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
             # 데이터가 없으면

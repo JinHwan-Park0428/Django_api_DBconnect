@@ -50,7 +50,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_product WHERE pid=%d"
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_3, (data[2], ))
+                    cursor.execute(sql_query_3, (int(data[2]), ))
                     products = cursor.fetchone()
                     # 상품이 있으면
                     if products is not None:
@@ -97,7 +97,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            bag_id = request.data['bag_id']
+            bag_id = int(request.data['bag_id'])
 
             # SQL 쿼리문 작성
             sql_query = "DELETE FROM skdevsec_bag WHERE bag_id=%d"
@@ -128,8 +128,8 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
-            pid = request.data['pid']
-            bcount = request.data['bcount']
+            pid = int(request.data['pid'])
+            bcount = int(request.data['bcount'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE unickname=%s"

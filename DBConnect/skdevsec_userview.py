@@ -26,7 +26,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             new_data = list()
             try:
                 # POST 메소드로 날라온 Request의 데이터 각각 추출
-                upage = request.data['upage']
+                upage = int(request.data['upage'])
 
                 # DB 접근할 cursor
                 cursor = connection.cursor()
@@ -36,11 +36,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 # DB에 명령문 전송
                 cursor.execute(sql_query_1)
-                datas = cursor.fetchone()
+                count = cursor.fetchone()
 
-                if datas is not None:
+                if count is not None:
                     # 전체 유저 수를 저장
-                    new_data.append({"user_count": datas[0]})
+                    new_data.append({"user_count": count[0]})
                 else:
                     new_data.append({"user_count": 0})
 
@@ -48,7 +48,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 strsql = "SELECT * FROM skdevsec_user order by ucreate_date desc limit %d, 10 "
 
                 # DB에 명령문 전송
-                cursor.execute(strsql, (upage,))
+                cursor.execute(strsql, (upage*10-10,))
                 data = cursor.fetchone()
 
                 # 데이터가 존재 한다면
@@ -63,7 +63,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         new_data_in['umail'] = data[4]
                         new_data_in['uphone'] = data[5]
                         new_data_in['ucreate_date'] = data[6]
-                        new_data_in['authority'] = data[7]
+                        new_data_in['authority'] = int(data[7])
                         new_data.append(new_data_in)
                         data = cursor.fetchone()
                 # 데이터가 존재 하지 않는 다면
@@ -97,9 +97,9 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             new_data = list()
             try:
                 # POST 메소드로 날라온 Request의 데이터 각각 추출
-                ucode = request.data['ucode']
+                ucode = int(request.data['ucode'])
                 usearch = request.data['usearch']
-                upage = request.data['upage']
+                upage = int(request.data['upage'])
 
                 # DB 접근할 cursor
                 cursor_count = connection.cursor()
@@ -118,7 +118,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     count = cursor_count.fetchone()
 
                     cursor_data.execute(sql_query_1, ('%' + usearch + '%', '%' + usearch + '%', '%' + usearch + '%', '%'
-                                                      + usearch + '%', upage,))
+                                                      + usearch + '%', upage*10-10,))
                     data = cursor_data.fetchone()
 
                 elif ucode == 1:
@@ -130,7 +130,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
                     count = cursor_count.fetchone()
 
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage,))
+                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
                     data = cursor_data.fetchone()
 
                 elif ucode == 2:
@@ -142,7 +142,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
                     count = cursor_count.fetchone()
 
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage,))
+                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
                     data = cursor_data.fetchone()
 
                 elif ucode == 3:
@@ -154,7 +154,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
                     count = cursor_count.fetchone()
 
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage,))
+                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
                     data = cursor_data.fetchone()
 
                 elif ucode == 4:
@@ -166,7 +166,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
                     count = cursor_count.fetchone()
 
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage,))
+                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
                     data = cursor_data.fetchone()
 
                 else:
@@ -183,7 +183,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         new_data_in['umail'] = data[4]
                         new_data_in['uphone'] = data[5]
                         new_data_in['ucreate_date'] = data[6]
-                        new_data_in['authority'] = data[7]
+                        new_data_in['authority'] = int(data[7])
                         new_data.append(new_data_in)
                         data = cursor_data.fetchone()
                 # 데이터가 없으면
@@ -229,10 +229,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             umail = request.data['umail']
             uphone = request.data['uphone']
             ucreate_date = request.data['ucreate_date']
-            authority = request.data['authority']
+            authority = int(request.data['authority'])
 
             # SQL 쿼리문 작성
-            sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %d)"
 
             # DB에 명령문 전송
             cursor.execute(sql_query, (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority))
@@ -393,7 +393,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # 불러온 데이터를 딕셔너리 형태로 저장
             if data is not None:
                 new_data['unickname'] = data[2]
-                new_data['authority'] = data[7]
+                new_data['authority'] = int(data[7])
             else:
                 return Response(0)
 

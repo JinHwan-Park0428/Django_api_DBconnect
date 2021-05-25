@@ -21,7 +21,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # # POST 메소드로 날라온 Request의 데이터 각각 추출
-            ppage = request.data['ppage']
+            ppage = int(request.data['ppage'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product"
@@ -37,21 +37,21 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_2 = "SELECT * FROM skdevsec_product order by pid desc limit %d, 8"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_2, (ppage, ))
+                cursor.execute(sql_query_2, (ppage*8-8, ))
                 data = cursor.fetchone()
 
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
                     new_data_in['ptext'] = data[4]
-                    new_data_in['pprice'] = data[5]
+                    new_data_in['pprice'] = int(data[5])
                     new_data_in['pcreate_date'] = data[6]
                     new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
-                    new_data_in['pcount'] = data[9]
+                    new_data_in['preview_avg'] = float(data[8])
+                    new_data_in['pcount'] = int(data[9])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
             else:
@@ -80,7 +80,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            pid = request.data['pid']
+            pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
             sql_query = "SELECT * FROM skdevsec_product WHERE pid=%d"
@@ -94,16 +94,16 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 # 데이터 수만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
                     new_data_in['ptext'] = data[4]
-                    new_data_in['pprice'] = data[5]
+                    new_data_in['pprice'] = int(data[5])
                     new_data_in['pcreate_date'] = data[6]
-                    new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
-                    new_data_in['pcount'] = data[9]
+                    new_data_in['preview'] = int(data[7])
+                    new_data_in['preview_avg'] = float(data[8])
+                    new_data_in['pcount'] = int(data[9])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
             # 데이터가 없으면
@@ -138,11 +138,11 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['pcate'] = request.data['pcate']
             new_data['pimage'] = request.data['pimage']
             new_data['ptext'] = request.data['ptext']
-            new_data['pprice'] = request.data['pprice']
+            new_data['pprice'] = int(request.data['pprice'])
             new_data['pcreate_date'] = request.data['pcreate_date']
             new_data['preview'] = request.data['preview']
-            new_data['preview_avg'] = request.data['preview_avg']
-            new_data['pcount'] = request.data['pcount']
+            new_data['preview_avg'] = float(request.data['preview_avg'])
+            new_data['pcount'] = int(request.data['pcount'])
 
             # DB에 저장하기 위해 시리얼라이저 함수 사용
             file_serializer = SkdevsecProductSerializer(data=new_data)
@@ -175,19 +175,19 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # 수정할 게시물 번호를 받아서 해당 DB를 저장
-            data_check = SkdevsecProduct.objects.get(pid=request.data['pid'])
+            data_check = SkdevsecProduct.objects.get(pid=int(request.data['pid']))
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            pid = request.data['pid']
+            pid = int(request.data['pid'])
             new_data['pname'] = request.data['pname']
             new_data['pcate'] = request.data['pcate']
             new_data['pimage'] = request.data['pimage']
             new_data['ptext'] = request.data['ptext']
-            new_data['pprice'] = request.data['pprice']
+            new_data['pprice'] = int(request.data['pprice'])
             new_data['pcreate_date'] = request.data['pcreate_date']
-            new_data['preview'] = request.data['preview']
-            new_data['preview_avg'] = request.data['preview_avg']
-            new_data['pcount'] = request.data['pcount']
+            new_data['preview'] = int(request.data['preview'])
+            new_data['preview_avg'] = float(request.data['preview_avg'])
+            new_data['pcount'] = int(request.data['pcount'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_product WHERE pid=%d"
@@ -244,7 +244,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            pid = request.data['pid']
+            pid = int(request.data['pid'])
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_product WHERE pid=%d"
@@ -315,20 +315,20 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             count = cursor.fetchone()
 
             # DB에 명령문 전송
-            cursor.execute(sql_query1, ('%' + psearch[1] + '%', psearch[0],))
+            cursor.execute(sql_query1, ('%' + psearch[1] + '%', int(psearch[0])*8-8,))
             data = cursor.fetchone()
 
             if count is not None:
                 # 데이터만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = data[5]
-                    new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
+                    new_data_in['pprice'] = int(data[5])
+                    new_data_in['preview'] = int(data[7])
+                    new_data_in['preview_avg'] = float(data[8])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
                 new_data.append({"product_count": count[0]})
@@ -359,12 +359,12 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            ppage = request.data['ppage']
+            ppage = int(request.data['ppage'])
 
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pcreate_date DESC limit %d, 8"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (ppage, ))
+            cursor.execute(sql_query_1, (ppage*8-8, ))
             count = cursor.fetchone()
 
             if count is not None:
@@ -374,18 +374,18 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_2 = "SELECT * FROM skdevsec_product order by pcreate_date desc limit %d, 8"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_2, (ppage, ))
+                cursor.execute(sql_query_2, (ppage*8-8, ))
                 data = cursor.fetchone()
 
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = data[5]
-                    new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
+                    new_data_in['pprice'] = int(data[5])
+                    new_data_in['preview'] = int(data[7])
+                    new_data_in['preview_avg'] = float(data[8])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
             else:
@@ -414,12 +414,12 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            ppage = request.data['ppage']
+            ppage = int(request.data['ppage'])
 
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit %d, 8"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (ppage, ))
+            cursor.execute(sql_query_1, (ppage*8-8, ))
             count = cursor.fetchone()
 
             if count is not None:
@@ -429,19 +429,19 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 sql_query_2 = "SELECT * FROM skdevsec_product order by pprice desc limit %d, 8"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_2, (ppage, ))
+                cursor.execute(sql_query_2, (ppage*8-8, ))
                 data = cursor.fetchone()
 
                 # 데이터 수만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = data[5]
-                    new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
+                    new_data_in['pprice'] = int(data[5])
+                    new_data_in['preview'] = int(data[7])
+                    new_data_in['preview_avg'] = float(data[8])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
             else:
@@ -469,12 +469,12 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            ppage = request.data['ppage']
+            ppage = int(request.data['ppage'])
 
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product ORDER BY pprice DESC limit %d, 8"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (ppage, ))
+            cursor.execute(sql_query_1, (ppage*8-8, ))
             count = cursor.fetchone()
             if count is not None:
                 new_data.append({"product_count": count[0]})
@@ -489,13 +489,13 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 # 데이터 수만큼 반복
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = data[5]
-                    new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
+                    new_data_in['pprice'] = int(data[5])
+                    new_data_in['preview'] = int(data[7])
+                    new_data_in['preview_avg'] = float(data[8])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
             else:
@@ -523,12 +523,12 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            ppage = request.data['ppage']
+            ppage = int(request.data['ppage'])
 
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_product order by preview DESC, preview_avg DESC limit %d, 8"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (ppage, ))
+            cursor.execute(sql_query_1, (ppage*8-8, ))
             count = cursor.fetchone()
 
             if count is not None:
@@ -543,13 +543,13 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = data[5]
-                    new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
+                    new_data_in['pprice'] = int(data[5])
+                    new_data_in['preview'] = int(data[7])
+                    new_data_in['preview_avg'] = float(data[8])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
 
@@ -580,13 +580,14 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             psearch = request.data['psearch']
-            ppage = request.data['ppage']
-            pcode = request.data['pcode']
+            ppage = int(request.data['ppage'])
+            pcode = int(request.data['pcode'])
 
             # SQL 쿼리문 작성
             # 0 : 전체 검색 / 1 : 상품 명 검색 / 2 : 카테고리 검색
             if pcode == 0:
-                sql_query_1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s) ORDER BY pid DESC limit %d, 8"
+                sql_query_1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s) ORDER BY pid " \
+                              "DESC limit %d, 8 "
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s)"
 
                 # DB에 명령문 전송
@@ -594,7 +595,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 count = cursor.fetchone()
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + psearch + '%', '%' + psearch + '%', ppage,))
+                cursor.execute(sql_query_1, ('%' + psearch + '%', '%' + psearch + '%', ppage*8-8,))
                 data = cursor.fetchone()
 
             elif pcode == 1:
@@ -606,7 +607,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 count = cursor.fetchone()
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + psearch + '%', ppage,))
+                cursor.execute(sql_query_1, ('%' + psearch + '%', ppage*8-8,))
                 data = cursor.fetchone()
 
             elif pcode == 2:
@@ -618,7 +619,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 count = cursor.fetchone()
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + psearch.upper() + '%', ppage,))
+                cursor.execute(sql_query_1, ('%' + psearch.upper() + '%', ppage*8-8,))
                 data = cursor.fetchone()
 
             else:
@@ -627,15 +628,15 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             if count is not None:
                 while data:
                     new_data_in = dict()
-                    new_data_in['pid'] = data[0]
+                    new_data_in['pid'] = int(data[0])
                     new_data_in['pname'] = data[1]
                     new_data_in['pcate'] = data[2]
                     new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = data[5]
+                    new_data_in['pprice'] = int(data[5])
                     new_data_in['pcreate_date'] = data[6]
-                    new_data_in['preview'] = data[7]
-                    new_data_in['preview_avg'] = data[8]
-                    new_data_in['pcount'] = data[9]
+                    new_data_in['preview'] = int(data[7])
+                    new_data_in['preview_avg'] = float(data[8])
+                    new_data_in['pcount'] = int(data[9])
                     new_data.append(new_data_in)
                     data = cursor.fetchone()
 
