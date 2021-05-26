@@ -387,9 +387,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(sql_query_1, (uid, upwd))
             data = cursor.fetchone()
 
-            # DB와 접속 종료
-            connection.close()
-
             # 불러온 데이터를 딕셔너리 형태로 저장
             if data is not None:
                 new_data['unickname'] = data[2]
@@ -407,6 +404,9 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     return Response(0)
 
                 return Response(0)
+
+            # DB와 접속 종료
+            connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
