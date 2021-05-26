@@ -54,6 +54,11 @@ CORS_ORIGIN_ALLOW_ALL = True
 # CORS_ORIGIN_WHITELIST = ['http://www.kilhyomin.com', ]
 # CORS_ALLOW_CREDENTIALS = True
 
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+]
+
 # 아직까지 건들 일 없음
 ROOT_URLCONF = 'DBtest.urls'
 
