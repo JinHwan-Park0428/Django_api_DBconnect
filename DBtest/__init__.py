@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         event_handler = CollectstaticEventHandler()
         observer = Observer()
-        for path in settings.STATIC_DIR:
+        for path in settings.STATICFILES_DIRS:
             observer.schedule(event_handler, path, recursive=True)
         observer.start()
         try:

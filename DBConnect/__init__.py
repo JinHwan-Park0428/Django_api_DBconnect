@@ -10,15 +10,18 @@ import json
 import random
 import string
 
+
 # 실제 파일을 저장할 경로 및 파일 명 생성
 def file_upload_path(filename):
     ext = filename.split('.')[-1]
-    filename = "%s.%s"%(uuid.uuid4().hex, ext)
+    filename = "%s.%s" % (uuid.uuid4().hex, ext)
     return os.path.join('static/', filename)
+
 
 # DB 필드에서 호출
 def file_upload_path_for_db(intance, filename):
     return file_upload_path(filename)
+
 
 # 인증 SMS 전송
 def sms_send(phone):
@@ -62,6 +65,7 @@ def sms_send(phone):
 
     return authentication_number
 
+
 # 해더에 포함되는 signature를 생성하는 함수
 def make_signature(string):
     secret_key = bytes('ismBxwRC8yWrNHZxXKaSXe2gyYASkyf0kAnTmCFK', 'UTF-8')
@@ -69,3 +73,4 @@ def make_signature(string):
     string_hmac = hmac.new(secret_key, string, digestmod=hashlib.sha256).digest()
     string_base64 = base64.b64encode(string_hmac).decode('UTF-8')
     return string_base64
+
