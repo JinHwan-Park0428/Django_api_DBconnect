@@ -20,6 +20,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
+            cursor_product = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
@@ -51,12 +52,12 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_product WHERE pid=%s"
                     # DB에 명령문 전송
-                    cursor.execute(sql_query_3, (int(data[2]), ))
-                    products = cursor.fetchone()
+                    cursor_product.execute(sql_query_3, (int(data[2]), ))
+                    products = cursor_product.fetchone()
                     # 상품이 있으면
                     if products is not None:
                         new_data_in['bag_id'] = data[0]
-                        new_data_in['pid'] = data[1]
+                        new_data_in['pid'] = data[2]
                         new_data_in['pname'] = products[1]
                         new_data_in['pcate'] = products[2]
                         new_data_in['pimage'] = products[3]
