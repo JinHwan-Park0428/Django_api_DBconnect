@@ -46,6 +46,7 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             if data is not None:
                 # 장바구니 갯수만큼 반복
                 while data:
+                    print(data)
                     new_data_in = dict()
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_product WHERE pid=%s"
