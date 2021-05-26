@@ -5,7 +5,6 @@ from DBtest import mysettings
 
 # 베이스 디렉토리 경로 (ex : C:\Users\soopeng\PycharmProjects)
 BASE_DIR = Path(__file__).resolve().parent.parent
-ROOT_DIR = os.path.dirname(BASE_DIR)
 
 # Django Secure Key
 SECRET_KEY = mysettings.SECRET_KEY

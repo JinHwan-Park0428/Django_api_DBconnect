@@ -54,7 +54,6 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
-            connection.rollback()
             print(f"에러: {e}")
             return Response(0)
         else:
@@ -74,6 +73,23 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
             global_order_date = request.data['order_date']
             global_oprice = int(request.data['oprice'])
             global_bagcode = int(request.data['bagcode'])
+
+            sum_product = 0
+
+            try:
+                temp_list = list()
+                for temp_dict in global_product:
+                    for value in temp_dict.values():
+                        temp_list.append(value)
+                for i in range(len(temp_list)//2):
+                    sum_product += temp_list[i*2] * temp_list[i*2+1]
+
+                if sum_product != global_oprice:
+                    return Response(0)
+
+            except Exception as e:
+                print(f"에러: {e}")
+                return Response(0)
 
             # Kakao Pay 결제 API
             url = "https://kapi.kakao.com"
