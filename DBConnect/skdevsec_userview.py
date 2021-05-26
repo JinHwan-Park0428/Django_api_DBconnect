@@ -381,10 +381,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             upwd = request.data['upwd']
 
             # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_user WHERE uid=%s and upwd=%s"
+            sql_query_1 = "SELECT * FROM skdevsec_user WHERE uid=%s and upwd=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query, (uid, upwd))
+            cursor.execute(sql_query_1, (uid, upwd))
             data = cursor.fetchone()
 
             # DB와 접속 종료
@@ -395,6 +395,17 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 new_data['unickname'] = data[2]
                 new_data['authority'] = int(data[7])
             else:
+                try:
+                    sql_query_2 = "UPDATE skdevsec_user SET ulock=ulock+1 WHERE uid=%s"
+                    cursor.execute(sql_query_2, (uid, ))
+                    connection.commit()
+                    connection.close()
+
+                except Exception as e:
+                    connection.rollback()
+                    print(f"에러: {e}")
+                    return Response(0)
+
                 return Response(0)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
