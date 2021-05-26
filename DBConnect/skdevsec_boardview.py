@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
+from django.core.management import call_command
 
 
 # 게시판 관련 테이블
@@ -166,6 +167,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 # 저장이 가능한 상태면 저장
                 if file_serializer.is_valid():
                     file_serializer.save()
+                    call_command("collectstatic", interactive=False)
                 # 저장이 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
                 else:
                     print(f"에러: {file_serializer.errors}")
@@ -232,9 +234,12 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     # 수정할 데이터를 업데이트함
                     if file_serializer.is_valid():
                         file_serializer.update(data_check, file_serializer.validated_data)
+
                         # 게시물 기존 파일이 존재하면 삭제
                         if data[0] != "0":
                             os.remove(data[0])
+
+                        call_command("collectstatic", interactive=False)
                     # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
                     else:
                         print(f"에러: {file_serializer.errors}")
@@ -280,7 +285,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             if data is not None:
                 if data[0] != "0":
                     os.remove(data[0])
-
+                call_command("collectstatic", interactive=False)
             # SQL 쿼리문 작성
             sql_query_2 = "DELETE FROM skdevsec_board WHERE bid=%s"
 
@@ -322,7 +327,7 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             if data is not None:
                 if data[0] != "0":
                     os.remove(data[0])
-
+                call_command("collectstatic", interactive=False)
             # SQL 쿼리문 작성
             sql_query_2 = "UPDATE skdevsec_board SET bfile=0 WHERE bid=%s"
 

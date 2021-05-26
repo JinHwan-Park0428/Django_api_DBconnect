@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from DBConnect.serializers import *
+from django.core.management import call_command
 
 
 # 상품 관련 테이블
@@ -150,6 +151,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # 저장이 가능한 상태면 저장
             if file_serializer.is_valid():
                 file_serializer.save()
+                call_command("collectstatic", interactive=False)
             # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
             else:
                 print(f"에러: {file_serializer.errors}")
@@ -211,6 +213,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                     # 파일이 존재하면 삭제
                     if data[3] != "0":
                         os.remove(data[3])
+                    call_command("collectstatic", interactive=False)
                 # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
                 else:
                     print(f"에러: {file_serializer.errors}")
@@ -257,6 +260,7 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
                 # 파일이 존재하면 삭제
                 if data[3] != "0":
                     os.remove(data[3])
+                call_command("collectstatic", interactive=False)
             else:
                 return Response(0)
 
