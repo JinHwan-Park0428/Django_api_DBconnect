@@ -9,7 +9,9 @@ from rest_framework.response import Response
 from DBConnect.serializers import *
 from DBtest.settings import EMAIL_HOST_USER
 from . import sms_send
-
+import bcrypt
+from datetime import datetime
+from DBConnect.security import *
 
 # 회원 정보 관련 테이블
 class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -224,6 +226,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
             upwd = request.data['upwd']
+            hashed_password = bcrypt.hashpw(request.data['upwd'].encode('utf-8'), bcrypt.gensalt())
             unickname = request.data['unickname']
             uname = request.data['uname']
             umail = request.data['umail']
@@ -235,7 +238,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query, (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority))
+            cursor.execute(sql_query, (uid, hashed_password, unickname, uname, umail, uphone, ucreate_date, authority))
 
             # DB와 접속 종료
             connection.commit()
@@ -380,38 +383,57 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             uid = request.data['uid']
             upwd = request.data['upwd']
 
-            # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_user WHERE uid=%s and upwd=%s"
+            strsql = "SELECT * FROM skdevsec_user WHERE uid=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query, (uid, upwd))
-            data = cursor.fetchone()
+            cursor.execute(strsql,(uid,))
+            datas = cursor.fetchone()
+
 
             # DB와 접속 종료
+            connection.commit()
             connection.close()
+            
+            # 프론트와 맞춰야하는 키
+            string_key = '000000000@fsadqega#fkdlsaiqu1235'
 
-            # 불러온 데이터를 딕셔너리 형태로 저장
-            if data is not None:
-                new_data['unickname'] = data[2]
-                new_data['authority'] = int(data[7])
+            # 프론트의 키값을 16진수화하기위한 과정
+            new_key = []
+            cnt = 0
+            for i in string_key:
+                key[cnt] = int(hex(ord(i)),16)
+                cnt += 1
+
+            
+            # bcrypt를 이용해 저장한 패스워드와 일치여부 확인
+            if bcrypt.checkpw(upwd.encode('utf-8'),datas[1].encode('utf-8')):
+                rnd = 0
+                if(uid == 'admin'):
+                    rnd = randint(100,1000)
+                    
+                else:
+                    rnd = randint(1000,10000)
+                
+                # 키와 원하는 정보를 aes256기법을 이용한 토큰화
+                token = AESCipher(bytes(key)).encrypt(datas[2]+'-'+str(rnd)+'-'+str(datetime.today().strftime("%Y%m%d%H%M")))
+
+                # 서버단에서 토큰 복호화 확인용
+                decrypted_data = AESCipher(bytes(key)).decrypt(token)
+                decrypted_data.decode('utf-8')
+                print(decrypted_data)
+
+                return Response({'token' : token})
+
             else:
-                return Response(0)
+                return Response({'message' : '로그인에 실패하였습니다.'})
+            
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
-            print(f"에러: {e}")
-            return Response(0)
-
-        # 관리자 로그인이면 2 일반 사용자이면 1 로그인 실패면 0을 프론트엔드에 전송
-        else:
-            if new_data['authority'] == 1:
-                new_data['login_check'] = 2
-                return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
-            else:
-                new_data['login_check'] = 1
-                return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
-
+            print(f"login 에러: {e}")
+            return Response({'message' : '로그인에 실패하였습니다.'})
+        
     # 내 정보 보기
     @action(detail=False, methods=['POST'])
     def view_info(self, request):
