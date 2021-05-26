@@ -23,9 +23,9 @@ router.register(r'SkdevsecUser', skdevsec_userview.SkdevsecUserViewSet)
 urlpatterns = [
     path('', include(router.urls)),
 ]
-
-urlpatterns += url(r'^static/(?P<path>.\*)$', serve, {
-    'document_root': settings.STATIC_ROOT,
-})
+#
+# urlpatterns += url(r'^static/(?P<path>.\*)$', serve, {
+#     'document_root': settings.STATIC_ROOT,
+# })
 
 # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT, insecure=True)
