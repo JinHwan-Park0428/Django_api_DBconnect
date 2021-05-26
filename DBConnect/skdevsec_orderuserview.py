@@ -96,11 +96,15 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 if sum_product != global_oprice:
                     print("장난치지마라")
+                    connection.close()
                     return Response(0)
 
             except Exception as e:
                 print(f"에러: {e}")
+                connection.close()
                 return Response(0)
+
+            connection.close()
 
             # Kakao Pay 결제 API
             url = "https://kapi.kakao.com"
