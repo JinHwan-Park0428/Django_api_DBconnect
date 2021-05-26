@@ -22,8 +22,11 @@ router.register(r'SkdevsecUser', skdevsec_userview.SkdevsecUserViewSet)
 # 접근 가능한 url 패턴 목록
 urlpatterns = [
     path('', include(router.urls)),
+    url(r'^static/(?P<path>.\*)$', serve, {
+        'document_root': settings.STATIC_ROOT,
+    })
 ]
-#
+
 # urlpatterns += url(r'^static/(?P<path>.\*)$', serve, {
 #     'document_root': settings.STATIC_ROOT,
 # })
