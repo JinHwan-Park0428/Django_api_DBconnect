@@ -4,6 +4,7 @@ from rest_framework import routers
 from . import skdevsec_bagview, skdevsec_boardview, skdevsec_userview, skdevsec_reviewview, skdevsec_commentview, \
     skdevsec_productview, skdevsec_orderuserview, skdevsec_orderproductview
 from django.views.static import serve
+from django.conf import settings
 
 # trailing_slash=False
 router = routers.SimpleRouter(trailing_slash=False)
