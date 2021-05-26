@@ -1,5 +1,7 @@
 # 필요한 모듈 임포트
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework import routers
 from . import skdevsec_bagview, skdevsec_boardview, skdevsec_userview, skdevsec_reviewview, skdevsec_commentview, \
     skdevsec_productview, skdevsec_orderuserview, skdevsec_orderproductview
@@ -18,4 +20,4 @@ router.register(r'SkdevsecUser', skdevsec_userview.SkdevsecUserViewSet)
 # 접근 가능한 url 패턴 목록
 urlpatterns = [
     path('', include(router.urls)),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
