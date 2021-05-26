@@ -90,6 +90,8 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor.execute(sql_query_1, (int(temp_list[i*2]), ))
                     pprice = cursor.fetchone()
                     sum_product += int(pprice[5]) * int(temp_list[i*2+1])
+                if global_oprice < 50000:
+                    sum_product += 2500
 
                 print(sum_product)
                 print(global_oprice)
