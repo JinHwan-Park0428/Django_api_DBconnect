@@ -63,6 +63,10 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['POST'])
     def kakaopay(self, request):
         try:
+
+            # DB 접근할 cursor
+            cursor = connection.cursor()
+
             global global_unickname, global_oname, global_ophone, global_oaddress, global_order_date, global_oprice, global_bagcode
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
@@ -82,7 +86,10 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     for value in temp_dict.values():
                         temp_list.append(value)
                 for i in range(len(temp_list)//2):
-                    sum_product += int(temp_list[i*2]) * int(temp_list[i*2+1])
+                    sql_query_1 = 'SELECT * FROM skdevsec_product WHERE pid=%s'
+                    cursor.execute(sql_query_1, (int(temp_list[i*2]), ))
+                    pprice = cursor.fetchone()
+                    sum_product += int(pprice[5]) * int(temp_list[i*2+1])
 
                 print(sum_product)
                 print(global_oprice)
