@@ -84,6 +84,9 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                 for i in range(len(temp_list)//2):
                     sum_product += int(temp_list[i*2]) * int(temp_list[i*2+1])
 
+                print(sum_product)
+                print(global_oprice)
+
                 if sum_product != global_oprice:
                     print("장난치지마라")
                     return Response(0)
