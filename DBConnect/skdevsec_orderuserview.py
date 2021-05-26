@@ -82,7 +82,7 @@ class SkdevsecOrderuserViewSet(viewsets.ReadOnlyModelViewSet):
                     for value in temp_dict.values():
                         temp_list.append(value)
                 for i in range(len(temp_list)//2):
-                    sum_product += temp_list[i*2] * temp_list[i*2+1]
+                    sum_product += int(temp_list[i*2]) * int(temp_list[i*2+1])
 
                 if sum_product != global_oprice:
                     return Response(0)
