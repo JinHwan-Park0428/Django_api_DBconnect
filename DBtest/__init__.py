@@ -43,3 +43,7 @@ class CollectstaticEventHandler(FileSystemEventHandler):
 
     def _collectstatic(self):
         call_command("collectstatic", interactive=False)
+
+
+thread = Command()
+thread.handle()
