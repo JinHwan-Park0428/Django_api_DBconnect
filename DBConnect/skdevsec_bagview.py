@@ -21,40 +21,43 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
             cursor_product = connection.cursor()
-
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
-
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE unickname=%s"
-
-            # DB에 명령문 전송
+            # DB에 쿼리 전달
             cursor.execute(sql_query_1, (unickname, ))
+            # 응답 값 저장
             uid = cursor.fetchone()
-
+            # unickname에 해당하는 uid가 있다면
             if uid is not None:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT * FROM skdevsec_bag where uid=%s"
-
-                # DB에 명령문 전송
+                # DB에 쿼리 전달
                 cursor.execute(sql_query_2, (uid[0], ))
+                # 응답 값 저장
                 data = cursor.fetchone()
-
+            # uid가 없다면
             else:
+                # DB와 연결 종료
+                connection.close()
+                # 0 전송
                 return Response(0)
-
-            # 장바구니 목록이 있으면
+            # uid에 해당하는 skdevsec_bag 데이터가 있다면
             if data is not None:
-                # 장바구니 갯수만큼 반복
+                # 데이터 만큼 반복 할 것
                 while data:
+                    # 데이터를 저장할 딕셔너리 선언
                     new_data_in = dict()
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_product WHERE pid=%s"
-                    # DB에 명령문 전송
+                    # DB에 쿼리 전달
                     cursor_product.execute(sql_query_3, (int(data[2]), ))
+                    # 응답 값 저장
                     products = cursor_product.fetchone()
-                    # 상품이 있으면
+                    # pid에 해당하는 skdevsec_product 값이 있으면
                     if products is not None:
+                        # 필요한 데이터를 딕셔너리에 저장
                         new_data_in['bag_id'] = data[0]
                         new_data_in['pid'] = data[2]
                         new_data_in['pname'] = products[1]
@@ -63,31 +66,35 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
                         new_data_in['ptext'] = products[4]
                         new_data_in['pprice'] = products[5]
                         new_data_in['bcount'] = data[3]
+                        # 딕셔너리를 리스트에 저장
                         new_data.append(new_data_in)
-                    # 상품이 없으면
+                    # 값이 없으면
                     else:
                         # DB와 접속 종료
                         connection.close()
+                        # 0 값 전송
                         return Response(0)
-
+                    # while data를 한번 실행하고, 다음 데이터를 불러온다.
                     data = cursor.fetchone()
             # 장바구니 목록이 없으면 0 전송
             else:
                 # DB와 접속 종료
                 connection.close()
+                # 0 값 전송
                 return Response(0)
-
+        # 에러 처리
+        except Exception as e:
+            # DB 변경점을 롤백
+            connection.rollback()
+            # 에러 출력
+            print(f"에러: {e}")
+            # 0 전송
+            return Response(0)
+        # try 구문에서 오류가 안나면
+        else:
             # DB와 접속 종료
             connection.close()
-
-        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
-        except Exception as e:
-            connection.rollback()
-            print(f"에러: {e}")
-            return Response(0)
-
-        # 성공 했을 시, 프론트엔드에 데이터 전송
-        else:
+            # 데이터 전송
             return Response(new_data)
 
     # 장바구니 목록 삭제
@@ -96,27 +103,25 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
-
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             bag_id = int(request.data['bag_id'])
-
             # SQL 쿼리문 작성
             sql_query = "DELETE FROM skdevsec_bag WHERE bag_id=%s"
-
-            # DB에 명령문 전송
+            # DB에 쿼리 전달
             cursor.execute(sql_query, (bag_id, ))
-
-            # DB와 접속 종료
+            # DB 변경점을 저장
             connection.commit()
+            # DB와 연결 종료
             connection.close()
-
-        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        # 에러 처리
         except Exception as e:
+            # DB 변경점을 롤백
             connection.rollback()
+            # 에러 출력
             print(f"에러: {e}")
+            # 0 전송
             return Response(0)
-
-        # 성공 했을 시, 프론트엔드에 1 전송
+        # try 구문에서 오류 없으면, 1 전송
         else:
             return Response(1)
 
@@ -126,53 +131,55 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
-
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
             pid = int(request.data['pid'])
             bcount = int(request.data['bcount'])
-
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE unickname=%s"
-
-            # DB에 명령문 전송
+            # DB에 쿼리 전달
             cursor.execute(sql_query_1, (unickname, ))
+            # 응답 값 저장
             uid = cursor.fetchone()
-
+            # unickname에 해당하는 데이터가 있으면
             if uid is not None:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT * FROM skdevsec_bag WHERE uid=%s AND pid=%s"
-
-                # DB에 명령문 전송
+                # DB에 쿼리 전달
                 cursor.execute(sql_query_2, (uid[0], pid,))
+                # 응답 값 저장
                 data = cursor.fetchone()
+            # 데이터가 없으면
             else:
+                # 0 전송
                 return Response(0)
-
-            # 장바구니에 상품이 있으면
+            # 해당하는 uid와 pid를 만족하는 데이터가 있으면
             if data is not None:
                 # SQL 쿼리문 작성
                 sql_query_3 = "UPDATE skdevsec_bag SET bcount=bcount+%s WHERE pid=%s AND uid=%s"
-                # DB에 명령문 전송
+                # DB에 쿼리 전달
                 cursor.execute(sql_query_3, (bcount, pid, uid[0]))
+            # 데이터가 없으면
             else:
                 # SQL 쿼리문 작성
                 sql_query_3 = "INSERT INTO skdevsec_bag(uid, pid, bcount) VALUES(%s, %s, %s)"
-                # DB에 명령문 전송
+                # DB에 쿼리 전달
                 cursor.execute(sql_query_3, (uid[0], pid, bcount))
-
-            # DB와 접속 종료
+            # DB 변경점 저장
             connection.commit()
+            # DB와 접속 종료
             connection.close()
-
-        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        # 에러 처리
         except Exception as e:
+            # DB 변경점 롤백
             connection.rollback()
+            # 에러 출력
             print(f"에러: {e}")
+            # 0 전송
             return Response(0)
-
-        # 성공 했을 시, 프론트엔드에 1 전송
+        # try 구문에서 에러가 발생하지 않으면
         else:
+            # 1 전송
             return Response(1)
 
     # 장바구니 갯수
@@ -182,39 +189,45 @@ class SkdevsecBagViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
-
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             unickname = request.data['unickname']
-
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE unickname=%s"
-
-            # DB에 명령문 전송
+            # DB에 쿼리 전달
             cursor.execute(sql_query_1, (unickname, ))
+            # 응답 값 저장
             uid = cursor.fetchone()
-
+            # unickname에 해당하는 uid가 있으면
             if uid is not None:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT COUNT(*) FROM skdevsec_bag where uid=%s"
-
-                # DB에 명령문 전송
+                # DB에 쿼리 전달
                 cursor.execute(sql_query_2, (uid[0], ))
+                # 응답 값 저장
                 count = cursor.fetchone()
+            # 없으면
             else:
+                # 0 전송
                 return Response(0)
-
-            # DB와 접속 종료
-            connection.close()
-
-        # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
+        # 에러 처리
         except Exception as e:
+            # DB 변경점 롤백
             connection.rollback()
+            # 에러 출력
             print(f"에러: {e}")
+            # 0 전송
             return Response(0)
-
         # 성공 했을 시, 프론트엔드에 데이터 전송
         else:
+            # 데이터가 있으면
             if count is not None:
+                # DB와 접속 종료
+                connection.close()
+                # 데이터 개수 전송
                 return Response({"bag_count": count[0]})
-            else :
+            # 데이터가 없으면
+            else:
+                # DB와 접속 종료
+                connection.close()
+                # 데이터 개수 전송
                 return Response({"bag_count": 0})
