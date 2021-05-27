@@ -1,5 +1,6 @@
 # 필요한 모듈 임포트
 import random
+import re
 import string
 from django.core.mail import send_mail
 from django.db import connection
@@ -101,105 +102,112 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 usearch = request.data['usearch']
                 upage = int(request.data['upage'])
 
-                # DB 접근할 cursor
-                cursor_count = connection.cursor()
-                cursor_data = connection.cursor()
+                p = re.compile('[\{\}\[\]\/?.,;:|\)*~`!@^\-+<>\#$%&\\\=\(\'\"]')
 
-                # SQL 쿼리문 작성
-                # 0: 전체 검색 / 1 : 이름 / 2 : 닉네임 / 3 : 아이디 / 4 : 이메일
-                if ucode == 0:
-                    sql_query_1 = "SELECT * FROM skdevsec_user where (uname LIKE %s OR unickname LIKE %s OR uid LIKE " \
-                                  "%s OR umail LIKE %s) order by ucreate_date desc limit %s, 10"
-                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where (uname LIKE %s OR unickname LIKE %s OR " \
-                                  "uid LIKE %s OR umail LIKE %s)"
-                    # DB에 명령문 전송
-                    cursor_count.execute(sql_query_2, ('%' + usearch + '%', '%' + usearch + '%', '%' + usearch + '%',
-                                                       '%' + usearch + '%',))
-                    count = cursor_count.fetchone()
+                m = p.search(usearch)
 
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', '%' + usearch + '%', '%' + usearch + '%', '%'
-                                                      + usearch + '%', upage*10-10,))
-                    data = cursor_data.fetchone()
-
-                elif ucode == 1:
-                    sql_query_1 = "SELECT * FROM skdevsec_user where uname LIKE %s order by ucreate_date desc limit " \
-                                  "%s, 10 "
-                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where uname LIKE %s"
-
-                    # DB에 명령문 전송
-                    cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
-                    count = cursor_count.fetchone()
-
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
-                    data = cursor_data.fetchone()
-
-                elif ucode == 2:
-                    sql_query_1 = "SELECT * FROM skdevsec_user where unickname LIKE %s order by ucreate_date desc " \
-                                  "limit %s, 10 "
-                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where unickname LIKE %s"
-
-                    # DB에 명령문 전송
-                    cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
-                    count = cursor_count.fetchone()
-
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
-                    data = cursor_data.fetchone()
-
-                elif ucode == 3:
-                    sql_query_1 = "SELECT * FROM skdevsec_user where uid LIKE %s order by ucreate_date desc limit %s, " \
-                                  "10 "
-                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where uid LIKE %s"
-
-                    # DB에 명령문 전송
-                    cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
-                    count = cursor_count.fetchone()
-
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
-                    data = cursor_data.fetchone()
-
-                elif ucode == 4:
-                    sql_query_1 = "SELECT * FROM skdevsec_user where umail LIKE %s order by ucreate_date desc limit " \
-                                  "%s, 10 "
-                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where umail LIKE %s"
-
-                    # DB에 명령문 전송
-                    cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
-                    count = cursor_count.fetchone()
-
-                    cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
-                    data = cursor_data.fetchone()
-
-                else:
+                if m:
                     return Response(0)
-
-                # 데이터가 있으면
-                if data is not None:
-                    # 데이터 만큼 반복
-                    while data:
-                        new_data_in = dict()
-                        new_data_in['uid'] = data[0]
-                        new_data_in['unickname'] = data[2]
-                        new_data_in['uname'] = data[3]
-                        new_data_in['umail'] = data[4]
-                        new_data_in['uphone'] = data[5]
-                        new_data_in['ucreate_date'] = data[6]
-                        new_data_in['authority'] = int(data[7])
-                        new_data.append(new_data_in)
-                        data = cursor_data.fetchone()
-                # 데이터가 없으면
                 else:
+                    # DB 접근할 cursor
+                    cursor_count = connection.cursor()
+                    cursor_data = connection.cursor()
+
+                    # SQL 쿼리문 작성
+                    # 0: 전체 검색 / 1 : 이름 / 2 : 닉네임 / 3 : 아이디 / 4 : 이메일
+                    if ucode == 0:
+                        sql_query_1 = "SELECT * FROM skdevsec_user where (uname LIKE %s OR unickname LIKE %s OR uid LIKE " \
+                                      "%s OR umail LIKE %s) order by ucreate_date desc limit %s, 10"
+                        sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where (uname LIKE %s OR unickname LIKE %s OR " \
+                                      "uid LIKE %s OR umail LIKE %s)"
+                        # DB에 명령문 전송
+                        cursor_count.execute(sql_query_2, ('%' + usearch + '%', '%' + usearch + '%', '%' + usearch + '%',
+                                                           '%' + usearch + '%',))
+                        count = cursor_count.fetchone()
+
+                        cursor_data.execute(sql_query_1, ('%' + usearch + '%', '%' + usearch + '%', '%' + usearch + '%', '%'
+                                                          + usearch + '%', upage*10-10,))
+                        data = cursor_data.fetchone()
+
+                    elif ucode == 1:
+                        sql_query_1 = "SELECT * FROM skdevsec_user where uname LIKE %s order by ucreate_date desc limit " \
+                                      "%s, 10 "
+                        sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where uname LIKE %s"
+
+                        # DB에 명령문 전송
+                        cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
+                        count = cursor_count.fetchone()
+
+                        cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
+                        data = cursor_data.fetchone()
+
+                    elif ucode == 2:
+                        sql_query_1 = "SELECT * FROM skdevsec_user where unickname LIKE %s order by ucreate_date desc " \
+                                      "limit %s, 10 "
+                        sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where unickname LIKE %s"
+
+                        # DB에 명령문 전송
+                        cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
+                        count = cursor_count.fetchone()
+
+                        cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
+                        data = cursor_data.fetchone()
+
+                    elif ucode == 3:
+                        sql_query_1 = "SELECT * FROM skdevsec_user where uid LIKE %s order by ucreate_date desc limit %s, " \
+                                      "10 "
+                        sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where uid LIKE %s"
+
+                        # DB에 명령문 전송
+                        cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
+                        count = cursor_count.fetchone()
+
+                        cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
+                        data = cursor_data.fetchone()
+
+                    elif ucode == 4:
+                        sql_query_1 = "SELECT * FROM skdevsec_user where umail LIKE %s order by ucreate_date desc limit " \
+                                      "%s, 10 "
+                        sql_query_2 = "SELECT COUNT(*) FROM skdevsec_user where umail LIKE %s"
+
+                        # DB에 명령문 전송
+                        cursor_count.execute(sql_query_2, ('%' + usearch + '%',))
+                        count = cursor_count.fetchone()
+
+                        cursor_data.execute(sql_query_1, ('%' + usearch + '%', upage*10-10,))
+                        data = cursor_data.fetchone()
+
+                    else:
+                        return Response(0)
+
+                    # 데이터가 있으면
+                    if data is not None:
+                        # 데이터 만큼 반복
+                        while data:
+                            new_data_in = dict()
+                            new_data_in['uid'] = data[0]
+                            new_data_in['unickname'] = data[2]
+                            new_data_in['uname'] = data[3]
+                            new_data_in['umail'] = data[4]
+                            new_data_in['uphone'] = data[5]
+                            new_data_in['ucreate_date'] = data[6]
+                            new_data_in['authority'] = int(data[7])
+                            new_data.append(new_data_in)
+                            data = cursor_data.fetchone()
+                    # 데이터가 없으면
+                    else:
+                        # DB와 접속 종료
+                        connection.close()
+                        # 프론트엔드에 0 전송
+                        return Response(0)
+
+                    if count is not None:
+                        new_data.append({"user_count": count[0]})
+                    else:
+                        new_data.append({"user_count": 0})
+
                     # DB와 접속 종료
                     connection.close()
-                    # 프론트엔드에 0 전송
-                    return Response(0)
-
-                if count is not None:
-                    new_data.append({"user_count": count[0]})
-                else:
-                    new_data.append({"user_count": 0})
-
-                # DB와 접속 종료
-                connection.close()
 
             # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
             except Exception as e:
@@ -231,15 +239,46 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             ucreate_date = request.data['ucreate_date']
             authority = int(request.data['authority'])
 
-            # SQL 쿼리문 작성
-            sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            p_name = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
+            p_id = re.compile('^[a-zA-Z0-9]*$')
+            p_pwd_1 = re.compile('(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).*$')
+            p_pwd_2 = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
+            p_mail = re.compile('[~!#$%^&*()+|<>?:{}=,/`;-]')
+            p_nickname = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
+            p_phone = re.compile('^[0-9]*$')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query, (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority))
+            m_name = p_name.search(uname)
+            m_id = p_id.search(uid)
+            m_pwd_1 = p_pwd_1(upwd)
+            m_pwd_2 = p_pwd_2(upwd)
+            m_mail = p_mail(umail)
+            m_nickname = p_nickname(unickname)
+            m_phone = p_phone(uphone)
 
-            # DB와 접속 종료
-            connection.commit()
-            connection.close()
+            if m_name:
+                return Response(0)
+            elif m_id:
+                return Response(0)
+            elif m_pwd_1:
+                return Response(0)
+            elif m_pwd_2:
+                return Response(0)
+            elif m_mail:
+                return Response(0)
+            elif m_nickname:
+                return Response(0)
+            elif m_phone:
+                return Response(0)
+            else:
+                # SQL 쿼리문 작성
+                sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query, (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority))
+
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -261,15 +300,22 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
 
-            # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_user WHERE uid=%s"
+            p_id = re.compile('^[a-zA-Z0-9]*$')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query, (uid, ))
-            data = cursor.fetchone()
+            m_id = p_id.search(uid)
 
-            # DB와 접속 종료
-            connection.close()
+            if m_id:
+                return Response(0)
+            else:
+                # SQL 쿼리문 작성
+                sql_query = "SELECT * FROM skdevsec_user WHERE uid=%s"
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query, (uid, ))
+                data = cursor.fetchone()
+
+                # DB와 접속 종료
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -294,15 +340,21 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출:
             unickname = request.data['unickname']
 
-            # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_user WHERE unickname=%s"
+            p = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
+            m = p.search(unickname)
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query, (unickname, ))
-            data = cursor.fetchone()
+            if m:
+                return Response(0)
+            else:
+                # SQL 쿼리문 작성
+                sql_query = "SELECT * FROM skdevsec_user WHERE unickname=%s"
 
-            # DB와 접속 종료
-            connection.close()
+                # DB에 명령문 전송
+                cursor.execute(sql_query, (unickname, ))
+                data = cursor.fetchone()
+
+                # DB와 접속 종료
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -327,15 +379,22 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             umail = request.data['umail']
 
-            # SQL 쿼리문 작성
-            sql_query = "SELECT * FROM skdevsec_user WHERE umail=%s"
+            p = re.compile('[~!#$%^&*()+|<>?:{}=,/`;-]')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query, (umail, ))
-            data = cursor.fetchone()
+            m = p.search(umail)
 
-            # DB와 접속 종료
-            connection.close()
+            if m:
+                return Response(0)
+            else:
+                # SQL 쿼리문 작성
+                sql_query = "SELECT * FROM skdevsec_user WHERE umail=%s"
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query, (umail, ))
+                data = cursor.fetchone()
+
+                # DB와 접속 종료
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -513,15 +572,30 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             umail = request.data['umail']
             uphone = request.data['uphone']
 
-            # SQL 쿼리문 작성
-            sql_query = "UPDATE skdevsec_user SET unickname=%s, umail=%s, uphone=%s WHERE uid=%s"
+            p_nickname = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
+            p_mail = re.compile('[~!#$%^&*()+|<>?:{}=,/`;-]')
+            p_phone = re.compile('^[0-9]*$')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query, (unickname, umail, uphone, uid))
+            m_nickname = p_nickname(unickname)
+            m_mail = p_mail(umail)
+            m_phone = p_phone(uphone)
 
-            # DB와 접속 종료
-            connection.commit()
-            connection.close()
+            if m_nickname:
+                return Response(0)
+            elif m_mail:
+                return Response(0)
+            elif m_phone:
+                return Response(0)
+            else:
+                # SQL 쿼리문 작성
+                sql_query = "UPDATE skdevsec_user SET unickname=%s, umail=%s, uphone=%s WHERE uid=%s"
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query, (unickname, umail, uphone, uid))
+
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -544,15 +618,26 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             unickname = request.data['unickname']
             upwd = request.data['upwd']
 
-            # SQL 쿼리문 작성
-            sql_query = "UPDATE skdevsec_user SET upwd=%s WHERE unickname=%s"
+            p_pwd_1 = re.compile('(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).*$')
+            p_pwd_2 = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query, (upwd, unickname, ))
+            m_pwd_1 = p_pwd_1(upwd)
+            m_pwd_2 = p_pwd_2(upwd)
 
-            # DB와 접속 종료
-            connection.commit()
-            connection.close()
+            if m_pwd_1:
+                return Response(0)
+            elif m_pwd_2:
+                return Response(0)
+            else:
+                # SQL 쿼리문 작성
+                sql_query = "UPDATE skdevsec_user SET upwd=%s WHERE unickname=%s"
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query, (upwd, unickname, ))
+
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -726,14 +811,25 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             uid = request.data['uid']
             upwd = request.data['upwd']
 
-            sql_query = "UPDATE skdevsec_user SET upwd=%s WHERE uid=%s"
+            p_pwd_1 = re.compile('(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).*$')
+            p_pwd_2 = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query, (upwd, uid, ))
+            m_pwd_1 = p_pwd_1(upwd)
+            m_pwd_2 = p_pwd_2(upwd)
 
-            # DB와 접속 종료
-            connection.commit()
-            connection.close()
+            if m_pwd_1:
+                return Response(0)
+            elif m_pwd_2:
+                return Response(0)
+            else:
+                sql_query = "UPDATE skdevsec_user SET upwd=%s WHERE uid=%s"
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query, (upwd, uid, ))
+
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
