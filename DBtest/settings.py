@@ -22,6 +22,7 @@ DEBUG = False
 
 # 접속 가능한 호스트('*' <== 전부 허용)
 ALLOWED_HOSTS = ['ec2-50-18-81-3.us-west-1.compute.amazonaws.com']
+# ALLOWED_HOSTS = ['*']
 
 # 앱
 INSTALLED_APPS = [

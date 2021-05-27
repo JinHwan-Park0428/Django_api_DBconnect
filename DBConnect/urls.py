@@ -7,6 +7,7 @@ from . import skdevsec_bagview, skdevsec_boardview, skdevsec_userview, skdevsec_
 
 # trailing_slash=False
 router = routers.SimpleRouter(trailing_slash=False)
+# router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'SkdevsecBag', skdevsec_bagview.SkdevsecBagViewSet)
 router.register(r'SkdevsecBoard', skdevsec_boardview.SkdevsecBoardViewSet)
 router.register(r'SkdevsecComment', skdevsec_commentview.SkdevsecCommentViewSet)
