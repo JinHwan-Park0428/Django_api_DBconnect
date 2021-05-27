@@ -1,5 +1,6 @@
 # 필요한 모듈 임포트
 import os
+import re
 
 from django.db import connection
 from rest_framework import viewsets
@@ -297,53 +298,60 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             psearch = request.data
 
-            # psearch = ["페이지", "검색단어", "카테고리", "카테고리", ...]
-            # SQL 쿼리문 작성
-            sql_query1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s)"
-            sql_query2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s)"
-            if len(psearch) >= 3:
-                if psearch[2] == "":
-                    sql_query1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s)"
-                    sql_query2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s)"
-                else:
-                    sql_query1 = sql_query1 + " AND (pcate='"
-                    sql_query2 = sql_query2 + " AND (pcate='"
-                    for pcate in psearch[2:]:
-                        sql_query1 = sql_query1 + pcate + "' OR pcate='"
-                        sql_query2 = sql_query2 + pcate + "' OR pcate='"
-                    sql_query1 = sql_query1 + "')"
-                    sql_query2 = sql_query2 + "')"
-            sql_query1 = sql_query1 + " ORDER BY pid DESC limit %s, 8"
+            p = re.compile('[\{\}\[\]\/?.,;:|\)*~`!@^\-+<>\#$%&\\\=\(\'\"]')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query2, ('%' + psearch[1] + '%', ))
-            count = cursor.fetchone()
+            m = p.search(psearch[1])
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query1, ('%' + psearch[1] + '%', int(psearch[0])*8-8,))
-            data = cursor.fetchone()
-
-            if count is not None:
-                # 데이터만큼 반복
-                while data:
-                    new_data_in = dict()
-                    new_data_in['pid'] = int(data[0])
-                    new_data_in['pname'] = data[1]
-                    new_data_in['pcate'] = data[2]
-                    new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = int(data[5])
-                    new_data_in['preview'] = int(data[7])
-                    new_data_in['preview_avg'] = float(data[8])
-                    new_data.append(new_data_in)
-                    data = cursor.fetchone()
-                new_data.append({"product_count": count[0]})
-
+            if m:
+                return Response(0)
             else:
-                connection.close()
-                return Response({"product_count": 0})
+                # psearch = ["페이지", "검색단어", "카테고리", "카테고리", ...]
+                # SQL 쿼리문 작성
+                sql_query1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s)"
+                sql_query2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s)"
+                if len(psearch) >= 3:
+                    if psearch[2] == "":
+                        sql_query1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s)"
+                        sql_query2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s)"
+                    else:
+                        sql_query1 = sql_query1 + " AND (pcate='"
+                        sql_query2 = sql_query2 + " AND (pcate='"
+                        for pcate in psearch[2:]:
+                            sql_query1 = sql_query1 + pcate + "' OR pcate='"
+                            sql_query2 = sql_query2 + pcate + "' OR pcate='"
+                        sql_query1 = sql_query1 + "')"
+                        sql_query2 = sql_query2 + "')"
+                sql_query1 = sql_query1 + " ORDER BY pid DESC limit %s, 8"
 
-            # DB와 접속 종료
-            connection.close()
+                # DB에 명령문 전송
+                cursor.execute(sql_query2, ('%' + psearch[1] + '%', ))
+                count = cursor.fetchone()
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query1, ('%' + psearch[1] + '%', int(psearch[0])*8-8,))
+                data = cursor.fetchone()
+
+                if count is not None:
+                    # 데이터만큼 반복
+                    while data:
+                        new_data_in = dict()
+                        new_data_in['pid'] = int(data[0])
+                        new_data_in['pname'] = data[1]
+                        new_data_in['pcate'] = data[2]
+                        new_data_in['pimage'] = data[3]
+                        new_data_in['pprice'] = int(data[5])
+                        new_data_in['preview'] = int(data[7])
+                        new_data_in['preview_avg'] = float(data[8])
+                        new_data.append(new_data_in)
+                        data = cursor.fetchone()
+                    new_data.append({"product_count": count[0]})
+
+                else:
+                    connection.close()
+                    return Response({"product_count": 0})
+
+                # DB와 접속 종료
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -588,70 +596,77 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             ppage = int(request.data['ppage'])
             pcode = int(request.data['pcode'])
 
-            # SQL 쿼리문 작성
-            # 0 : 전체 검색 / 1 : 상품 명 검색 / 2 : 카테고리 검색
-            if pcode == 0:
-                sql_query_1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s) ORDER BY pid " \
-                              "DESC limit %s, 8 "
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s)"
+            p = re.compile('[\{\}\[\]\/?.,;:|\)*~`!@^\-+<>\#$%&\\\=\(\'\"]')
 
-                # DB에 명령문 전송
-                cursor.execute(sql_query_2, ('%' + psearch + '%', '%' + psearch + '%',))
-                count = cursor.fetchone()
+            m = p.search(psearch)
 
-                # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + psearch + '%', '%' + psearch + '%', ppage*8-8,))
-                data = cursor.fetchone()
-
-            elif pcode == 1:
-                sql_query_1 = "SELECT * FROM skdevsec_product WHERE pname LIKE %s ORDER BY pid DESC limit %s, 8"
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE pname LIKE %s"
-
-                # DB에 명령문 전송
-                cursor.execute(sql_query_2, ('%' + psearch + '%', ))
-                count = cursor.fetchone()
-
-                # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + psearch + '%', ppage*8-8,))
-                data = cursor.fetchone()
-
-            elif pcode == 2:
-                sql_query_1 = "SELECT * FROM skdevsec_product WHERE pcate LIKE %s ORDER BY pid DESC limit %s, 8"
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE pcate LIKE %s"
-
-                # DB에 명령문 전송
-                cursor.execute(sql_query_2, ('%' + psearch.upper() + '%',))
-                count = cursor.fetchone()
-
-                # DB에 명령문 전송
-                cursor.execute(sql_query_1, ('%' + psearch.upper() + '%', ppage*8-8,))
-                data = cursor.fetchone()
-
-            else:
+            if m:
                 return Response(0)
+            else:
+                # SQL 쿼리문 작성
+                # 0 : 전체 검색 / 1 : 상품 명 검색 / 2 : 카테고리 검색
+                if pcode == 0:
+                    sql_query_1 = "SELECT * FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s) ORDER BY pid " \
+                                  "DESC limit %s, 8 "
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE (pname LIKE %s OR pcate LIKE %s)"
 
-            if count is not None:
-                while data:
-                    new_data_in = dict()
-                    new_data_in['pid'] = int(data[0])
-                    new_data_in['pname'] = data[1]
-                    new_data_in['pcate'] = data[2]
-                    new_data_in['pimage'] = data[3]
-                    new_data_in['pprice'] = int(data[5])
-                    new_data_in['pcreate_date'] = data[6]
-                    new_data_in['preview'] = int(data[7])
-                    new_data_in['preview_avg'] = float(data[8])
-                    new_data_in['pcount'] = int(data[9])
-                    new_data.append(new_data_in)
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_2, ('%' + psearch + '%', '%' + psearch + '%',))
+                    count = cursor.fetchone()
+
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + psearch + '%', '%' + psearch + '%', ppage*8-8,))
                     data = cursor.fetchone()
 
-                new_data.append({"product_count": count[0]})
-            else:
-                connection.close()
-                return Response({"product_count": 0})
+                elif pcode == 1:
+                    sql_query_1 = "SELECT * FROM skdevsec_product WHERE pname LIKE %s ORDER BY pid DESC limit %s, 8"
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE pname LIKE %s"
 
-            # DB와 접속 종료
-            connection.close()
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_2, ('%' + psearch + '%', ))
+                    count = cursor.fetchone()
+
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + psearch + '%', ppage*8-8,))
+                    data = cursor.fetchone()
+
+                elif pcode == 2:
+                    sql_query_1 = "SELECT * FROM skdevsec_product WHERE pcate LIKE %s ORDER BY pid DESC limit %s, 8"
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_product WHERE pcate LIKE %s"
+
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_2, ('%' + psearch.upper() + '%',))
+                    count = cursor.fetchone()
+
+                    # DB에 명령문 전송
+                    cursor.execute(sql_query_1, ('%' + psearch.upper() + '%', ppage*8-8,))
+                    data = cursor.fetchone()
+
+                else:
+                    return Response(0)
+
+                if count is not None:
+                    while data:
+                        new_data_in = dict()
+                        new_data_in['pid'] = int(data[0])
+                        new_data_in['pname'] = data[1]
+                        new_data_in['pcate'] = data[2]
+                        new_data_in['pimage'] = data[3]
+                        new_data_in['pprice'] = int(data[5])
+                        new_data_in['pcreate_date'] = data[6]
+                        new_data_in['preview'] = int(data[7])
+                        new_data_in['preview_avg'] = float(data[8])
+                        new_data_in['pcount'] = int(data[9])
+                        new_data.append(new_data_in)
+                        data = cursor.fetchone()
+
+                    new_data.append({"product_count": count[0]})
+                else:
+                    connection.close()
+                    return Response({"product_count": 0})
+
+                # DB와 접속 종료
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
