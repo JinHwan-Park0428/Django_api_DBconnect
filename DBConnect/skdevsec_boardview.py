@@ -1,5 +1,6 @@
 # 필요한 모듈 임포트
 import os
+import re
 
 from django.db import connection
 from rest_framework import viewsets
@@ -364,115 +365,122 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bsearch = request.data['bsearch']
             bpage = int(request.data['bpage'])
 
-            # 검색 조건 코드 분류
-            # 전체 0, 제목 1, 내용 2, 작성자 3, 제목 + 내용 4
-            # SQL 쿼리문 작성
-            if bcode == 0:
-                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR unickname LIKE " \
-                              "%s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC limit %s, 10 "
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR " \
-                              "unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC "
+            p = re.compile('[\{\}\[\]\/?.,;:|\)*~`!@^\-+<>\#$%&\\\=\(\'\"]')
 
-                cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', '%' + bsearch + '%', bcate,))
-                count = cursor.fetchone()
+            m = p.search(bsearch)
 
-                if count is not None:
-                    # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', '%' + bsearch + '%', bcate,
-                                                 bpage*10-10,))
-                    data = cursor.fetchone()
-                else:
-                    connection.close()
-                    return Response({"board_count": 0})
-
-            elif bcode == 1:
-                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
-                              "bid DESC limit %s, 10 "
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s " \
-                              "ORDER BY bid DESC "
-
-                cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
-                count = cursor.fetchone()
-
-                if count is not None:
-                    # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
-                    data = cursor.fetchone()
-                else:
-                    connection.close()
-                    return Response({"board_count": 0})
-
-            elif bcode == 2:
-                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
-                              "bid DESC limit %s, 10 "
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s " \
-                              "ORDER BY bid DESC "
-
-                cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
-                count = cursor.fetchone()
-
-                if count is not None:
-                    # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
-                    data = cursor.fetchone()
-                else:
-                    connection.close()
-                    return Response({"board_count": 0})
-
-            elif bcode == 3:
-                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER " \
-                              "BY bid DESC limit %s, 10 "
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND " \
-                              "bcate=%s ORDER BY bid DESC "
-
-                cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
-                count = cursor.fetchone()
-
-                if count is not None:
-                    # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
-                    data = cursor.fetchone()
-                else:
-                    connection.close()
-                    return Response({"board_count": 0})
-
-            elif bcode == 4:
-                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND b_lock=0 AND " \
-                              "bcate=%s ORDER BY bid DESC limit %s, 10 "
-                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND " \
-                              "b_lock=0 AND bcate=%s ORDER BY bid DESC "
-
-                cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', bcate,))
-                count = cursor.fetchone()
-
-                if count is not None:
-                    # DB에 명령문 전송
-                    cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', bcate, bpage*10-10,))
-                    data = cursor.fetchone()
-                else:
-                    connection.close()
-                    return Response({"board_count": 0})
-
-            else:
+            if m:
                 return Response(0)
+            else:
+                # 검색 조건 코드 분류
+                # 전체 0, 제목 1, 내용 2, 작성자 3, 제목 + 내용 4
+                # SQL 쿼리문 작성
+                if bcode == 0:
+                    sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR unickname LIKE " \
+                                  "%s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC limit %s, 10 "
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s OR " \
+                                  "unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY bid DESC "
 
-            # 데이터만큼 반복
-            while data:
-                new_data_in = dict()
-                new_data_in['bid'] = int(data[0])
-                new_data_in['btitle'] = data[1]
-                new_data_in['bview'] = int(data[4])
-                new_data_in['bcomment'] = int(data[5])
-                new_data_in['unickname'] = data[6]
-                new_data_in['bcreate_date'] = data[7]
-                new_data_in['b_lock'] = data[9]
-                new_data.append(new_data_in)
-                data = cursor.fetchone()
+                    cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', '%' + bsearch + '%', bcate,))
+                    count = cursor.fetchone()
 
-            new_data.append({"board_count": count[0]})
+                    if count is not None:
+                        # DB에 명령문 전송
+                        cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', '%' + bsearch + '%', bcate,
+                                                     bpage*10-10,))
+                        data = cursor.fetchone()
+                    else:
+                        connection.close()
+                        return Response({"board_count": 0})
 
-            # DB와 접속 종료
-            connection.close()
+                elif bcode == 1:
+                    sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
+                                  "bid DESC limit %s, 10 "
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s) AND b_lock=0 AND bcate=%s " \
+                                  "ORDER BY bid DESC "
+
+                    cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
+                    count = cursor.fetchone()
+
+                    if count is not None:
+                        # DB에 명령문 전송
+                        cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
+                        data = cursor.fetchone()
+                    else:
+                        connection.close()
+                        return Response({"board_count": 0})
+
+                elif bcode == 2:
+                    sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s ORDER BY " \
+                                  "bid DESC limit %s, 10 "
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btext LIKE %s) AND b_lock=0 AND bcate=%s " \
+                                  "ORDER BY bid DESC "
+
+                    cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
+                    count = cursor.fetchone()
+
+                    if count is not None:
+                        # DB에 명령문 전송
+                        cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
+                        data = cursor.fetchone()
+                    else:
+                        connection.close()
+                        return Response({"board_count": 0})
+
+                elif bcode == 3:
+                    sql_query_1 = "SELECT * FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND bcate=%s ORDER " \
+                                  "BY bid DESC limit %s, 10 "
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (unickname LIKE %s) AND b_lock=0 AND " \
+                                  "bcate=%s ORDER BY bid DESC "
+
+                    cursor.execute(sql_query_2, ('%' + bsearch + '%', bcate,))
+                    count = cursor.fetchone()
+
+                    if count is not None:
+                        # DB에 명령문 전송
+                        cursor.execute(sql_query_1, ('%' + bsearch + '%', bcate, bpage*10-10,))
+                        data = cursor.fetchone()
+                    else:
+                        connection.close()
+                        return Response({"board_count": 0})
+
+                elif bcode == 4:
+                    sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND b_lock=0 AND " \
+                                  "bcate=%s ORDER BY bid DESC limit %s, 10 "
+                    sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND " \
+                                  "b_lock=0 AND bcate=%s ORDER BY bid DESC "
+
+                    cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', bcate,))
+                    count = cursor.fetchone()
+
+                    if count is not None:
+                        # DB에 명령문 전송
+                        cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', bcate, bpage*10-10,))
+                        data = cursor.fetchone()
+                    else:
+                        connection.close()
+                        return Response({"board_count": 0})
+
+                else:
+                    return Response(0)
+
+                # 데이터만큼 반복
+                while data:
+                    new_data_in = dict()
+                    new_data_in['bid'] = int(data[0])
+                    new_data_in['btitle'] = data[1]
+                    new_data_in['bview'] = int(data[4])
+                    new_data_in['bcomment'] = int(data[5])
+                    new_data_in['unickname'] = data[6]
+                    new_data_in['bcreate_date'] = data[7]
+                    new_data_in['b_lock'] = data[9]
+                    new_data.append(new_data_in)
+                    data = cursor.fetchone()
+
+                new_data.append({"board_count": count[0]})
+
+                # DB와 접속 종료
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
@@ -558,39 +566,46 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
             bsearch = request.data['bsearch']
             bpage = int(request.data['bpage'])
 
-            # SQL 쿼리문 작성
-            sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s " \
-                          "ORDER BY bid DESC limit %s, 10 "
-            sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s"
+            p = re.compile('[\{\}\[\]\/?.,;:|\)*~`!@^\-+<>\#$%&\\\=\(\'\"]')
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', unickname,))
-            count = cursor.fetchone()
+            m = p.search(bsearch)
 
-            # DB에 명령문 전송
-            cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', unickname, bpage*10-10))
-            data = cursor.fetchone()
-
-            if count is not None:
-                while data:
-                    new_data_in = dict()
-                    new_data_in['bid'] = int(data[0])
-                    new_data_in['btitle'] = data[1]
-                    new_data_in['bview'] = int(data[4])
-                    new_data_in['bcomment'] = int(data[5])
-                    new_data_in['unickname'] = data[6]
-                    new_data_in['bcreate_date'] = data[7]
-                    new_data_in['b_lock'] = data[9]
-                    new_data.append(new_data_in)
-                    data = cursor.fetchone()
-                new_data.append({"board_count": count[0]})
+            if m:
+                return Response(0)
             else:
-                connection.close()
-                return Response({"board_count": 0})
+                # SQL 쿼리문 작성
+                sql_query_1 = "SELECT * FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s " \
+                              "ORDER BY bid DESC limit %s, 10 "
+                sql_query_2 = "SELECT COUNT(*) FROM skdevsec_board WHERE (btitle LIKE %s OR btext LIKE %s) AND unickname=%s"
 
-            # DB와 접속 종료
-            connection.commit()
-            connection.close()
+                # DB에 명령문 전송
+                cursor.execute(sql_query_2, ('%' + bsearch + '%', '%' + bsearch + '%', unickname,))
+                count = cursor.fetchone()
+
+                # DB에 명령문 전송
+                cursor.execute(sql_query_1, ('%' + bsearch + '%', '%' + bsearch + '%', unickname, bpage*10-10))
+                data = cursor.fetchone()
+
+                if count is not None:
+                    while data:
+                        new_data_in = dict()
+                        new_data_in['bid'] = int(data[0])
+                        new_data_in['btitle'] = data[1]
+                        new_data_in['bview'] = int(data[4])
+                        new_data_in['bcomment'] = int(data[5])
+                        new_data_in['unickname'] = data[6]
+                        new_data_in['bcreate_date'] = data[7]
+                        new_data_in['b_lock'] = data[9]
+                        new_data.append(new_data_in)
+                        data = cursor.fetchone()
+                    new_data.append({"board_count": count[0]})
+                else:
+                    connection.close()
+                    return Response({"board_count": 0})
+
+                # DB와 접속 종료
+                connection.commit()
+                connection.close()
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
