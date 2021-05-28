@@ -378,11 +378,13 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             umail = request.data['umail']
+            print(umail)
 
             p = re.compile('[~!#$%^&*()+|<>?:{}=,/`;-]')
 
             m = p.search(umail)
 
+            print(m)
             if m:
                 return Response(1)
             else:
