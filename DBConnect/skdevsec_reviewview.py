@@ -75,7 +75,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             rcreate_date = request.data['rcreate_date']
 
             # SQL 쿼리문 작성
-            sql_query_1 = "INSERT INTO skdevsec_review(pid, rstar, unickname, rcreate_date) VALUES(%s, %f, %s, %s)"
+            sql_query_1 = "INSERT INTO skdevsec_review(pid, rstar, unickname, rcreate_date) VALUES(%s, %s, %s, %s)"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (pid, rstar, unickname, rcreate_date))
