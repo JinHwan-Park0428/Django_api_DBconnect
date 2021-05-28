@@ -108,7 +108,7 @@ FILE_UPLOAD_HANDLERS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata'
+    'DEFAULT_METADATA_CLASS': None,
 }
 
 # 기타 설정들
