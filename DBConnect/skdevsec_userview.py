@@ -578,15 +578,15 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             p_mail = re.compile('[~!#$%^&*()+|<>?:{}=,/`;-]')
             p_phone = re.compile('^[0-9]*$')
 
-            m_nickname = p_nickname(unickname)
-            m_mail = p_mail(umail)
-            m_phone = p_phone(uphone)
+            m_nickname = p_nickname.search(unickname)
+            m_mail = p_mail.search(umail)
+            m_phone = p_phone.search(uphone)
 
             if m_nickname:
                 return Response(0)
             elif m_mail:
                 return Response(0)
-            elif m_phone:
+            elif not m_phone:
                 return Response(0)
             else:
                 # SQL 쿼리문 작성
