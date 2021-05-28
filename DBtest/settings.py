@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 
 # 미들웨어
 MIDDLEWARE = [
+    'DBtest.middleware.RemoveHeaders',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -47,7 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'DBtest.middleware.RemoveHeaders',
+
 ]
 
 # 외부 웹사이트 접근 허용 여부
