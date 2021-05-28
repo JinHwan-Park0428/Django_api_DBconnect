@@ -107,6 +107,10 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata'
+}
+
 # 기타 설정들
 LANGUAGE_CODE = 'ko-kr'
 
