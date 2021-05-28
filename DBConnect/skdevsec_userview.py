@@ -306,7 +306,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             m_id = p_id.search(uid)
 
             print(m_id)
-            if m_id:
+            if not m_id:
                 return Response(1)
             else:
                 # SQL 쿼리문 작성
