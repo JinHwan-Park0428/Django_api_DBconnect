@@ -271,10 +271,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response(0)
             else:
                 # SQL 쿼리문 작성
-                sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                sql_query = "INSERT INTO skdevsec_user VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query, (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority))
+                cursor.execute(sql_query, (uid, upwd, unickname, uname, umail, uphone, ucreate_date, authority, 0))
 
                 # DB와 접속 종료
                 connection.commit()
