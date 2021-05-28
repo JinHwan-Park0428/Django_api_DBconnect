@@ -384,7 +384,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             m = p.search(umail)
 
             if m:
-                return Response(0)
+                return Response(1)
             else:
                 # SQL 쿼리문 작성
                 sql_query = "SELECT * FROM skdevsec_user WHERE umail=%s"
