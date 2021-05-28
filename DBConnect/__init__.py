@@ -74,3 +74,38 @@ def make_signature(string):
     string_base64 = base64.b64encode(string_hmac).decode('UTF-8')
     return string_base64
 
+
+# 업로드 파일 검증(보드, 상품은 관리자만 관리하기에 넣지 않아도 무방할듯 )
+def check_file(filename):
+    # return으로 boolean값을 하기위한 변수
+    check_result = False
+
+    # 허용할 확장자명 리스트
+    allow_ext = ['jpg', 'jpeg', 'png']
+
+    # 파일명 중간에 들어가는지 확인할 특수 문자 리스트
+    disable_sc = ['..', './', '.\\', '%', ';', '\0']
+
+    # 특수문자 색출
+    for i in disable_sc:
+        if filename.find(i) != -1:
+            check_result = False
+    else:
+        try:
+            # 파일의 확장자명 추출을 위한 인덱스값
+            temp_point = filename.rindex('.')
+            # 파일의 확장자명 추출
+            file_ext = filename[temp_point:]
+            # 확장자명이 없거나 빈값이 아니면서
+            if file_ext is not None and file_ext.trim() != '':
+                # 화이트리스트에 있으면
+                if file_ext in allow_ext:
+                    # 리턴값을 위한 변경
+                    check_result = True
+
+        except Exception as e:
+            print(f"에러: {e}")
+            check_result = False
+            return check_result
+
+    return check_result
