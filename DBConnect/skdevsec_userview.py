@@ -816,12 +816,12 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             p_pwd_1 = re.compile('(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).*$')
             p_pwd_2 = re.compile('[~!@#$%^&*()_+|<>?:{}=,/`;-]')
 
-            m_pwd_1 = p_pwd_1(upwd)
-            m_pwd_2 = p_pwd_2(upwd)
+            m_pwd_1 = p_pwd_1.search(upwd)
+            m_pwd_2 = p_pwd_2.search(upwd)
 
-            if m_pwd_1:
+            if not m_pwd_1:
                 return Response(0)
-            elif m_pwd_2:
+            elif not m_pwd_2:
                 return Response(0)
             else:
                 sql_query = "UPDATE skdevsec_user SET upwd=%s WHERE uid=%s"
