@@ -39,7 +39,7 @@ INSTALLED_APPS = [
 
 # 미들웨어
 MIDDLEWARE = [
-    'DBtest.DBtest.middleware.RemoveHeaders'
+    # 'DBtest.DBtest.middleware.RemoveHeaders'
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
