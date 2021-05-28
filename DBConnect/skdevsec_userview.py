@@ -346,7 +346,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             m = p.search(unickname)
 
             if m:
-                return Response(0)
+                return Response(1)
             else:
                 # SQL 쿼리문 작성
                 sql_query = "SELECT * FROM skdevsec_user WHERE unickname=%s"
