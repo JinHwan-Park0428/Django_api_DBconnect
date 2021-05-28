@@ -301,9 +301,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             uid = request.data['uid']
             print(uid)
 
-            p_id = re.compile('^[a-zA-Z0-9]*$')
+            p_id = re.compile('[^a-zA-Z0-9]*$')
 
             m_id = p_id.search(uid)
+
             print(m_id)
             if m_id:
                 return Response(1)
