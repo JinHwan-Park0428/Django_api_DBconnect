@@ -126,7 +126,16 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                           "preview_avg =(SELECT round(avg(rstar),1) FROM skdevsec_review WHERE pid=%s)  WHERE pid=%s "
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_2, (pid, pid, pid,))
+            try:
+                cursor.execute(sql_query_2, (pid, pid, pid,))
+            except:
+                try:
+                    sql_query_3 = "UPDATE skdevsec_product SET preview = 0, preview_avg =0 WHERE pid=%s"
+                    cursor.execute(sql_query_3, (pid, pid, pid,))
+                except Exception as e:
+                    connection.rollback()
+                    print(f"에러: {e}")
+                    return Response(0)
 
             # DB와 접속 종료
             connection.commit()
