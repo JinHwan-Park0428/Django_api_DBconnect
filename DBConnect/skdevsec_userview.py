@@ -262,12 +262,13 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             {uname}
             {umail}
             {uphone}
-            {ucreate_date}
-            {authority}
             {m_id}
             {m_pwd_1}
             {m_pwd_2}
-            {m_mail, m_nickname, m_phone}
+            {m_nickname}
+            {m_name}
+            {m_mail}
+            {m_phone}
             """)
 
             if m_name:
