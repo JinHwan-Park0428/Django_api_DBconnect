@@ -157,17 +157,12 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             unickname = request.data['unickname']
             pname = request.data['pname']
 
-            print(unickname)
-            print(pname)
-
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE unickname=%s"
 
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (unickname,))
             uid = cursor.fetchone()
-
-            print(uid)
 
             if uid is not None:
                 # SQL 쿼리문 작성
@@ -182,7 +177,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
 
             if oid is not None:
                 while oid:
-                    print(oid)
+
                     # SQL 쿼리문 작성
                     sql_query_3 = "SELECT * FROM skdevsec_orderproduct WHERE oid=%s"
 
@@ -190,20 +185,17 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor.execute(sql_query_3, (int(oid[0]),))
                     _pname = cursor.fetchone()
 
-                    print(_pname)
-
                     pname_list.append(_pname[2])
                     oid = cursor_oid.fetchone()
 
                 pname_count = {}
-                print(pname_list)
+
                 for i in pname_list:
                     try:
                         pname_count[i] += 1
                     except:
                         pname_count[i] = 1
 
-                print(pname_count)
                 # 만약 사용자가 상품을 구매했으면 리뷰한 적이 있는지 확인
                 if pname in pname_list:
                     # SQL 쿼리문 작성
@@ -213,7 +205,6 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor.execute(sql_query_4, (pname,))
                     pid = cursor.fetchone()
 
-                    print(pid)
                     # SQL 쿼리문 작성
                     sql_query_5 = "SELECT COUNT(*) FROM skdevsec_review WHERE pid=%s AND unickname=%s"
 
@@ -221,7 +212,6 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                     cursor.execute(sql_query_5, (int(pid[0]), unickname,))
                     review = cursor.fetchone()
 
-                    print(review)
                 # 구매한적이 없으면 프론트엔드로 0 전송
                 else:
                     return Response(1)
@@ -229,7 +219,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
                 # DB와 접속 종료
                 connection.close()
             else:
-                return  Response(1)
+                return Response(1)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
