@@ -255,29 +255,13 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             m_nickname = p_nickname.search(unickname)
             m_phone = p_phone.search(uphone)
 
-            print(f"""
-            {uid}
-            {upwd}
-            {unickname}
-            {uname}
-            {umail}
-            {uphone}
-            {m_id}
-            {m_pwd_1}
-            {m_pwd_2}
-            {m_nickname}
-            {m_name}
-            {m_mail}
-            {m_phone}
-            """)
-
             if m_name:
                 return Response(0)
             elif not m_id:
                 return Response(0)
-            elif m_pwd_1:
+            elif not m_pwd_1:
                 return Response(0)
-            elif m_pwd_2:
+            elif not m_pwd_2:
                 return Response(0)
             elif m_mail:
                 return Response(0)
