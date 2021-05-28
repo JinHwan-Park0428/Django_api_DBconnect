@@ -257,7 +257,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             if m_name:
                 return Response(0)
-            elif m_id:
+            elif not m_id:
                 return Response(0)
             elif m_pwd_1:
                 return Response(0)
@@ -267,7 +267,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response(0)
             elif m_nickname:
                 return Response(0)
-            elif m_phone:
+            elif not m_phone:
                 return Response(0)
             else:
                 # SQL 쿼리문 작성
@@ -299,13 +299,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             uid = request.data['uid']
-            print(uid)
 
             p_id = re.compile('^[a-zA-Z0-9]*$')
 
             m_id = p_id.search(uid)
 
-            print(m_id)
             if not m_id:
                 return Response(1)
             else:
