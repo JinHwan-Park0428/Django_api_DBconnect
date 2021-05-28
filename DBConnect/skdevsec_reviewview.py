@@ -112,12 +112,13 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             rid = int(request.data['rid'])
             pid = int(request.data['pid'])
+            unickname = request.data['unickname']
 
             # SQL 쿼리문 작성
-            sql_query_1 = "DELETE FROM skdevsec_review WHERE rid=%s"
+            sql_query_1 = "DELETE FROM skdevsec_review WHERE rid=%s and unickname=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (rid, ))
+            cursor.execute(sql_query_1, (rid, unickname, ))
             connection.commit()
 
             # SQL 쿼리문 작성
