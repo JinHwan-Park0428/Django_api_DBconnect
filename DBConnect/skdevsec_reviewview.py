@@ -27,7 +27,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             sql_query = "SELECT * FROM skdevsec_review where pid=%s order by rid desc"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query, (pid, ))
+            cursor.execute(sql_query, (pid,))
             data = cursor.fetchone()
 
             # 데이터가 있으면
@@ -118,7 +118,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             sql_query_1 = "DELETE FROM skdevsec_review WHERE rid=%s and unickname=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (rid, unickname, ))
+            cursor.execute(sql_query_1, (rid, unickname,))
             connection.commit()
 
             # SQL 쿼리문 작성
@@ -157,58 +157,70 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             unickname = request.data['unickname']
             pname = request.data['pname']
 
+            print(unickname)
+            print(pname)
+
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE unickname=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (unickname, ))
+            cursor.execute(sql_query_1, (unickname,))
             uid = cursor.fetchone()
+
+            print(uid)
 
             if uid is not None:
                 # SQL 쿼리문 작성
                 sql_query_2 = "SELECT * FROM skdevsec_orderuser WHERE uid=%s"
 
                 # DB에 명령문 전송
-                cursor_oid.execute(sql_query_2, (uid[0], ))
+                cursor_oid.execute(sql_query_2, (uid[0],))
                 oid = cursor_oid.fetchone()
 
             else:
                 return Response(0)
 
             while oid:
+                print(oid)
                 # SQL 쿼리문 작성
                 sql_query_3 = "SELECT * FROM skdevsec_orderproduct WHERE oid=%s"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_3, (int(oid[0]), ))
+                cursor.execute(sql_query_3, (int(oid[0]),))
                 _pname = cursor.fetchone()
+
+                print(_pname)
 
                 pname_list.append(_pname[2])
                 oid = cursor_oid.fetchone()
 
             pname_count = {}
-
+            print(pname_list)
             for i in pname_list:
                 try:
                     pname_count[i] += 1
                 except:
                     pname_count[i] = 1
 
+            print(pname_count)
             # 만약 사용자가 상품을 구매했으면 리뷰한 적이 있는지 확인
             if pname in pname_list:
                 # SQL 쿼리문 작성
                 sql_query_4 = "SELECT * FROM skdevsec_product WHERE pname=%s"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_4, (pname, ))
+                cursor.execute(sql_query_4, (pname,))
                 pid = cursor.fetchone()
 
+                print(pid)
                 # SQL 쿼리문 작성
                 sql_query_5 = "SELECT COUNT(*) FROM skdevsec_review WHERE pid=%s AND unickname=%s"
 
                 # DB에 명령문 전송
-                cursor.execute(sql_query_5, (int(pid[0]), unickname, ))
+                cursor.execute(sql_query_5, (int(pid[0]), unickname,))
                 review = cursor.fetchone()
+
+                print(review)
             # 구매한적이 없으면 프론트엔드로 0 전송
             else:
                 return Response(0)
