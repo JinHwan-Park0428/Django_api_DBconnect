@@ -131,7 +131,7 @@ class SkdevsecReviewViewSet(viewsets.ReadOnlyModelViewSet):
             except:
                 try:
                     sql_query_3 = "UPDATE skdevsec_product SET preview = 0, preview_avg =0 WHERE pid=%s"
-                    cursor.execute(sql_query_3, (pid, pid, pid,))
+                    cursor.execute(sql_query_3, (pid, ))
                 except Exception as e:
                     connection.rollback()
                     print(f"에러: {e}")
