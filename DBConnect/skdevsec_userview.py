@@ -249,11 +249,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             m_name = p_name.search(uname)
             m_id = p_id.search(uid)
-            m_pwd_1 = p_pwd_1(upwd)
-            m_pwd_2 = p_pwd_2(upwd)
-            m_mail = p_mail(umail)
-            m_nickname = p_nickname(unickname)
-            m_phone = p_phone(uphone)
+            m_pwd_1 = p_pwd_1.search(upwd)
+            m_pwd_2 = p_pwd_2.search(upwd)
+            m_mail = p_mail.search(umail)
+            m_nickname = p_nickname.search(unickname)
+            m_phone = p_phone.search(uphone)
 
             if m_name:
                 return Response(0)
