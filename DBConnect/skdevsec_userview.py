@@ -447,22 +447,18 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         # 프론트와 맞춰야하는 키
         string_key = b'000000000@fsadqega#fkdlsaiqu1235'
         # string_key = '000000000@fsadqega#fkdlsaiqu1235'
+
         # 프론트의 키값을 16진수화하기위한 과정
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
-            # # url_decode = parse.unquote(request.data)
-            # # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
-            #
-            # print(f"체크: {request.data['body']}")
-            # base64_str = request.data['body']
-            # base64_decode = base64.b64decode(base64_str).decode('utf-16')
-            # print(base64_decode)
+
             print(f"request.data:{request.data}")
             print(f"request.data['body']: {request.data['body']}")
             decrypted_data = AESCipher(string_key).decrypt(request.data['body'])
+
             print(f"체크1: {decrypted_data}")
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             decrypted_data = decrypted_data.decode('utf-8')
@@ -475,7 +471,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # {}
             uid = decrypted_data['uid']
             upwd = decrypted_data['upwd']
-            print('에러검사')
+
             # [{}]
             # uid = decrypted_data[0]['uid']
             # upwd = decrypted_data[0]['upwd']

@@ -25,11 +25,13 @@ class AESCipher:
         return base64.b64encode(iv + cipher.encrypt(raw.encode('utf-8')))
 
     def decrypt(self, enc):
+        print("first enc : ", enc)
         enc = base64.b64decode(enc)
+        print("decode enc : ", enc)
         iv = enc[:16]
-        print(iv)
+        print("iv : ", iv)
         # iv = iv.encode('utf-8')
-        print(enc[16:])
+        print("before decrypt : ", enc[16:])
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         print(cipher.decrypt(enc[16:]))
         a = cipher.decrypt(enc[16:])
