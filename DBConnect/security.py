@@ -33,7 +33,8 @@ class AESCipher:
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         print(cipher.decrypt(enc[16:]))
         a = cipher.decrypt(enc[16:])
-        print(ord(a))
+        for i in a:
+            print(ord(i), end='')
         return unpad(cipher.decrypt(enc[16:]))
 
 
