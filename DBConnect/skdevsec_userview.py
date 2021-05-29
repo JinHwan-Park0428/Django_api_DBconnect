@@ -447,10 +447,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         string_key = '0000000000@fsadqega#fkdlsaiqu1235'
         # 프론트의 키값을 16진수화하기위한 과정
         new_key = []
-        cnt = 0
+        # cnt = 0
         for i in string_key:
-            new_key[cnt] = int(hex(ord(i)), 16)
-            cnt += 1
+            new_key.append(int(hex(ord(i)), 16))
+            # cnt += 1
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
