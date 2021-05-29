@@ -19,7 +19,7 @@ class AESCipher:
         raw = pad(raw)
         # iv = Random.new().read(AES.block_size)
         iv = 1234567812345678
-        iv = iv.encode('utf-8')
+        # iv = iv.encode('utf-8')
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return base64.b64encode(iv + cipher.encrypt(raw.encode('utf-8')))
 
@@ -27,7 +27,7 @@ class AESCipher:
         enc = base64.b64decode(enc)
         # iv = enc[:16]
         iv = 1234567812345678
-        iv = iv.encode('utf-8')
+        # iv = iv.encode('utf-8')
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return unpad(cipher.decrypt(enc[16:]))
 
