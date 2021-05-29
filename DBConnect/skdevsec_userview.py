@@ -445,8 +445,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         # 데이터 저장을 위한 딕셔너리 선언
         new_data = dict()
         # 프론트와 맞춰야하는 키
-        # string_key = b'000000000@fsadqega#fkdlsaiqu1235'
-        string_key = '000000000@fsadqega#fkdlsaiqu1235'
+        string_key = b'000000000@fsadqega#fkdlsaiqu1235'
+        # string_key = '000000000@fsadqega#fkdlsaiqu1235'
         # 프론트의 키값을 16진수화하기위한 과정
         try:
             # DB 접근할 cursor
@@ -462,7 +462,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # print(base64_decode)
             print(f"request.data:{request.data}")
             print(f"request.data['body']: {request.data['body']}")
-            decrypted_data = AESCipher1(string_key).decrypt(request.data['body'])
+            decrypted_data = AESCipher(string_key).decrypt(request.data['body'])
             print(f"체크1: {decrypted_data}")
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             decrypted_data = decrypted_data.decode('utf-8')
