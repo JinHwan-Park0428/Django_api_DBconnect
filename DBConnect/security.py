@@ -6,7 +6,7 @@ from Crypto.Cipher import AES
 
 # from Crypto.Util.Padding import pad
 
-BS = 32
+BS = 16
 pad = lambda s: s + (BS - len(s.encode('utf-8')) % BS) * chr(BS - len(s.encode('utf-8')) % BS)
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
@@ -26,9 +26,8 @@ class AESCipher:
 
     def decrypt(self, enc):
         enc = base64.b64decode(enc)
-        # iv = enc[:16]
-        iv = b'1234567812345678'
-        iv = base64.b64encode(iv)
+        iv = enc[:16]
+        print(iv)
         # iv = iv.encode('utf-8')
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return unpad(cipher.decrypt(enc[16:]))
