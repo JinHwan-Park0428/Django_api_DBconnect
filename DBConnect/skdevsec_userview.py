@@ -467,7 +467,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # 서버단에서 토큰 복호화 확인용
             # url_decode = parse.unquote(request.data)
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
-            decrypted_data = AESCipher(bytes(new_key)).decrypt(data_key)
+            decrypted_data = AESCipher(bytes(new_key)).decrypt(data_key[0])
             decrypted_data = decrypted_data.decode('utf-8')
             print(decrypted_data)
 
