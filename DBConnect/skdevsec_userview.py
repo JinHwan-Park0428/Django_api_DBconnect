@@ -452,7 +452,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         for i in string_key:
             new_key.append(int(hex(ord(i)), 16))
             # cnt += 1
-        print(new_key)
+        print(f"newkey:{new_key}")
+        print(f"bytesnewkey:{bytes(new_key)}")
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
