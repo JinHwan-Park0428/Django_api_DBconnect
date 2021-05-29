@@ -459,15 +459,12 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # 서버단에서 토큰 복호화 확인용
             # url_decode = parse.unquote(request.data)
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
-            # base64_decode = base64.decode(request.data['body'])
-            # decrypted_data = AESCipher(bytes(new_key)).decrypt(base64_decode)
-            print(f"체크: {request.data['body']}")
-            try:
-                decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
-                decrypted_data = decrypted_data.decode('utf-8')
-            except Exception as e:
-                print(f"에러 : {e}")
 
+            print(f"체크: {request.data['body']}")
+            base64_decode = base64.decode(request.data['body'])
+            decrypted_data = AESCipher(bytes(new_key)).decrypt(base64_decode)
+            # decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
+            decrypted_data = decrypted_data.decode('utf-8')
             print(f"체크: {decrypted_data}")
 
             # 기존
