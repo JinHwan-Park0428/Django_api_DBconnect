@@ -28,7 +28,7 @@ class AESCipher:
         enc = base64.b64decode(enc)
         iv = enc[:16]
         print(iv)
-        iv = iv.encode('utf-8')
+        # iv = iv.encode('utf-8')
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         print(unpad(cipher.decrypt(enc[16:])))
         return unpad(cipher.decrypt(enc[16:]))
