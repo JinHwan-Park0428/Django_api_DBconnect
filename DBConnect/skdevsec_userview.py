@@ -455,11 +455,12 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
+            print(request.data)
+
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
             # url_decode = parse.unquote(request.data)
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
-
             decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data)
             decrypted_data = decrypted_data.decode('utf-8')
             print(decrypted_data)
