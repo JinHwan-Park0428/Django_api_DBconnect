@@ -13,6 +13,7 @@ from . import sms_send
 import bcrypt
 from datetime import datetime
 from DBConnect.security import *
+from urllib import parse
 
 
 # 회원 정보 관련 테이블
@@ -456,6 +457,9 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
+            # url_decode = parse.unquote(request.data)
+            # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
+
             decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data)
             decrypted_data = decrypted_data.decode('utf-8')
             print(decrypted_data)
@@ -473,7 +477,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # upwd = decrypted_data[0]['upwd']
 
             print(f"""
-            {uid, upwd}""")
+            {uid, upwd}
+            """)
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE uid=%s"
