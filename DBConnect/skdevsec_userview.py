@@ -442,76 +442,76 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
     def login(self, request):
         # 데이터 저장을 위한 딕셔너리 선언
         new_data = dict()
+        # 프론트와 맞춰야하는 키
+        string_key = '000000000@fsadqega#fkdlsaiqu1235'
+        # 프론트의 키값을 16진수화하기위한 과정
+        new_key = []
+        cnt = 0
+        for i in string_key:
+            new_key[cnt] = int(hex(ord(i)), 16)
+            cnt += 1
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
-            uid = request.data['uid']
-            upwd = request.data['upwd']
+            # 서버단에서 토큰 복호화 확인용
+            decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data)
+            decrypted_data.decode('utf-8')
+            # uid = request.data['uid']
+            # upwd = request.data['upwd']
+            uid = decrypted_data['uid']
+            upwd = decrypted_data['upwd']
 
             # SQL 쿼리문 작성
-            sql_query_1 = "SELECT * FROM skdevsec_user WHERE uid=%s and upwd=%s"
+            sql_query_1 = "SELECT * FROM skdevsec_user WHERE uid=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (uid, upwd))
+            cursor.execute(sql_query_1, (uid, ))
             data = cursor.fetchone()
 
             # 불러온 데이터를 딕셔너리 형태로 저장
             if data is not None:
-                # 프론트와 맞춰야하는 키
-                string_key = '000000000@fsadqega#fkdlsaiqu1235'
-
-                # 프론트의 키값을 16진수화하기위한 과정
-                new_key = []
-                cnt = 0
-                for i in string_key:
-                    new_key[cnt] = int(hex(ord(i)), 16)
-                    cnt += 1
-
                 # bcrypt를 이용해 저장한 패스워드와 일치여부 확인
                 if bcrypt.checkpw(upwd.encode('utf-8'), data[1].encode('utf-8')):
                     if uid == 'admin':
                         rnd = random.randint(100, 1000)
-
                     else:
                         rnd = random.randint(1000, 10000)
 
-                    # 키와 원하는 정보를 aes256기법을 이용한 토큰화
-                    token = AESCipher(bytes(new_key)).encrypt(
-                        data[2] + '-' + str(rnd) + '-' + str(datetime.today().strftime("%Y%m%d%H%M")))
-
-                    # 서버단에서 토큰 복호화 확인용
-                    decrypted_data = AESCipher(bytes(new_key)).decrypt(token)
-                    decrypted_data.decode('utf-8')
-
+                    # 키와 원하는 정보를 aes256기법을 이용한 토큰화 token = AESCipher(bytes(new_key)).encrypt(data[2] + '-' + str(rnd)
+                    # + '-' + str(datetime.today().strftime("%Y%m%d%H%M")))
+                    token = AESCipher(bytes(new_key)).encrypt({'unickname': data[2],
+                                                               'level': str(rnd),
+                                                               'login_date': str(
+                                                                   datetime.today().strftime("%Y%m%d%H%M"))}
+                                                              )
                     # DB와 접속 종료
                     connection.close()
-                    if new_data['authority'] == 1:
-                        new_data['login_check'] = 2
-                        return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
-                    else:
-                        new_data['login_check'] = 1
-                        return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                    # if new_data['authority'] == 1:
+                    #     new_data['login_check'] = 2
+                    #     return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                    # else:
+                    #     new_data['login_check'] = 1
+                    #     return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
 
-                    # return Response({'token': token})
+                    return Response({'token': token})
 
                 else:
-                    # DB와 접속 종료
-                    connection.close()
-                    return Response(0)
+                    try:
+                        sql_query_2 = "UPDATE skdevsec_user SET ulock=ulock+1 WHERE uid=%s"
+                        cursor.execute(sql_query_2, (uid,))
+
+                    except Exception as e:
+                        connection.rollback()
+                        print(f"에러: {e}")
+                        return Response(0)
+
+                    else:
+                        connection.commit()
+                        connection.close()
+                        return Response(0)
             else:
-                try:
-                    sql_query_2 = "UPDATE skdevsec_user SET ulock=ulock+1 WHERE uid=%s"
-                    cursor.execute(sql_query_2, (uid,))
-                    connection.commit()
-                    connection.close()
-
-                except Exception as e:
-                    connection.rollback()
-                    print(f"에러: {e}")
-                    return Response(0)
-
                 return Response(0)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
