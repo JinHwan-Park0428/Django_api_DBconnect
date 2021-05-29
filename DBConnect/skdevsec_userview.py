@@ -464,7 +464,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             print(request.data['body'])
             decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             decrypted_data = decrypted_data.decode('utf-8')
-            print(decrypted_data)
+            print(f"체크: {decrypted_data}")
 
             # 기존
             # uid = request.data['uid']
