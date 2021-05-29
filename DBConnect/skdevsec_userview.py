@@ -457,11 +457,17 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             print(request.data)
 
+            data_key = request.data
+            print(data_key)
+
+            data_key = data_key.keys()
+            print(data_key)
+
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
             # url_decode = parse.unquote(request.data)
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
-            decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data)
+            decrypted_data = AESCipher(bytes(new_key)).decrypt(data_key)
             decrypted_data = decrypted_data.decode('utf-8')
             print(decrypted_data)
 
