@@ -31,7 +31,7 @@ class AESCipher:
         # iv = iv.encode('utf-8')
         print(enc[16:])
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        print(unpad(cipher.decrypt(enc[16:])))
+        print(cipher.decrypt(enc[16:]))
         return unpad(cipher.decrypt(enc[16:]))
 
 
