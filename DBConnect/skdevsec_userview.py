@@ -461,8 +461,10 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
 
             print(f"체크: {request.data['body']}")
-            base64_decode = base64.decode(request.data['body'])
-            decrypted_data = AESCipher(bytes(new_key)).decrypt(base64_decode)
+            base64_str = request.data['body']
+            base64_bytes = base64.b64decode(base64_str)
+            base64_decode = base64_bytes.decode('ascii')
+            decrypted_data = AESCipher(base64_bytes(new_key)).decrypt(base64_decode)
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             decrypted_data = decrypted_data.decode('utf-8')
             print(f"체크: {decrypted_data}")
@@ -501,11 +503,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                     # 키와 원하는 정보를 aes256기법을 이용한 토큰화 token = AESCipher(bytes(new_key)).encrypt(data[2] + '-' + str(rnd)
                     # + '-' + str(datetime.today().strftime("%Y%m%d%H%M")))
-                    token = AESCipher(bytes(new_key)).encrypt({'unickname': data[2],
+                    token = AESCipher(base64_bytes(new_key)).encrypt({'unickname': data[2],
                                                                'level': str(rnd),
                                                                'login_date': str(
                                                                    datetime.today().strftime("%Y%m%d%H%M"))}
-                                                              )
+                                                                     )
                     print(token)
                     # DB와 접속 종료
                     connection.close()
