@@ -466,7 +466,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # base64_str = request.data['body']
             # base64_decode = base64.b64decode(base64_str).decode('utf-16')
             # print(base64_decode)
-
+            print(f"request.data:{request.data}")
+            print(f"request.data['body']: {request.data['body']}")
             decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             print(f"체크1: {decrypted_data}")
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
