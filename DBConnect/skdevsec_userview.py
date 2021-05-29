@@ -14,6 +14,7 @@ import bcrypt
 from datetime import datetime
 from DBConnect.security import *
 from urllib import parse
+import base64
 
 
 # 회원 정보 관련 테이블
@@ -455,19 +456,15 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # DB 접근할 cursor
             cursor = connection.cursor()
 
-            print(request.data)
 
-            data_key = request.data
-            print(data_key)
-
-            data_key = data_key.keys()
-            print(data_key)
 
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
             # url_decode = parse.unquote(request.data)
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
-            decrypted_data = AESCipher(bytes(new_key)).decrypt(data_key[0])
+            # base64_decode = base64.decode(request.data['body'])
+            # decrypted_data = AESCipher(bytes(new_key)).decrypt(base64_decode)
+            decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             decrypted_data = decrypted_data.decode('utf-8')
             print(decrypted_data)
 
