@@ -457,14 +457,15 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
-            # url_decode = parse.unquote(request.data)
-            # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
+            # # url_decode = parse.unquote(request.data)
+            # # decrypted_data = AESCipher(bytes(new_key)).decrypt(url_decode)
+            #
+            # print(f"체크: {request.data['body']}")
+            # base64_str = request.data['body']
+            # base64_decode = base64.b64decode(base64_str).decode('utf-16')
+            # print(base64_decode)
 
-            print(f"체크: {request.data['body']}")
-            base64_str = request.data['body']
-            base64_decode = base64.b64decode(base64_str).decode('utf-16')
-            print(base64_decode)
-            decrypted_data = AESCipher(bytes(new_key)).decrypt(base64_decode)
+            decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             print(decrypted_data)
             # decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
             decrypted_data = decrypted_data.decode('utf-8')
