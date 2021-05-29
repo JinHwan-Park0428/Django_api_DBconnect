@@ -457,11 +457,14 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
             decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data)
-            decrypted_data.decode('utf-8')
+            decrypted_data = decrypted_data.decode('utf-8')
+            print(decrypted_data)
             # uid = request.data['uid']
             # upwd = request.data['upwd']
             uid = decrypted_data['uid']
             upwd = decrypted_data['upwd']
+            print(f"""
+            {uid, upwd}""")
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE uid=%s"
@@ -486,6 +489,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                                                                'login_date': str(
                                                                    datetime.today().strftime("%Y%m%d%H%M"))}
                                                               )
+                    print(token)
                     # DB와 접속 종료
                     connection.close()
                     if new_data['authority'] == 1:
