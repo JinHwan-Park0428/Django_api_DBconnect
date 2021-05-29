@@ -443,7 +443,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         # 데이터 저장을 위한 딕셔너리 선언
         new_data = dict()
         # 프론트와 맞춰야하는 키
-        string_key = '000000000@fsadqega#fkdlsaiqu1235'
+        string_key = '0000000000@fsadqega#fkdlsaiqu1235'
         # 프론트의 키값을 16진수화하기위한 과정
         new_key = []
         cnt = 0
@@ -488,14 +488,14 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                                                               )
                     # DB와 접속 종료
                     connection.close()
-                    # if new_data['authority'] == 1:
-                    #     new_data['login_check'] = 2
-                    #     return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
-                    # else:
-                    #     new_data['login_check'] = 1
-                    #     return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                    if new_data['authority'] == 1:
+                        new_data['login_check'] = 2
+                        return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                    else:
+                        new_data['login_check'] = 1
+                        return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
 
-                    return Response({'token': token})
+                    # return Response({'token': token})
 
                 else:
                     try:
