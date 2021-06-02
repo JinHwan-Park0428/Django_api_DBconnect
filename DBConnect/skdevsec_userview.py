@@ -1,4 +1,5 @@
 # 필요한 모듈 임포트
+import json
 import random
 import re
 import string
@@ -445,8 +446,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         # 데이터 저장을 위한 딕셔너리 선언
         new_data = dict()
         # 프론트와 맞춰야하는 키
-        string_key = b'000000000@fsadqega#fkdlsaiqu1235'
-        # string_key = '000000000@fsadqega#fkdlsaiqu1235'
+        string_key = '000000000@fsadqega#fkdlsaiqu1235'
 
         # 프론트의 키값을 16진수화하기위한 과정
         try:
@@ -454,37 +454,18 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor = connection.cursor()
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             # 서버단에서 토큰 복호화 확인용
-
-            print(f"request.data:{request.data}")
-            print(f"request.data['body']: {request.data['body']}")
-            decrypted_data = AESCipher(string_key).decrypt(request.data['body'])
-
-            print(f"체크1: {decrypted_data}")
-            # decrypted_data = AESCipher(bytes(new_key)).decrypt(request.data['body'])
-            decrypted_data = decrypted_data.decode('utf-8')
-            print(f"체크2: {decrypted_data}")
-
-            # 기존
-            # uid = request.data['uid']
-            # upwd = request.data['upwd']
-
-            # {}
-            uid = decrypted_data['uid']
-            upwd = decrypted_data['upwd']
+            decrypted_data = decrypt(request.data[0], string_key)
+            decrypted_data = json.loads(decrypted_data)
 
             # [{}]
-            # uid = decrypted_data[0]['uid']
-            # upwd = decrypted_data[0]['upwd']
-
-            print(f"""
-            {uid, upwd}
-            """)
+            uid = decrypted_data[0]['uid']
+            upwd = decrypted_data[0]['upwd']
 
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT * FROM skdevsec_user WHERE uid=%s"
 
             # DB에 명령문 전송
-            cursor.execute(sql_query_1, (uid, ))
+            cursor.execute(sql_query_1, (uid,))
             data = cursor.fetchone()
 
             # 불러온 데이터를 딕셔너리 형태로 저장
@@ -498,14 +479,17 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                     # 키와 원하는 정보를 aes256기법을 이용한 토큰화 token = AESCipher(bytes(new_key)).encrypt(data[2] + '-' + str(rnd)
                     # + '-' + str(datetime.today().strftime("%Y%m%d%H%M")))
-                    token = AESCipher(string_key).encrypt({'unickname': data[2],
-                                                               'level': str(rnd),
-                                                               'login_date': str(
-                                                                   datetime.today().strftime("%Y%m%d%H%M"))}
-                                                                     )
-                    print(token)
+                    token_data = json.dumps({'unickname': data[2],
+                                             'level': str(rnd),
+                                             'login_date': str(
+                                                 datetime.today().strftime("%Y%m%d%H%M"))})
+                    token = encrypt(token_data, string_key)
                     # DB와 접속 종료
                     connection.close()
+
+                    new_data['unickname'] = data[2]
+                    new_data['authority'] = data[7]
+
                     if new_data['authority'] == 1:
                         new_data['login_check'] = 2
                         return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
