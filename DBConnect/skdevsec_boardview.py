@@ -14,7 +14,6 @@ from DBConnect.serializers import *
 class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkdevsecBoard.objects.all()
     serializer_class = SkdevsecBoardSerializer
-
     # 게시판 출력
     @action(detail=False, methods=['POST'])
     def board_output(self, request):
@@ -23,14 +22,11 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             # DB 접근할 cursor
             cursor = connection.cursor()
-
             # POST 메소드로 날라온 Request의 데이터 각각 추출
             bcate = request.data['bcate']
             bpage = int(request.data['bpage'])
-
             # SQL 쿼리문 작성
             sql_query_1 = "SELECT COUNT(*) FROM skdevsec_board WHERE bcate=%s"
-
             # DB에 명령문 전송
             cursor.execute(sql_query_1, (bcate,))
             count = cursor.fetchone()

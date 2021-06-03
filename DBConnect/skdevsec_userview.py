@@ -479,11 +479,11 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                     # 키와 원하는 정보를 aes256기법을 이용한 토큰화 token = AESCipher(bytes(new_key)).encrypt(data[2] + '-' + str(rnd)
                     # + '-' + str(datetime.today().strftime("%Y%m%d%H%M")))
-                    token_data = json.dumps({'unickname': data[2],
-                                             'level': str(rnd),
-                                             'login_date': str(
-                                                 datetime.today().strftime("%Y%m%d%H%M"))})
-                    token = encrypt(token_data, string_key)
+                    # token_data = json.dumps({'unickname': data[2],
+                    #                          'level': str(rnd),
+                    #                          'login_date': str(
+                    #                              datetime.today().strftime("%Y%m%d%H%M"))})
+                    # token = encrypt(token_data, string_key)
                     # DB와 접속 종료
                     connection.close()
 
@@ -492,10 +492,15 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                     if new_data['authority'] == 1:
                         new_data['login_check'] = 2
-                        return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                        token_data = json.dumps({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                        token = encrypt(token_data, string_key)
+                        return Response(token.decode('utf-8'))
                     else:
                         new_data['login_check'] = 1
-                        return Response({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                        token_data = json.dumps(
+                            {'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                        token = encrypt(token_data, string_key)
+                        return Response(token.decode('utf-8'))
 
                     # return Response({'token': token})
 
@@ -507,20 +512,28 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     except Exception as e:
                         connection.rollback()
                         print(f"에러: {e}")
-                        return Response(0)
+                        error_num = '0'
+                        error = encrypt(error_num, string_key)
+                        return Response(error)
 
                     else:
                         connection.commit()
                         connection.close()
-                        return Response(0)
+                        error_num = '0'
+                        error = encrypt(error_num, string_key)
+                        return Response(error)
             else:
-                return Response(0)
+                error_num = '0'
+                error = encrypt(error_num, string_key)
+                return Response(error)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
         except Exception as e:
             connection.rollback()
             print(f"에러: {e}")
-            return Response(0)
+            error_num = '0'
+            error = encrypt(error_num, string_key)
+            return Response(error)
 
     # 내 정보 보기
     @action(detail=False, methods=['POST'])
