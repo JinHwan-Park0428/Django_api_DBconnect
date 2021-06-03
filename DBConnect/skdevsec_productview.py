@@ -6,7 +6,7 @@ from django.db import connection
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from . import check_file
 from DBConnect.serializers import *
 
 
@@ -147,16 +147,19 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
             new_data['preview_avg'] = float(request.data['preview_avg'])
             new_data['pcount'] = int(request.data['pcount'])
 
-            # DB에 저장하기 위해 시리얼라이저 함수 사용
-            file_serializer = SkdevsecProductSerializer(data=new_data)
+            if check_file(new_data['pimage']):
+                # DB에 저장하기 위해 시리얼라이저 함수 사용
+                file_serializer = SkdevsecProductSerializer(data=new_data)
 
-            # 저장이 가능한 상태면 저장
-            if file_serializer.is_valid():
-                file_serializer.save()
+                # 저장이 가능한 상태면 저장
+                if file_serializer.is_valid():
+                    file_serializer.save()
 
-            # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
+                # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
+                else:
+                    print(f"에러: {file_serializer.errors}")
+                    return Response(0)
             else:
-                print(f"에러: {file_serializer.errors}")
                 return Response(0)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
@@ -210,15 +213,18 @@ class SkdevsecProductViewSet(viewsets.ReadOnlyModelViewSet):
 
             # 수정할 데이터를 업데이트함
             if new_data['pimage'] != image_path:
-                if file_serializer.is_valid():
-                    file_serializer.update(data_check, file_serializer.validated_data)
-                    # 파일이 존재하면 삭제
-                    if data[3] != "0":
-                        os.remove(data[3])
+                if check_file(new_data['pimage']):
+                    if file_serializer.is_valid():
+                        file_serializer.update(data_check, file_serializer.validated_data)
+                        # 파일이 존재하면 삭제
+                        if data[3] != "0":
+                            os.remove(data[3])
 
-                # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
+                    # 불가능한 상태면 에러 알림 및 프론트엔드에 0 전송
+                    else:
+                        print(f"에러: {file_serializer.errors}")
+                        return Response(0)
                 else:
-                    print(f"에러: {file_serializer.errors}")
                     return Response(0)
             else:
                 sql_query_2 = "UPDATE skdevsec_product SET pname=%s, pcate=%s, ptext=%s, pprice=%s, pcount=%s WHERE " \

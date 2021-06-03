@@ -6,7 +6,7 @@ from django.db import connection
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from . import check_file
 from DBConnect.serializers import *
 
 
@@ -163,16 +163,19 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                 connection.close()
             # 업로드할 파일이 있으면
             else:
-                # DB에 저장하기 위해 시리얼라이저 함수 사용
-                file_serializer = SkdevsecBoardSerializer(data=new_data)
+                if check_file(new_data['bfile']):
+                    # DB에 저장하기 위해 시리얼라이저 함수 사용
+                    file_serializer = SkdevsecBoardSerializer(data=new_data)
 
-                # 저장이 가능한 상태면 저장
-                if file_serializer.is_valid():
-                    file_serializer.save()
+                    # 저장이 가능한 상태면 저장
+                    if file_serializer.is_valid():
+                        file_serializer.save()
 
-                # 저장이 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                    # 저장이 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                    else:
+                        print(f"에러: {file_serializer.errors}")
+                        return Response(0)
                 else:
-                    print(f"에러: {file_serializer.errors}")
                     return Response(0)
 
         # 에러가 발생했을 경우 백엔드에 에러 내용 출력 및 프론트엔드에 0 전송
@@ -230,22 +233,25 @@ class SkdevsecBoardViewSet(viewsets.ReadOnlyModelViewSet):
                     return Response(0)
 
                 if new_data['bfile'] != image_path:
-                    # DB에 저장하기 위해 시리얼라이저 함수 사용
-                    file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
+                    if check_file(new_data['bfile']):
+                        # DB에 저장하기 위해 시리얼라이저 함수 사용
+                        file_serializer = SkdevsecBoardSerializer(data_check, data=new_data)
 
-                    # 수정할 데이터를 업데이트함
-                    if file_serializer.is_valid():
-                        file_serializer.update(data_check, file_serializer.validated_data)
+                        # 수정할 데이터를 업데이트함
+                        if file_serializer.is_valid():
+                            file_serializer.update(data_check, file_serializer.validated_data)
 
-                        # 게시물 기존 파일이 존재하면 삭제
-                        if data[0] != "0":
-                            os.remove(data[0])
+                            # 게시물 기존 파일이 존재하면 삭제
+                            if data[0] != "0":
+                                os.remove(data[0])
 
-
-                    # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                        # 업데이트 불가능하면 백엔드에 에러 알림 및 프론트엔드에 0 전송
+                        else:
+                            print(f"에러: {file_serializer.errors}")
+                            return Response(0)
                     else:
-                        print(f"에러: {file_serializer.errors}")
                         return Response(0)
+
                 else:
                     sql_query_3 = "UPDATE skdevsec_board SET btitle=%s, btext=%s, bcate=%s, b_lock=%s WHERE bid=%s"
 
