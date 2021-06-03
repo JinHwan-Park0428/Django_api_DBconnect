@@ -1,9 +1,7 @@
-# 필요한 모듈 임포트
 from rest_framework import serializers
 from .models import *
 
 
-# 각각의 클래스는 Django Rest API에서 테이블 내용을 출력하기 위한 기본 세팅 상태
 class SkdevsecBagSerializer(serializers.ModelSerializer):
     class Meta:
         model = SkdevsecBag
