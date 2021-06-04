@@ -446,8 +446,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                 else:
                     try:
-                        sql_query_2 = "UPDATE skdevsec_user SET ulock=ulock+1 WHERE uid=%s"
-                        cursor.execute(sql_query_2, (uid,))
+                        sql_query_3 = "UPDATE skdevsec_user SET ulock=ulock+1 WHERE uid=%s"
+                        cursor.execute(sql_query_3, (uid,))
 
                     except Exception as e:
                         connection.rollback()
