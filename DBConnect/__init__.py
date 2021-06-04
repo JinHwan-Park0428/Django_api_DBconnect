@@ -90,7 +90,7 @@ def check_file(filename):
                 temp_point = filename.rindex('.')
                 file_ext = filename[temp_point:]
 
-                if file_ext is not None and file_ext.trim() != '':
+                if file_ext is not None and file_ext.strip() != '':
                     if file_ext in allow_ext:
                         check_result = True
 
