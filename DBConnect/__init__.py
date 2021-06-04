@@ -77,7 +77,7 @@ def check_file(filename):
     filename = str(filename)
     check_result = False
 
-    allow_ext = ['jpg', 'jpeg', 'png']
+    allow_ext = ['.jpg', '.jpeg', '.png']
     disable_sc = ['..', './', '.\\', '%', ';', '\0']
 
     for i in disable_sc:
