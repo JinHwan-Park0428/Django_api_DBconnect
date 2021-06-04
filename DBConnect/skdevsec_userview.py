@@ -369,7 +369,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
         string_key = '000000000@fsadqega#fkdlsaiqu1235'
 
         try:
-
             cursor = connection.cursor()
 
             decrypted_data = decrypt(request.data[0], string_key)
@@ -411,6 +410,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         try:
                             sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
                             cursor.execute(sql_query_2, (uid,))
+                            connection.commit()
 
                         except Exception as e:
                             connection.rollback()
@@ -429,9 +429,9 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         token = encrypt(token_data, string_key)
 
                         try:
-                            print("uid: ", uid)
                             sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
                             cursor.execute(sql_query_2, (uid,))
+                            connection.commit()
 
                         except Exception as e:
                             connection.rollback()
