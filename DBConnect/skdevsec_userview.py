@@ -401,18 +401,47 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                     new_data['unickname'] = data[2]
                     new_data['authority'] = data[7]
+                    new_data['ulock'] = data[8]
 
                     if new_data['authority'] == 1:
                         new_data['login_check'] = 2
-                        token_data = json.dumps({'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                        token_data = json.dumps({'unickname': new_data['unickname'],
+                                                 'login_check': new_data['login_check'], 'ulock': new_data['ulock']})
+
                         token = encrypt(token_data, string_key)
+
+                        try:
+                            sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
+                            cursor.execute(sql_query_2, (uid,))
+
+                        except Exception as e:
+                            connection.rollback()
+                            print(f"에러: {e}")
+
+                            error_num = '0'
+                            error = encrypt(error_num, string_key)
+                            return Response(error)
+
                         return Response(token.decode('utf-8'))
 
                     else:
                         new_data['login_check'] = 1
-                        token_data = json.dumps(
-                            {'unickname': new_data['unickname'], 'login_check': new_data['login_check']})
+                        token_data = json.dumps({'unickname': new_data['unickname'],
+                                                 'login_check': new_data['login_check'], 'ulock': new_data['ulock']})
                         token = encrypt(token_data, string_key)
+
+                        try:
+                            sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
+                            cursor.execute(sql_query_2, (uid,))
+
+                        except Exception as e:
+                            connection.rollback()
+                            print(f"에러: {e}")
+
+                            error_num = '0'
+                            error = encrypt(error_num, string_key)
+                            return Response(error)
+
                         return Response(token.decode('utf-8'))
 
                 else:
