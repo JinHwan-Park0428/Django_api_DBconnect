@@ -409,7 +409,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         token = encrypt(token_data, string_key)
 
                         try:
-                            print(uid)
+                            print("uid: ", uid)
                             sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
                             cursor.execute(sql_query_2, (uid,))
 
