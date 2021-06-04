@@ -372,9 +372,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
             cursor = connection.cursor()
 
-            print(request.data)
-
-            decrypted_data = decrypt(request.data, string_key)
+            decrypted_data = decrypt(request.data[0], string_key)
             decrypted_data = json.loads(decrypted_data)
 
             uid = decrypted_data[0]['uid']
