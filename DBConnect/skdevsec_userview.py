@@ -409,6 +409,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         token = encrypt(token_data, string_key)
 
                         try:
+                            print(uid)
                             sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
                             cursor.execute(sql_query_2, (uid,))
 
@@ -427,7 +428,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                         token_data = json.dumps({'unickname': new_data['unickname'],
                                                  'login_check': new_data['login_check'], 'ulock': new_data['ulock']})
                         token = encrypt(token_data, string_key)
-                        print(token)
 
                         try:
                             sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
@@ -435,7 +435,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                         except Exception as e:
                             connection.rollback()
-                            print(f"에러1: {e}")
+                            print(f"에러: {e}")
 
                             error_num = '0'
                             error = encrypt(error_num, string_key)
