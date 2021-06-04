@@ -85,21 +85,16 @@ def check_file(filename):
             check_result = False
         else:
             try:
-                print(filename.rindex('.'))
                 temp_point = filename.rindex('.')
-                print(temp_point)
                 file_ext = filename[temp_point:]
-                print(file_ext)
 
                 if file_ext is not None and file_ext.strip() != '':
                     if file_ext in allow_ext:
                         check_result = True
-                    print(check_result)
 
             except Exception as e:
                 print(f"에러: {e}")
                 check_result = False
                 return check_result
 
-    print(check_result)
     return check_result
