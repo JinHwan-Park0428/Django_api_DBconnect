@@ -73,7 +73,8 @@ def make_signature(string):
     return string_base64
 
 
-def check_file(intance, filename):
+def check_file(filename):
+    filename = str(filename)
     print(filename)
     print(filename.split('.')[-1])
     check_result = False
