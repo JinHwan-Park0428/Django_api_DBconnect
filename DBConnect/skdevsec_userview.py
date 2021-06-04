@@ -394,8 +394,6 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
                     #                              datetime.today().strftime("%Y%m%d%H%M"))})
                     # token = encrypt(token_data, string_key)
 
-                    connection.close()
-
                     new_data['unickname'] = data[2]
                     new_data['authority'] = data[7]
                     new_data['ulock'] = data[8]
@@ -409,8 +407,9 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                         try:
                             sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
-                            cursor.execute(sql_query_2, (uid,))
+                            cursor.execute(sql_query_2, (uid, ))
                             connection.commit()
+                            connection.close()
 
                         except Exception as e:
                             connection.rollback()
@@ -430,8 +429,9 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
 
                         try:
                             sql_query_2 = "UPDATE skdevsec_user SET ulock=0 WHERE uid=%s"
-                            cursor.execute(sql_query_2, (uid,))
+                            cursor.execute(sql_query_2, (uid, ))
                             connection.commit()
+                            connection.close()
 
                         except Exception as e:
                             connection.rollback()
