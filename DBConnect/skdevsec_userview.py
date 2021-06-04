@@ -387,6 +387,7 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             print(data)
 
             if data is not None:
+                print(bcrypt.checkpw(upwd.encode('utf-8'), data[1].encode('utf-8')))
                 if bcrypt.checkpw(upwd.encode('utf-8'), data[1].encode('utf-8')):
                     if uid == 'admin':
                         rnd = random.randint(100, 1000)
