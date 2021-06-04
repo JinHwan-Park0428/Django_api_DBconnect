@@ -375,6 +375,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             decrypted_data = decrypt(request.data[0], string_key)
             decrypted_data = json.loads(decrypted_data)
 
+            print(decrypted_data)
+
             uid = decrypted_data[0]['uid']
             upwd = decrypted_data[0]['upwd']
 
