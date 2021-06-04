@@ -384,6 +384,8 @@ class SkdevsecUserViewSet(viewsets.ReadOnlyModelViewSet):
             cursor.execute(sql_query_1, (uid,))
             data = cursor.fetchone()
 
+            print(data)
+
             if data is not None:
                 if bcrypt.checkpw(upwd.encode('utf-8'), data[1].encode('utf-8')):
                     if uid == 'admin':
