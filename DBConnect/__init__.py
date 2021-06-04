@@ -74,6 +74,8 @@ def make_signature(string):
 
 
 def check_file(filename):
+    print(filename)
+    print(filename.split('.')[-1])
     check_result = False
 
     allow_ext = ['jpg', 'jpeg', 'png']
